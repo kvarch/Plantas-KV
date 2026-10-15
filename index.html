@@ -110,7 +110,16 @@ button,input,select,textarea{font-family:inherit;font-size:14px;color:inherit}
 .pet{position:absolute;z-index:20;display:none;align-items:center;background:var(--md-sys-color-surface-container-lowest);border:1px solid var(--md-sys-color-outline);padding:0}
 .pet.show{display:flex}
 .pet .icon-btn{width:44px;height:48px;min-width:44px}
-.pet .ptitle{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--md-sys-color-on-surface-variant);padding:0 8px;writing-mode:vertical-rl;transform:rotate(180deg);border-right:1px solid var(--md-sys-color-outline-variant);align-self:stretch;display:flex;align-items:center;justify-content:center}
+.pet .ptitle{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--md-sys-color-on-surface-variant);padding:0 8px;writing-mode:vertical-rl;transform:rotate(180deg);border-right:1px solid var(--md-sys-color-outline-variant);align-self:stretch;display:flex;align-items:center;justify-content:center;cursor:move;touch-action:none;min-width:28px;user-select:none;background:var(--md-sys-color-surface-container)}
+.usage-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;text-align:left;min-width:180px;max-width:100%}
+.usage-btn .ut{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.usage-btn .sw{width:14px;height:14px;flex:none;border:1px solid rgba(0,0,0,.25)}
+.optbar .usage-btn{min-height:40px;height:40px}
+.wbtn{min-height:48px;padding:0 10px;letter-spacing:0;text-transform:none}
+.wbtn[aria-pressed=false]{opacity:.45;text-decoration:line-through}
+.wbtn[aria-pressed=true]{background:var(--md-sys-color-surface-container-high)}
+#menu-usage{width:300px;max-height:min(70vh,520px)}
+#menu-usage [aria-selected=true]{background:var(--md-sys-color-primary-fixed);color:var(--md-sys-color-on-primary-fixed)}
 .pet .pnum{width:64px;min-height:40px;height:40px;margin:0 4px;padding:0 6px}
 .pet.docked{left:50% !important;top:auto !important;bottom:12px;transform:translateX(-50%)}
 .edit-inp{position:absolute;z-index:25;width:84px;min-height:32px;height:32px;padding:0 6px;border:2px solid var(--md-sys-color-primary);background:#fff;color:#1b1b1b;font-weight:600;text-align:center}
@@ -314,7 +323,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V02 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V03 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -322,13 +331,14 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 <div class="menu" id="menu-file" role="menu" aria-label="Arquivo"></div>
 <div class="menu" id="menu-snap" role="menu" aria-label="Tipos de snap"></div>
 <div class="menu" id="menu-grid" role="menu" aria-label="Grade"></div>
+<div class="menu" id="menu-usage" role="dialog" aria-label="Escolher categoria de uso"></div>
 <div class="menu" id="menu-wall" role="menu" aria-label="Guias de parede"></div>
 <dialog id="dlg"><form method="dialog" id="dlg-form"></form></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="file-in" accept=".json,application/json" hidden>
 <script type="module">
-/* KV Manchas — Beta V02 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V02';
+/* KV Manchas — Beta V03 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V03';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -521,8 +531,8 @@ function offsetRing(P, d, closed = true) {
 
 /* ---------- estado ---------- */
 const DEFAULT_USAGES = [
-  { name: 'Área privativa', color: '#9fd3c7' }, { name: 'Varanda', color: '#cfe6a8' }, { name: 'Circulação', color: '#dcdcdc' },
-  { name: 'Área comum', color: '#f3d48a' }, { name: 'Área técnica', color: '#c9c2e6' }, { name: 'Garagem', color: '#bdbdbd' }, { name: 'Não computável', color: '#efb9a8' }
+  { name: 'Área privativa', color: '#9fd3c7', group: 'Residencial' }, { name: 'Varanda', color: '#cfe6a8', group: 'Residencial' }, { name: 'Circulação', color: '#dcdcdc', group: 'Áreas comuns' },
+  { name: 'Área comum', color: '#f3d48a', group: 'Áreas comuns' }, { name: 'Área técnica', color: '#c9c2e6', group: 'Técnicas' }, { name: 'Garagem', color: '#bdbdbd', group: 'Técnicas' }, { name: 'Não computável', color: '#efb9a8', group: 'Outros' }
 ];
 const ROOM_NAMES = ['Sala', 'Estar/Jantar', 'Cozinha', 'Área de serviço', 'Dormitório', 'Suíte', 'Banho', 'Lavabo', 'Varanda', 'Circulação', 'Hall', 'Closet', 'Escritório', 'Depósito'];
 const ROLES = { room: 'Ambiente', unit: 'Área da unidade', limit: 'Limite de cálculo', layout: 'Mobiliário/layout', line: 'Desenho' };
@@ -607,7 +617,7 @@ function cache() {
       if (bu) { const R = [a, ...arcSample(a, b, bu), b]; for (let j = 0; j < R.length - 1; j++) segs.push({ a: R[j], b: R[j + 1], top: p._top, curved: true }); mids.push({ p: arcMidPt(a, b, bu), top: p._top }); }
       else { segs.push({ a, b, top: p._top }); mids.push({ p: mid(a, b), top: p._top }); }
     }
-    if (p.closed && p.role !== 'limit' && n >= 3) { const R = flat(p); centers.push({ p: centroid(R), top: p._top }); if (p.guide > 0 && !isRef && p.role === 'room') wallTypes().forEach(wt => wallR.push({ R: offsetRing(R, wt.d, true), top: p._top, k: wt.k, color: wt.color })); }
+    if (p.closed && p.role !== 'limit' && n >= 3) { const R = flat(p); centers.push({ p: centroid(R), top: p._top }); if (p.guide > 0 && !isRef && p.role === 'room') wallTypesFor(p).forEach(wt => wallR.push({ R: offsetRing(R, wt.d, true), top: p._top, k: wt.k, color: wt.color })); }
   };
   prims.forEach(p => addGeom(p, false)); ref.forEach(p => addGeom(p, true));
   const wallV = [], wallS = [];
@@ -619,6 +629,7 @@ function topBBox(el) { const ps = expandList([el]); const P = []; ps.forEach(p =
 function unionBBox(list) { let B = null; list.forEach(e => { const b = topBBox(e); if (!b) return; B = B ? [Math.min(B[0], b[0]), Math.min(B[1], b[1]), Math.max(B[2], b[2]), Math.max(B[3], b[3])] : b; }); return B; }
 
 const wallTypes = () => (S.doc.settings.walls || []).filter(w => w.on && w.d > 0);
+const wallTypesFor = p => (S.doc.settings.walls || []).filter(w => w.d > 0 && (p.walls && p.walls[w.k] !== undefined ? p.walls[w.k] : w.on));
 /* ---------- vista ---------- */
 const tx = () => S.W / 2 - S.view.cx * S.view.k, ty = () => S.H / 2 + S.view.cy * S.view.k;
 const w2s = p => [p[0] * S.view.k + tx(), -p[1] * S.view.k + ty()];
@@ -1171,27 +1182,29 @@ const OPS = {
     preview() { const P = this.pts; if (!this.cur) return null; if (P.length === 1) return { w: polyPreview(P, this.cur, false) }; if (P.length === 2) { const bu = bulgeFrom3(P[0], P[1], this.cur); return { w: `<path d="${pathD({ pts: [P[0], P[1]], b: [bu, 0], closed: false })}" fill="none" stroke="${PRI}" stroke-width="1.5" vector-effect="non-scaling-stroke"/>` }; } return null; }
   }),
   circle: () => ({
-    c: null, r: null, a0: 0, acc: 0, last: 0, cur: null, typed: true, label: 'Raio', noOrtho: true,
-    hint() { return !this.c ? 'Clique o centro' : !this.r ? 'Clique o ponto inicial (define o raio) ou digite o raio' : 'Gire para o lado do arco e clique para terminar · clique no ponto inicial (ou Enter) fecha o círculo'; },
+    c: null, r: null, a0: 0, acc: 0, last: 0, cur: null, typed: true, noOrtho: true,
+    get label() { return this.r ? 'Ângulo °' : 'Raio;ângulo'; },
+    hint() { return !this.c ? 'Clique o centro' : !this.r ? 'Clique o ponto inicial ou digite o raio (ex.: 2 ou 2;90 para raio e ângulo)' : 'Gire para o lado do arco e clique · digite o ângulo (negativo = horário, 360 = círculo) · clique no ponto inicial ou Enter fecha o círculo'; },
     base() { return this.c; },
     get extraPts() { return this.r ? [this.startPt()] : []; },
     startPt() { return add(this.c, [this.r * Math.cos(this.a0), this.r * Math.sin(this.a0)]); },
     endPt() { const a = this.a0 + this.acc; return add(this.c, [this.r * Math.cos(a), this.r * Math.sin(a)]); },
     onMove(p) { this.cur = p; if (this.r && dist(p, this.c) > 1e-6) { const a = Math.atan2(p[1] - this.c[1], p[0] - this.c[0]); let d = a - this.last; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; this.acc = clamp(this.acc + d, -2 * Math.PI + 0.02, 2 * Math.PI - 0.02); this.last = a; } },
-    startAt(r, ang) { this.r = r; this.a0 = ang; this.last = ang; this.acc = 0; setStatus(this.hint()); },
+    startAt(r, ang) { this.r = r; this.a0 = ang; this.last = ang; this.acc = 0; setStatus(this.hint()); typedLabel(this.label); },
+    byAngle(deg) { if (!isFinite(deg) || Math.abs(deg) < 1e-6) return; if (Math.abs(deg) >= 360 - 1e-6) return this.make(true); const dir = deg < 0 ? -1 : (this.acc < -1e-6 ? -1 : 1); this.acc = dir * Math.abs(deg) * Math.PI / 180; this.make(false); },
     onClick(p) {
       if (!this.c) { this.c = p; return setStatus(this.hint()); }
       if (!this.r) { const r = dist(p, this.c); if (r < 1e-4) return; return this.startAt(r, Math.atan2(p[1] - this.c[1], p[0] - this.c[0])); }
       if (dist(w2s(p), w2s(this.startPt())) < 10) return this.make(true);
       if (Math.abs(this.acc) < 1e-3) return; this.make(false);
     },
-    onTyped(v) { const r = parseNum(v); if (!(r > 0) || !this.c) return; const cur = this.cur && dist(this.cur, this.c) > 1e-6 ? this.cur : add(this.c, [1, 0]); this.startAt(r, Math.atan2(cur[1] - this.c[1], cur[0] - this.c[0])); },
+    onTyped(v) { if (!this.c) return; const nums = String(v).split(/[;x×\s]+/).map(parseNum).filter(isFinite); if (!nums.length) return; if (this.r) return this.byAngle(nums[0]); if (!(nums[0] > 0)) return; const cur = this.cur && dist(this.cur, this.c) > 1e-6 ? this.cur : add(this.c, [1, 0]); this.startAt(nums[0], Math.atan2(cur[1] - this.c[1], cur[0] - this.c[0])); if (nums.length > 1) this.byAngle(nums[1]); },
     onEnter() { if (this.r) this.make(true); },
     make(full) {
       const d = S.doc.defaults;
       if (full) addEls([{ id: uid(), t: 'circle', c: this.c.map(r4), r: r4(this.r), role: d.role === 'unit' ? 'room' : d.role, usage: d.usage, name: '', st: newStyle(d.role), guide: 0 }]);
       else addEls([{ ...mkLine([this.startPt(), this.endPt()]), b: [Math.tan(this.acc / 4), 0] }]);
-      this.c = this.r = null; this.acc = 0; setStatus(this.hint());
+      this.c = this.r = null; this.acc = 0; setStatus(this.hint()); typedLabel(this.label);
     },
     preview() {
       if (!this.c || !this.cur) return null; const c = this.c;
@@ -1384,14 +1397,16 @@ function showPet(ctx, sp) {
   const iconOf = { vmove: 'vmove', vdel: 'vdel', vfil: 'fillet', vcha: 'chamfer', rotEl: 'rotate', moveEl: 'move', eoff: 'eoff', vins: 'vins', ecurve: 'ecurve', poff: 'poff' };
   const def = items[0][0]; ctx.mode = def;
   const fixed = S.doc.settings.petMode === 'fixo';
-  pet.innerHTML = `<span class="ptitle">${ctx.kind === 'vertex' ? 'Vértice' : 'Aresta'}</span>` + items.map(([k, t]) => `<button class="icon-btn" data-pet="${k}" aria-label="${t}" title="${t}" aria-pressed="${k === def}">${icon(iconOf[k])}</button>`).join('') +
+  pet.innerHTML = `<span class="ptitle" title="Arraste para mover o menu · duplo clique volta para perto do clique">${ctx.kind === 'vertex' ? 'Vértice' : 'Aresta'}</span>` + items.map(([k, t]) => `<button class="icon-btn" data-pet="${k}" aria-label="${t}" title="${t}" aria-pressed="${k === def}">${icon(iconOf[k])}</button>`).join('') +
     (ctx.kind === 'vertex' ? `<label class="sr-only" for="pet-r">Raio ou distância</label><input class="inp pnum" id="pet-r" type="text" inputmode="decimal" value="${fmt(S.doc.settings.fillet, 2)}" title="Raio do fillet / distância do chanfro (m)">` : '') +
     `<button class="icon-btn" data-pet="pin" aria-label="${fixed ? 'Menu fixo — clique para seguir o cursor' : 'Menu segue o cursor — clique para fixar'}" title="${fixed ? 'Fixo' : 'Seguir cursor'}" aria-pressed="${fixed}">${icon('pin')}</button>`;
   pet.classList.toggle('docked', fixed); pet.classList.add('show');
-  if (!fixed) placePet(sp);
+  if (!fixed) { if (S.petUser) { const st = $('#stage').getBoundingClientRect(); pet.style.left = clamp(S.petUser[0], 4, st.width - pet.offsetWidth - 4) + 'px'; pet.style.top = clamp(S.petUser[1], 4, st.height - pet.offsetHeight - 4) + 'px'; } else placePet(sp); }
+  const ttl = $('.ptitle', pet); ttl.onpointerdown = ev => { if (fixed) return; ev.preventDefault(); ttl.setPointerCapture(ev.pointerId); const ox = ev.clientX - pet.offsetLeft, oy = ev.clientY - pet.offsetTop; ttl.onpointermove = mv => { const st = $('#stage').getBoundingClientRect(); const x = clamp(mv.clientX - ox, 4, st.width - pet.offsetWidth - 4), y = clamp(mv.clientY - oy, 4, st.height - pet.offsetHeight - 4); pet.style.left = x + 'px'; pet.style.top = y + 'px'; S.petUser = [x, y]; }; ttl.onpointerup = () => { ttl.onpointermove = null; }; };
+  ttl.ondblclick = () => { S.petUser = null; placePet(sp); };
   ctx.sp = sp; startPetMode(def);
 }
-function placePet(sp) { const pet = $('#pet'); const st = $('#stage').getBoundingClientRect(); const w = pet.offsetWidth || 300, h = pet.offsetHeight || 48; let x = sp[0] + 18, y = sp[1] + 22; if (x + w > st.width - 4) x = sp[0] - w - 18; if (y + h > st.height - 4) y = sp[1] - h - 22; pet.style.left = clamp(x, 4, st.width - w - 4) + 'px'; pet.style.top = clamp(y, 4, st.height - h - 4) + 'px'; }
+function placePet(sp) { const pet = $('#pet'); const st = $('#stage').getBoundingClientRect(); const w = pet.offsetWidth || 300, h = pet.offsetHeight || 48; let x = sp[0] + 40, y = sp[1] + 56; if (x + w > st.width - 4) x = sp[0] - w - 40; if (y + h > st.height - 4) y = sp[1] - h - 56; pet.style.left = clamp(x, 4, st.width - w - 4) + 'px'; pet.style.top = clamp(y, 4, st.height - h - 4) + 'px'; }
 function hidePet() { $('#pet').classList.remove('show'); petCtx = null; }
 function startPetMode(mode) {
   if (!petCtx) return; const ctx = petCtx; const el = byId(ctx.el.id); if (!el) return hidePet();
@@ -1435,7 +1450,7 @@ cv.addEventListener('pointermove', e => {
   if (PD && PD.newGuide) { const p = resolvePoint(w, null, { noTrack: true }); PD.p = p; const d = PD.newGuide === 'h' ? [1, 0] : [0, 1]; const L = 1e5 / S.view.k; const a = w2s(add(p, mul(d, -L))), b = w2s(add(p, mul(d, L))); renderOverlay(); $('#g-sc').insertAdjacentHTML('beforeend', `<line x1="${N(a[0])}" y1="${N(a[1])}" x2="${N(b[0])}" y2="${N(b[1])}" stroke="${PRI}" stroke-width="1.2" stroke-dasharray="6 4"/><text x="${N(sp[0] + 10)}" y="${N(sp[1] - 8)}" font-size="11" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${PD.newGuide === 'h' ? 'y ' + fmt(p[1]) : 'x ' + fmt(p[0])}</text>`); return; }
   if (PD && PD.guideMove && dist(sp, PD.sp) > 2) { const g = PD.guideMove; const p = resolvePoint(w, null, { noTrack: true, exclude: new Set([g.id]) }); const n = perpL(g.d); const t = dot(sub(p, PD.orig), n); g.p = add(PD.orig, mul(n, t)).map(r4); PD.moved = true; PD.del = sp[0] < RUL || sp[1] < RUL; invalidate(); renderAll(); return; }
   let shown = w;
-  if (S.op) { const p = opPoint(w); shown = p; S.op.onMove && S.op.onMove(p, e); if (S.op.pick || S.tool === 'trim') { const hh = hitTest(w); S.hover = hh ? hh.id : null; } if (petCtx && S.doc.settings.petMode !== 'fixo' && dist(sp, petCtx.sp) > 260) placePet(sp); renderOverlay(); }
+  if (S.op) { const p = opPoint(w); shown = p; S.op.onMove && S.op.onMove(p, e); if (S.op.pick || S.tool === 'trim') { const hh = hitTest(w); S.hover = hh ? hh.id : null; } renderOverlay(); }
   else if (PD && PD.handle && dist(sp, PD.sp) > 4) { // arrastar direto: move vértice/aresta
     const h = PD.handle; PD = null;
     if (h.kind === 'vertex') { S.op = opVertex(h.el, h.i, 'vmove'); S.op.dragFinish = true; }
@@ -1530,9 +1545,9 @@ window.addEventListener('keydown', e => {
   if (e.key === 'F3') { e.preventDefault(); toggle('snap'); return; }
   if (e.key === 'Home') { e.preventDefault(); fitView(); return; }
   if (e.key === '+' || e.key === '=') { zoomAt(1.25, [S.W / 2, S.H / 2]); return; }
-  if (e.key === '-') { zoomAt(0.8, [S.W / 2, S.H / 2]); return; }
+  if (e.key === '-' && !(S.op && S.op.typed)) { zoomAt(0.8, [S.W / 2, S.H / 2]); return; }
   if (S.op && S.op.onKey && S.op.onKey(k)) { renderOverlay(); return; }
-  if (S.op && S.op.typed && /^[0-9.,]$/.test(e.key)) { e.preventDefault(); typedLabel(S.op.label); typed.focus(); typed.value = e.key; return; }
+  if (S.op && S.op.typed && /^[0-9.,\-]$/.test(e.key)) { e.preventDefault(); typedLabel(S.op.label); typed.focus(); typed.value = e.key; return; }
   if (KEYS[k] && !e.altKey) { setTool(KEYS[k]); return; }
 });
 window.addEventListener('keyup', e => { if (e.key === 'Shift') S.shift = false; if (e.key === ' ') S.space = false; });
@@ -1547,6 +1562,18 @@ function toggle(k) {
 function syncCopyBtns() { const on = !!S.doc.settings.copyMode; $$('#tg-copy,#ob-copy').forEach(b => b.setAttribute('aria-pressed', String(on))); if (S.op && S.op.onMove && S.op.cur) { S.op.onMove(S.op.cur); renderAll(); } }
 
 /* ---------- barra de opções da ferramenta ---------- */
+function usageBtn(id, cur, mixed) { const c = usageColor(cur); return `<button type="button" class="sel usage-btn" id="${id}" aria-haspopup="listbox" aria-expanded="false" title="Categoria de uso"><span class="sw" style="background:${c || 'transparent'}"></span><span class="ut">${mixed ? '(vários)' : cur ? esc(cur) : '— sem categoria —'}</span><span aria-hidden="true">▾</span></button>`; }
+function openUsagePicker(btn, cur, cb) {
+  const groups = {}; S.usages.forEach(u => { const g = u.group || 'Usos do projeto'; (groups[g] = groups[g] || []).push(u); });
+  const list = q => { q = (q || '').trim().toLowerCase(); let h = ''; Object.entries(groups).forEach(([g, us]) => { const f = us.filter(u => !q || u.name.toLowerCase().includes(q) || g.toLowerCase().includes(q)); if (!f.length) return; h += `<div class="mh" role="presentation">${esc(g)}</div>` + f.map(u => `<button role="option" aria-selected="${u.name === cur}" data-u="${esc(u.name)}"><span class="sw" style="display:inline-block;width:14px;height:14px;background:${u.color || '#ccc'};border:1px solid rgba(0,0,0,.2)"></span>${esc(u.name)}</button>`).join(''); }); return h || '<p class="note" style="padding:0 16px">Nenhum uso encontrado.</p>'; };
+  openMenu(btn, '#menu-usage', `<div style="padding:8px 12px 4px"><label class="sr-only" for="up-q">Buscar uso</label><input class="inp" id="up-q" type="search" placeholder="Buscar uso…" style="width:100%" autocomplete="off"></div><button role="option" data-u="" aria-selected="${!cur}">— sem categoria —</button><div id="up-list" role="listbox" aria-label="Usos do projeto">${list('')}</div>`, m => {
+    const q = $('#up-q', m); q.focus();
+    const bind = () => $$('[data-u]', m).forEach(b => b.onclick = () => { closeMenus(); cb(b.dataset.u); });
+    q.addEventListener('input', () => { $('#up-list', m).innerHTML = list(q.value); bind(); });
+    q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#up-list [data-u]', m)?.click(); } if (e.key === 'ArrowDown') { e.preventDefault(); $('#up-list [data-u]', m)?.focus(); } e.stopPropagation(); });
+    bind();
+  });
+}
 function usageOptions(cur) { const list = S.usages.slice(); if (cur && !list.some(u => u.name === cur)) list.push({ name: cur }); return `<option value="">— sem categoria —</option>` + list.map(u => `<option value="${esc(u.name)}" ${u.name === cur ? 'selected' : ''}>${esc(u.name)}</option>`).join(''); }
 function renderOptbar() {
   const ob = $('#optbar'); const t = S.tool; const d = S.doc.defaults, st = S.doc.settings;
@@ -1556,10 +1583,11 @@ function renderOptbar() {
   h += `<span class="tname">${TOOL_NAMES[t] || ''}</span>`;
   if (['rect', 'poly', 'circle'].includes(t)) {
     h += `<div class="of"><label for="ob-role">Papel</label><select class="sel" id="ob-role">${['room', 'unit', 'layout', 'line'].map(r => `<option value="${r}" ${d.role === r ? 'selected' : ''}>${ROLES[r]}</option>`).join('')}</select></div>`;
-    h += `<div class="of"><label for="ob-usage">Categoria</label><select class="sel" id="ob-usage">${usageOptions(d.usage)}</select></div>`;
+    h += `<div class="of"><label for="ob-usage">Categoria</label>${usageBtn('ob-usage', d.usage)}</div>`;
     h += `<label class="chk" title="Guias perimetrais de parede (externa, entre ambientes, shaft) — controle no botão PAREDES da barra inferior"><input type="checkbox" id="ob-guide" ${d.guide ? 'checked' : ''}>Guias de parede</label>`;
   }
   if (t === 'dim') h += `<div class="seg" role="group" aria-label="Estilo de cota"><button id="ob-dl" aria-pressed="${(st.dimStyle || 'line') === 'line'}">Com linha</button><button id="ob-dc" aria-pressed="${st.dimStyle === 'text'}">Só texto</button></div><span class="vsep"></span><label class="chk" title="Mostra as medidas internas de todos os ambientes junto a um vértice"><input type="checkbox" id="ob-auto" ${st.autoDims ? 'checked' : ''}>Cotas internas automáticas</label>`;
+  if (t === 'select' && !S.op) { const g = selEls().filter(x => x.t === 'poly' || x.t === 'circle'); if (g.length) { const u0 = g[0].usage; h += `<div class="of"><label for="ob-susage">Categoria</label>${usageBtn('ob-susage', u0, g.some(x => x.usage !== u0))}</div>`; } }
   if (['move', 'rotate', 'mirror'].includes(t) || (t === 'select' && S.sel.size)) h += `<button class="btn sm" id="ob-copy" aria-pressed="${!!st.copyMode}" title="Mantém o original e cria cópia (vale para mover, rotacionar, espelhar e o menu do elemento)">${icon('copy')}Cópia</button>`;
   if (t === 'guide') h += `<div class="seg" role="group" aria-label="Direção da guia">${[['h', 'Horizontal'], ['v', 'Vertical'], ['2p', '2 pontos']].map(([k, n]) => `<button data-gm="${k}" aria-pressed="${(st.guideMode || 'h') === k}">${n}</button>`).join('')}</div><button class="btn sm" id="ob-clear-guides">${icon('trash')}Limpar guias</button>`;
   if (t === 'offset') h += `<div class="of"><label for="ob-off">Distância</label><input class="inp num" id="ob-off" value="${fmt(st.offset, 2)}" inputmode="decimal"><span class="hint">m</span></div><label class="chk"><input type="checkbox" id="ob-offcopy" ${st.offsetCopy !== false ? 'checked' : ''}>Criar cópia</label>`;
@@ -1571,7 +1599,9 @@ function renderOptbar() {
   const on = (id, ev, f) => { const x = $('#' + id); if (x) x.addEventListener(ev, f); };
   on('ob-exit-block', 'click', exitBlock);
   on('ob-role', 'change', e => { d.role = e.target.value; scheduleSave(); });
-  on('ob-usage', 'change', e => { d.usage = e.target.value; const c = usageColor(d.usage); if (c) d.st.fill = c; scheduleSave(); refreshPanels(); });
+  on('ob-usage', 'click', e => openUsagePicker(e.currentTarget, d.usage, v => { d.usage = v; const c = usageColor(v); if (c) d.st.fill = c; scheduleSave(); renderOptbar(); refreshPanels(); }));
+  const geoSel = () => selEls().filter(x => x.t === 'poly' || x.t === 'circle');
+  on('ob-susage', 'click', e => { const g = geoSel(); openUsagePicker(e.currentTarget, g[0]?.usage, v => mutate(() => g.forEach(x => { x.usage = v; if (x.st) x.st.byUse = true; }))); });
   on('ob-guide', 'change', e => { d.guide = e.target.checked; scheduleSave(); });
   on('ob-dl', 'click', () => { st.dimStyle = 'line'; renderOptbar(); renderOverlay(); });
   on('ob-dc', 'click', () => { st.dimStyle = 'text'; renderOptbar(); renderOverlay(); });
@@ -1611,7 +1641,7 @@ function renderProps() {
     h += `<div class="sec"><h3>Estilo padrão de novos elementos</h3>${styleFields(d.st, 'def')}</div>`;
     h += `<div class="sec"><h3>Prancheta</h3><div class="row2"><div class="field"><label for="set-grid">Grade (m)</label><input class="inp" id="set-grid" value="${fmt(set.grid, 2)}" inputmode="decimal"></div><div class="field"><label for="set-tol">Tolerância snap (px)</label><input class="inp" id="set-tol" value="${set.tol}" inputmode="numeric"></div></div>
       <div class="field"><label for="set-pet">Menu de edição (vértice/aresta)</label><select class="sel" id="set-pet"><option value="cursor" ${set.petMode !== 'fixo' ? 'selected' : ''}>Segue o cursor</option><option value="fixo" ${set.petMode === 'fixo' ? 'selected' : ''}>Fixo na base da prancheta</option></select></div></div>`;
-    h += `<div class="sec"><h3>Categorias de uso</h3><p class="note">${G.on ? 'Lidas do projeto Giraffe (usos).' : 'Lista padrão — dentro do Giraffe o app lê os usos do projeto.'}</p><div>${S.usages.map(u => `<span class="tag" style="opacity:1"><span class="sw" style="display:inline-block;width:9px;height:9px;background:${u.color || '#ccc'};margin-right:4px"></span>${esc(u.name)}</span>`).join(' ')}</div></div>`;
+    h += `<div class="sec"><h3>Categorias de uso</h3><p class="note">${G.on ? 'Lidas do projeto Giraffe (usos).' : 'Lista padrão — dentro do Giraffe o app lê os usos do projeto.'}</p>${Object.entries(S.usages.reduce((a, u) => { (a[u.group || 'Usos do projeto'] = a[u.group || 'Usos do projeto'] || []).push(u); return a; }, {})).map(([g, us]) => `<p class="note" style="margin:8px 0 4px;font-weight:600">${esc(g)}</p><div>${us.map(u => `<span class="tag" style="opacity:1"><span class="sw" style="display:inline-block;width:9px;height:9px;background:${u.color || '#ccc'};margin-right:4px"></span>${esc(u.name)}</span>`).join(' ')}</div>`).join('')}</div>`;
     P.innerHTML = h; bindStyle(P, 'def', d.st, () => scheduleSave());
     const on = (id, f) => { const x = $('#' + id, P); if (x) x.addEventListener('change', f); };
     on('set-grid', e => { const v = parseNum(e.target.value); if (v > 0) set.grid = v; renderAll(); scheduleSave(); });
@@ -1628,8 +1658,8 @@ function renderProps() {
     const nm = one ? (one.name || '') : '';
     if (one) h += `<div class="field"><label for="pp-name">Nome</label><input class="inp" id="pp-name" list="room-names" value="${esc(nm)}" placeholder="ex.: Dormitório 1"><datalist id="room-names">${ROOM_NAMES.map(n => `<option value="${n}">`).join('')}</datalist></div>`;
     const roleV = geo.every(e => e.role === geo[0].role) ? geo[0].role : ''; const useV = geo.every(e => e.usage === geo[0].usage) ? geo[0].usage : '';
-    h += `<div class="row2"><div class="field"><label for="pp-role">Papel</label><select class="sel" id="pp-role">${roleV ? '' : '<option value="">(vários)</option>'}${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${roleV === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div><div class="field"><label for="pp-usage">Categoria de uso</label><select class="sel" id="pp-usage">${usageOptions(useV)}</select></div></div>`;
-    const gv = geo.find(e => e.closed && e.role === 'room'); if (gv) h += `<label class="chk"><input type="checkbox" id="pp-gon" ${gv.guide > 0 ? 'checked' : ''}>Guias de parede (${wallTypes().map(w => fmt(w.d, 2)).join(' · ') || 'nenhuma ligada'})</label>`;
+    h += `<div class="row2"><div class="field"><label for="pp-role">Papel</label><select class="sel" id="pp-role">${roleV ? '' : '<option value="">(vários)</option>'}${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${roleV === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div><div class="field"><label for="pp-usage">Categoria de uso</label>${usageBtn('pp-usage', useV, !useV && geo.some(e => e.usage))}</div></div>`;
+    const gv = geo.find(e => e.closed && e.role === 'room'); if (gv) h += `<label class="chk"><input type="checkbox" id="pp-gon" ${gv.guide > 0 ? 'checked' : ''}>Guias de parede</label>${gv.guide > 0 ? `<div class="icon-grid" role="group" aria-label="Guias deste ambiente" style="gap:6px;margin:2px 0 4px">${set.walls.map(w => { const onv = gv.walls && gv.walls[w.k] !== undefined ? gv.walls[w.k] : w.on; return `<button class="btn sm wbtn" data-wk="${w.k}" aria-pressed="${onv}" title="${esc(w.name)} — ${fmt(w.d, 2)} m"><span style="display:inline-block;width:14px;height:3px;background:${w.color}"></span>${fmt(w.d, 2)}</button>`; }).join('')}${gv.walls ? `<button class="btn sm" id="pp-wreset" title="Voltar ao padrão do menu PAREDES">Padrão</button>` : ''}</div>` : ''}`;
     const rooms = geo.filter(e => e.closed && e.role === 'room' && e.pts);
     if (rooms.length) { const r0 = rooms[0]; const adOn = r0.ad ? r0.ad.on : set.autoDims; h += `<div style="margin-top:8px"><label class="chk"><input type="checkbox" id="pp-ad" ${adOn ? 'checked' : ''}>Cota interna automática</label>${adOn ? `<div class="icon-grid" role="group" aria-label="Vértice da cota interna"><button class="icon-btn" id="pp-adp" aria-label="Vértice anterior" title="Vértice anterior">${icon('rotate').replace('<svg', '<svg style="transform:scaleX(-1)"')}</button><button class="icon-btn" id="pp-adn" aria-label="Próximo vértice" title="Próximo vértice">${icon('rotate')}</button><button class="icon-btn" id="pp-ado" aria-pressed="${!!(r0.ad && r0.ad.out)}" aria-label="Texto do lado de fora" title="Texto fora do ambiente">${icon('flipV')}</button><span class="note" style="align-self:center;margin:0 6px">vértice ${((r0.ad && r0.ad.v) || 0) + 1}/${r0.pts.length}</span></div>` : ''}</div>`; }
     h += `</div><div class="sec"><h3>Aparência</h3>${styleFields(geo[0].st || {}, 'pp')}</div>`;
@@ -1652,8 +1682,10 @@ function renderProps() {
   const on = (id, ev, f) => { const x = $('#' + id, P); if (x) x.addEventListener(ev, f); };
   on('pp-name', 'change', e => mutate(() => { one.name = e.target.value.trim(); }, { keepPanel: true }));
   on('pp-role', 'change', e => { const v = e.target.value; if (!v) return; mutate(() => geo.forEach(x => { x.role = v; if (v === 'limit') { x.st = newStyle('limit'); x.usage = ''; } if (v === 'unit') { x.st = { ...x.st, fo: 0.12, dash: 'dash', sw: 1.6 }; x.guide = 0; } })); });
-  on('pp-usage', 'change', e => mutate(() => geo.forEach(x => { x.usage = e.target.value; if (x.st) x.st.byUse = true; })));
+  on('pp-usage', 'click', e => openUsagePicker(e.currentTarget, useV, v => mutate(() => geo.forEach(x => { x.usage = v; if (x.st) x.st.byUse = true; }))));
   on('pp-gon', 'change', e => mutate(() => geo.forEach(x => { if (x.closed && x.role === 'room') x.guide = e.target.checked ? 1 : 0; })));
+  $$('[data-wk]', P).forEach(b => b.addEventListener('click', () => { const k = b.dataset.wk; const nv = b.getAttribute('aria-pressed') !== 'true'; mutate(() => geo.forEach(x => { if (x.closed && x.role === 'room') { x.walls = x.walls || {}; x.walls[k] = nv; } })); }));
+  on('pp-wreset', 'click', () => mutate(() => geo.forEach(x => { delete x.walls; })));
   const adRooms = geo.filter(e => e.closed && e.role === 'room' && e.pts); const adOf = x => (x.ad = x.ad || { on: !!set.autoDims, v: 0, out: false });
   on('pp-ad', 'change', e => mutate(() => adRooms.forEach(x => { adOf(x).on = e.target.checked; })));
   on('pp-adn', 'click', () => mutate(() => adRooms.forEach(x => { const a = adOf(x); a.on = true; a.v = ((a.v || 0) + 1) % x.pts.length; })));
@@ -1916,7 +1948,10 @@ async function initGiraffe() {
     const us = await withTimeout(G.rpc.invoke('getProjectUsages', []), 3500);
     G.on = true;
     const arr = Array.isArray(us) ? us : Object.entries(us || {}).map(([k, v]) => ({ ...(typeof v === 'object' ? v : {}), _k: k }));
-    const list = arr.map(u => ({ name: u.name || u.id || u._k, color: normColor(u.color || u.fillColor || u.colour || (u.style && u.style.color) || (u.properties && u.properties.color)) || '#cccccc' })).filter(u => u.name);
+    if (arr[0]) console.info('[KV Manchas] exemplo de uso do projeto:', JSON.stringify(arr[0]).slice(0, 600));
+    const GK = ['category', 'categoria', 'group', 'grupo', 'typology', 'tipologia', 'type', 'usageType', 'class', 'kind', 'program'];
+    const grp = u => { for (const k of GK) { const v = u[k] ?? (u.properties && u.properties[k]); if (typeof v === 'string' && v.trim()) return v.trim(); } const n = String(u.name || ''); const m = n.match(/^(.+?)\s*[-–:/]\s+/); return m ? m[1] : 'Usos do projeto'; };
+    const list = arr.map(u => ({ name: u.name || u.id || u._k, group: grp(u), color: normColor(u.color || u.fillColor || u.colour || (u.style && u.style.color) || (u.properties && u.properties.color)) || '#cccccc' })).filter(u => u.name);
     if (list.length) S.usages = list;
     try { const u = G.state.get('giraffe_user'); G.user = (u && (u.name || u.email)) || ''; } catch (_) { }
     try { const p = G.state.get('project'); G.pid = p && (p.id || (p.properties && p.properties.id)); } catch (_) { }
