@@ -75,11 +75,14 @@ button,input,select,textarea{font-family:inherit;font-size:14px;color:inherit}
 .tab-add:hover{background:var(--md-sys-color-surface-container-high)}
 
 /* TOOL OPTIONS */
-.optbar{display:flex;align-items:center;gap:8px;padding:0 8px;min-height:56px;background:var(--md-sys-color-surface-container-lowest);border-bottom:1px solid var(--md-sys-color-outline-variant);overflow-x:auto;scrollbar-width:thin}
+.optbar{display:flex;align-items:center;flex-wrap:nowrap;gap:4px 8px;padding:0 8px;min-height:56px;height:56px;background:var(--md-sys-color-surface-container-lowest);border-bottom:1px solid var(--md-sys-color-outline-variant);overflow-x:auto;scrollbar-width:thin}
 .optbar .tname{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--md-sys-color-primary);white-space:nowrap;padding-right:4px}
 .optbar .hint{font-size:12px;color:var(--md-sys-color-on-surface-variant);white-space:nowrap}
 .optbar.block-mode{background:var(--md-sys-color-tertiary-fixed);color:var(--md-sys-color-on-tertiary-fixed)}
 .optbar.block-mode .tname,.optbar.block-mode .hint{color:var(--md-sys-color-on-tertiary-fixed)}
+.grp{display:flex;align-items:center;gap:4px;padding:0 6px 0 8px;border-left:1px solid var(--md-sys-color-outline-variant);flex-wrap:nowrap}
+.grp .glabel{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--md-sys-color-on-surface-variant);writing-mode:vertical-rl;transform:rotate(180deg);max-height:48px;overflow:hidden;line-height:1}
+.optbar input[type=color]{width:44px;height:44px}
 .of{display:flex;align-items:center;gap:6px;white-space:nowrap}
 .of label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--md-sys-color-on-surface-variant)}
 .inp,.sel{min-height:48px;padding:0 12px;border:1px solid var(--md-sys-color-outline);background:var(--md-sys-color-surface-container-low);color:var(--md-sys-color-on-surface);min-width:0}
@@ -111,7 +114,9 @@ button,input,select,textarea{font-family:inherit;font-size:14px;color:inherit}
 .pet.show{display:flex}
 .pet .icon-btn{width:44px;height:48px;min-width:44px}
 .pet .ptitle{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--md-sys-color-on-surface-variant);padding:0 8px;writing-mode:vertical-rl;transform:rotate(180deg);border-right:1px solid var(--md-sys-color-outline-variant);align-self:stretch;display:flex;align-items:center;justify-content:center;cursor:move;touch-action:none;min-width:28px;user-select:none;background:var(--md-sys-color-surface-container)}
-.usage-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;text-align:left;min-width:180px;max-width:100%}
+.usage-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;text-align:left;min-width:160px;max-width:220px}
+.dock .chk{white-space:normal}
+.optbar .sel{max-width:170px}
 .usage-btn .ut{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .usage-btn .sw{width:14px;height:14px;flex:none;border:1px solid rgba(0,0,0,.25)}
 .optbar .usage-btn{min-height:40px;height:40px}
@@ -122,7 +127,10 @@ button,input,select,textarea{font-family:inherit;font-size:14px;color:inherit}
 #menu-usage [aria-selected=true]{background:var(--md-sys-color-primary-fixed);color:var(--md-sys-color-on-primary-fixed)}
 .pet .pnum{width:64px;min-height:40px;height:40px;margin:0 4px;padding:0 6px}
 .pet.docked{left:50% !important;top:auto !important;bottom:12px;transform:translateX(-50%)}
-.edit-inp{position:absolute;z-index:25;width:84px;min-height:32px;height:32px;padding:0 6px;border:2px solid var(--md-sys-color-primary);background:#fff;color:#1b1b1b;font-weight:600;text-align:center}
+.edit-pop{position:absolute;z-index:25;display:flex;align-items:center;background:var(--md-sys-color-surface-container-lowest);border:1px solid var(--md-sys-color-outline)}
+.edit-pop[hidden]{display:none}
+.edit-pop .icon-btn{font-size:20px;font-weight:600}
+.edit-inp{width:84px;min-height:40px;height:40px;padding:0 6px;border:2px solid var(--md-sys-color-primary);background:#fff;color:#1b1b1b;font-weight:600;text-align:center}
 
 /* STATUS BAR */
 .statusbar>*{flex:none}.statusbar>.status-msg{flex:1 1 auto}.app-header>*{flex:none}.app-header>.hnav{flex:1 1 auto}
@@ -141,7 +149,7 @@ button,input,select,textarea{font-family:inherit;font-size:14px;color:inherit}
 .dock{width:340px;display:flex;flex-direction:column;background:var(--md-sys-color-surface-container-lowest);border-left:1px solid var(--md-sys-color-outline-variant);min-height:0}
 .dock[hidden]{display:none}
 .dock-tabs{display:flex;border-bottom:1px solid var(--md-sys-color-outline-variant)}
-.dock-tab{flex:1;min-height:48px;border:0;background:transparent;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--md-sys-color-on-surface-variant);display:flex;align-items:center;justify-content:center;gap:4px}
+.dock-tab{flex:1;min-height:48px;border:0;background:transparent;cursor:pointer;font-size:10.5px;font-weight:600;letter-spacing:.05em;padding:0 4px;text-transform:uppercase;color:var(--md-sys-color-on-surface-variant);display:flex;align-items:center;justify-content:center;gap:4px}
 .dock-tab[aria-selected="true"]{color:var(--md-sys-color-primary);box-shadow:inset 0 -3px 0 var(--md-sys-color-primary)}
 .dock-tab svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7}
 .dock-body{flex:1;overflow-y:auto;padding:16px;min-height:0}
@@ -290,13 +298,13 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
       </svg>
       <div class="empty-hint" id="empty-hint" hidden><strong>Folha em branco</strong>Desenhe a mancha da unidade com Retângulo (R) ou Polígono (P), ou insira uma tipologia da Biblioteca.</div>
       <div class="pet" id="pet" role="toolbar" aria-label="Menu de edição do elemento"></div>
-      <input class="edit-inp" id="edit-inp" type="text" inputmode="decimal" aria-label="Editar medida" hidden>
+      <div class="edit-pop" id="edit-pop" role="group" aria-label="Editar comprimento da aresta" hidden><input class="edit-inp" id="edit-inp" type="text" inputmode="decimal" aria-label="Novo comprimento (m)"></div>
     </div>
   </section>
 
   <aside class="dock" id="dock" aria-label="Painéis">
     <div class="dock-tabs" role="tablist" aria-label="Painéis">
-      <button class="dock-tab" role="tab" id="dt-props" aria-controls="p-props" aria-selected="true" data-panel="props"><span data-icon="sliders"></span>Prop.</button>
+      <button class="dock-tab" role="tab" id="dt-props" aria-controls="p-props" aria-selected="true" data-panel="props"><span data-icon="sliders"></span>Ajustes</button>
       <button class="dock-tab" role="tab" id="dt-sheets" aria-controls="p-sheets" aria-selected="false" data-panel="sheets"><span data-icon="layers"></span>Folhas</button>
       <button class="dock-tab" role="tab" id="dt-lib" aria-controls="p-lib" aria-selected="false" data-panel="lib"><span data-icon="book"></span>Biblio.</button>
       <button class="dock-tab" role="tab" id="dt-areas" aria-controls="p-areas" aria-selected="false" data-panel="areas"><span data-icon="table"></span>Áreas</button>
@@ -323,7 +331,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V03 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V04 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -337,8 +345,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <input type="file" id="file-in" accept=".json,application/json" hidden>
 <script type="module">
-/* KV Manchas — Beta V03 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V03';
+/* KV Manchas — Beta V04 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V04';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -420,7 +428,13 @@ const IC = {
   rot90: '<path d="M4 12a8 8 0 108-8"/><path d="M12 1v6H6" transform="rotate(-90 12 4)"/>',
   flipH: '<path d="M12 3v18" stroke-dasharray="2 2"/><path d="M9 6L4 18h5zM15 6l5 12h-5z"/>',
   flipV: '<path d="M3 12h18" stroke-dasharray="2 2"/><path d="M6 9L18 4v5zM6 15l12 5v-5z"/>',
-  refresh: '<path d="M20 12a8 8 0 11-2.3-5.6M20 4v5h-5"/>'
+  refresh: '<path d="M20 12a8 8 0 11-2.3-5.6M20 4v5h-5"/>',
+  lock: '<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 018 0v4"/>',
+  unlock: '<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 017.5-2"/>',
+  palette: '<path d="M12 3a9 9 0 100 18c1.2 0 2-.8 2-1.8 0-1.2-1-1.5-1-2.7 0-1 .8-1.5 1.8-1.5H17a4 4 0 004-4c0-4.4-4-8-9-8z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10" cy="7" r="1.2"/><circle cx="15" cy="7.5" r="1.2"/>',
+  prev: '<path d="M15 6l-6 6 6 6"/><rect x="3" y="3" width="4" height="4"/>',
+  next: '<path d="M9 6l6 6-6 6"/><rect x="17" y="3" width="4" height="4"/>',
+  allEdges: '<rect x="5" y="5" width="14" height="14"/><path d="M9 3h6M9 21h6M3 9v6M21 9v6"/>'
 };
 const icon = (n, cls = '') => `<svg viewBox="0 0 24 24" aria-hidden="true" class="${cls}">${IC[n] || ''}</svg>`;
 function paintIcons(root = document) { $$('[data-icon]', root).forEach(s => { if (!s.firstChild || s.dataset.painted !== s.dataset.icon) { s.innerHTML = icon(s.dataset.icon); s.dataset.painted = s.dataset.icon; } }); }
@@ -549,7 +563,7 @@ const S = {
 function newDoc() {
   return {
     v: 1, app: 'kv-manchas', sheets: [{ id: uid(), name: 'Folha 1', els: [], trace: false }], blocks: {}, active: null,
-    settings: { grid: 0.5, gridO: [0, 0], gridRot: 0, wall: 0.16, tol: 10, petMode: 'cursor', fillet: 0.3, chamfer: 0.3, offset: 0.15, traceOpacity: 0.35, autoDims: false, copyMode: false,
+    settings: { grid: 0.5, gridO: [0, 0], gridRot: 0, wall: 0.16, tol: 10, petMode: 'cursor', fillet: 0.3, chamfer: 0.3, offset: 0.15, traceOpacity: 0.35, autoDims: false, copyMode: false, dimFont: 12, dimColor: '#1b1b1b', mapRot: 0, sendColors: false,
       walls: [{ k: 'ext', name: 'Externa', d: 0.23, color: '#d83918', on: true }, { k: 'int', name: 'Entre ambientes', d: 0.16, color: '#00accd', on: true }, { k: 'shaft', name: 'Ambiente × shaft', d: 0.10, color: '#8e44ad', on: false }] },
     defaults: { role: 'room', usage: 'Área privativa', guide: true, st: { fill: '#9fd3c7', fo: 0.85, stroke: '#3a3a3a', sw: 1, dash: 'solid', byUse: true } }
   };
@@ -607,7 +621,7 @@ function cache() {
   const guides = els().filter(e => e.t === 'guide');
   const verts = [], mids = [], segs = [], centers = [], wallR = [];
   const addGeom = (p, isRef) => {
-    if (p.t === 'dim') { segs.push({ a: p.p1, b: p.p2, top: p._top }); verts.push({ p: p.p1, top: p._top }, { p: p.p2, top: p._top }); return; }
+    if (p.t === 'dim') { const n = perpL(nrm(sub(p.p2, p.p1))); const A = add(p.p1, mul(n, p.off || 0)), B = add(p.p2, mul(n, p.off || 0)); segs.push({ a: A, b: B, top: p._top }); verts.push({ p: p.p1, top: p._top }, { p: p.p2, top: p._top }, { p: A, top: p._top }, { p: B, top: p._top }); mids.push({ p: mid(A, B), top: p._top }); return; }
     if (p.t === 'circle') { centers.push({ p: p.c, top: p._top }); const R = flat(p); for (let i = 0; i < R.length; i++) segs.push({ a: R[i], b: R[(i + 1) % R.length], top: p._top, curved: true }); [[1, 0], [0, 1], [-1, 0], [0, -1]].forEach(d => verts.push({ p: add(p.c, mul(d, p.r)), top: p._top })); return; }
     const P = p.pts; if (!P || !P.length) return; const n = P.length, ec = p.closed ? n : n - 1;
     P.forEach(q => verts.push({ p: q, top: p._top }));
@@ -746,11 +760,11 @@ function dimMarkup(p, prev) {
     const tk = (s) => { const dd = [sd[0] - sd[1], sd[1] + sd[0]]; const a = add(s, mul(dd, 3.5)), b = add(s, mul(dd, -3.5)); return `<line x1="${N(a[0])}" y1="${N(a[1])}" x2="${N(b[0])}" y2="${N(b[1])}" stroke="${col}" stroke-width="1.6"/>`; };
     h += tk(sA) + tk(sB);
   }
-  const t = (p.prefix || '') + fmt(L, 2); h += dimText(sA, sB, t, pos, p.side || 1, col, showLine ? 4 : 2);
+  const t = (p.prefix || '') + fmt(L, 2); h += dimText(sA, sB, t, pos, p.side || 1, col, showLine ? 4 : 2, p.fs || S.doc.settings.dimFont || 12);
   return h + '</g>';
 }
 /* texto de cota ao longo de um segmento de tela; side = 1 (acima/esquerda) | -1 (oposto) */
-function dimText(sA, sB, t, pos, side, col, gap = 4, fs = 11, weight = 400) {
+function dimText(sA, sB, t, pos, side, col, gap = 4, fs = 12, weight = 400) {
   const sd = nrm(sub(sB, sA)); let ang = Math.atan2(sd[1], sd[0]) * 180 / Math.PI; let flip = false; if (ang > 90 || ang <= -90) { ang += 180; flip = true; }
   const tw = txtW(t, fs); const up = [Math.sin(ang * Math.PI / 180), -Math.cos(ang * Math.PI / 180)];
   const dir = flip ? mul(sd, -1) : sd; let ap;
@@ -759,23 +773,27 @@ function dimText(sA, sB, t, pos, side, col, gap = 4, fs = 11, weight = 400) {
   const tp = side >= 0 ? add(ap, mul(up, gap)) : add(ap, mul(up, -(gap + fs * 0.85)));
   return `<text x="${N(tp[0])}" y="${N(tp[1])}" transform="rotate(${N(ang)} ${N(tp[0])} ${N(tp[1])})" text-anchor="middle" font-size="${fs}" font-weight="${weight}" font-family="Hind,sans-serif" fill="${col}">${esc(t)}</text>`;
 }
-/* cotas internas automáticas dos ambientes (texto junto a um vértice) */
+/* cotas internas automáticas dos ambientes (texto junto a um vértice, ou em todas as arestas) */
 function autoDimMarkup(p) {
   const P = p.pts, n = P.length; if (n < 3) return ''; const ad = p.ad || {}; const vi = ((ad.v || 0) % n + n) % n;
-  const sg = ringArea(P) >= 0 ? 1 : -1; const V = P[vi], A = P[(vi - 1 + n) % n], Bp = P[(vi + 1) % n];
-  const bA = p.b && p.b[(vi - 1 + n) % n], bB = p.b && p.b[vi];
-  const col = ad.color || '#1b1b1b'; let h = '';
-  const one = (Q, curved) => {
-    if (curved) return ''; const L = dist(V, Q); const sV = w2s(V), sQ = w2s(Q); const segPx = dist(sV, sQ); const t = fmt(L, 2); const tw = txtW(t, 10.5); if (segPx < tw + 14) return '';
-    // lado interno: normal à esquerda (polígono anti-horário) do sentido V->Q ou Q->V
-    const u = nrm(sub(Q, V)); let nIn = perpL(u); const isNext = Q === Bp; if (isNext ? sg < 0 : sg > 0) nIn = mul(nIn, -1);
-    if (ad.out) nIn = mul(nIn, -1);
-    const sN = nrm(sub(w2s(add(V, nIn)), sV)); const sd = nrm(sub(sQ, sV));
-    const c = add(add(sV, mul(sd, tw / 2 + 8)), mul(sN, 9));
+  const sg = ringArea(P) >= 0 ? 1 : -1; const fs = ad.fs || S.doc.settings.dimFont || 12; const col = ad.color || S.doc.settings.dimColor || '#1b1b1b';
+  const live = !p._chain || !p._chain.length; // só editável fora de blocos (ou dentro do bloco em edição)
+  const edges = ad.all ? P.map((_, k) => k) : [(vi - 1 + n) % n, vi];
+  let h = '';
+  edges.forEach(k => {
+    if (ad.hide && ad.hide[k]) return; if (p.b && p.b[k]) return;
+    const A = P[k], B = P[(k + 1) % n]; const L = dist(A, B); const sA = w2s(A), sB = w2s(B); const segPx = dist(sA, sB); const t = fmt(L, 2); const tw = txtW(t, fs); if (segPx < tw + 10) return;
+    let nIn = perpL(nrm(sub(B, A))); if (sg < 0) nIn = mul(nIn, -1); if (ad.out) nIn = mul(nIn, -1);
+    const sd = nrm(sub(sB, sA)); const sN = nrm(sub(w2s(add(A, nIn)), sA));
+    let base;
+    if (ad.all) base = mid(sA, sB);
+    else { const fromStart = k === vi; const corner = fromStart ? sA : sB; base = add(corner, mul(fromStart ? sd : mul(sd, -1), tw / 2 + 8)); }
+    let c = add(base, mul(sN, fs * 0.8));
+    const off = ad.off && ad.off[k]; if (off) { const o = w2s(add(A, off)); c = add(c, sub(o, sA)); }
     let ang = Math.atan2(sd[1], sd[0]) * 180 / Math.PI; if (ang > 90 || ang <= -90) ang += 180;
-    return `<text x="${N(c[0])}" y="${N(c[1] + 3.5)}" transform="rotate(${N(ang)} ${N(c[0])} ${N(c[1])})" text-anchor="middle" font-size="10.5" font-family="Hind,sans-serif" fill="${col}">${t}</text>`;
-  };
-  h += one(Bp, !!bB) + one(A, !!bA);
+    const sel = S.adSel && S.adSel.id === p._top && S.adSel.e === k;
+    h += `<g class="${live ? 'adim' : ''}" data-el="${p._top}" data-e="${k}"${live ? ' role="button" aria-label="Cota interna ' + t + '"' : ''}>${sel ? `<rect x="${N(c[0] - tw / 2 - 2)}" y="${N(c[1] - fs * 0.6)}" width="${N(tw + 4)}" height="${N(fs * 1.3)}" fill="rgba(0,172,205,.18)" stroke="#00677c" transform="rotate(${N(ang)} ${N(c[0])} ${N(c[1])})"/>` : ''}<text x="${N(c[0])}" y="${N(c[1] + fs * 0.35)}" transform="rotate(${N(ang)} ${N(c[0])} ${N(c[1])})" text-anchor="middle" font-size="${fs}" font-family="Hind,sans-serif" fill="${col}">${t}</text></g>`;
+  });
   return h;
 }
 
@@ -843,14 +861,16 @@ function snapPoint(w, opt = {}) {
   S.snapHit = null;
   if (!S.snap || opt.noSnap) return null;
   const tol = (S.doc.settings.tol || 10) / S.view.k; const C = cache(); const ex = opt.exclude || null;
-  const ok = it => !ex || !ex.has(it.top);
+  const xp = opt.excludePts || null, xw = opt.excludeWallOf || null;
+  const ok = it => (!ex || !ex.has(it.top)) && !(xp && it.p && xp.some(q => dist(q, it.p) < 1e-7));
+  const okW = it => ok(it) && it.top !== xw;
   const near = (list, type) => { let best = null, bd = tol; list.forEach(it => { if (!ok(it)) return; const d = dist(it.p, w); if (d < bd) { bd = d; best = { p: it.p, type: it.top === '__ref' ? 'ref' : type }; } }); return best; };
   const sn = S.snaps; let r = null;
   const extra = (opt.extraPts || []).map(p => ({ p, top: '__x' }));
   if (sn.end) r = near(C.verts.concat(extra), 'end'); if (r) return (S.snapHit = r);
   // segmentos próximos
   const nearSegs = C.segs.filter(s => ok(s) && Math.min(s.a[0], s.b[0]) - tol <= w[0] && Math.max(s.a[0], s.b[0]) + tol >= w[0] && Math.min(s.a[1], s.b[1]) - tol <= w[1] && Math.max(s.a[1], s.b[1]) + tol >= w[1]);
-  const wallSegs = sn.wall && S.showWall ? C.wallS.filter(s => ok(s) && Math.min(s.a[0], s.b[0]) - tol <= w[0] && Math.max(s.a[0], s.b[0]) + tol >= w[0] && Math.min(s.a[1], s.b[1]) - tol <= w[1] && Math.max(s.a[1], s.b[1]) + tol >= w[1]) : [];
+  const wallSegs = sn.wall && S.showWall ? C.wallS.filter(s => okW(s) && Math.min(s.a[0], s.b[0]) - tol <= w[0] && Math.max(s.a[0], s.b[0]) + tol >= w[0] && Math.min(s.a[1], s.b[1]) - tol <= w[1] && Math.max(s.a[1], s.b[1]) + tol >= w[1]) : [];
   const guides = sn.guide ? C.guides.filter(g => { const t = dot(sub(w, g.p), g.d); return dist(add(g.p, mul(g.d, t)), w) < tol; }) : [];
   if (sn.int) {
     let best = null, bd = tol; const all = nearSegs.concat(wallSegs);
@@ -860,7 +880,7 @@ function snapPoint(w, opt = {}) {
   }
   if (sn.mid) r = near(C.mids, 'mid'); if (r) return (S.snapHit = r);
   if (sn.center) r = near(C.centers, 'center'); if (r) return (S.snapHit = r);
-  if (sn.wall && S.showWall) r = near(C.wallV, 'wall'); if (r) return (S.snapHit = r);
+  if (sn.wall && S.showWall) r = near(C.wallV.filter(okW), 'wall'); if (r) return (S.snapHit = r);
   if (sn.perp && opt.base && !opt.noPerp) { let best = null, bd = tol; nearSegs.concat(wallSegs).forEach(s => { const d = sub(s.b, s.a); const L = dot(d, d); if (!L) return; const t = dot(sub(opt.base, s.a), d) / L; if (t < 0 || t > 1) return; const p = add(s.a, mul(d, t)); const dd = dist(p, w); if (dd < bd) { bd = dd; best = { p, type: 'perp' }; } }); if (best) return (S.snapHit = best); }
   if (guides.length) { const g = guides[0]; const t = dot(sub(w, g.p), g.d); return (S.snapHit = { p: add(g.p, mul(g.d, t)), type: 'guide' }); }
   if (wallSegs.length) { let best = null, bd = tol; wallSegs.forEach(s => { const pr = projSeg(w, s.a, s.b); const d = dist(pr.p, w); if (d < bd) { bd = d; best = { p: pr.p, type: 'wallE' }; } }); if (best) return (S.snapHit = best); }
@@ -869,16 +889,16 @@ function snapPoint(w, opt = {}) {
   return null;
 }
 /* rastreamento: alinha o cursor (x/y no referencial da grade) a vértices e guias de parede próximos e mostra linhas provisórias */
-function trackTargets(ex) {
-  const C = cache(); const out = []; const ok = it => !ex || !ex.has(it.top);
-  C.verts.forEach(v => ok(v) && out.push(v.p)); if (S.showWall && S.snaps.wall) C.wallV.forEach(v => ok(v) && out.push(v.p));
+function trackTargets(ex, xp, xw) {
+  const C = cache(); const out = []; const ok = it => (!ex || !ex.has(it.top)) && !(xp && xp.some(q => dist(q, it.p) < 1e-7));
+  C.verts.forEach(v => ok(v) && out.push(v.p)); if (S.showWall && S.snaps.wall) C.wallV.forEach(v => ok(v) && v.top !== xw && out.push(v.p));
   return out;
 }
-function axisTrack(w, ex, extra = []) {
+function axisTrack(w, ex, extra = [], xp, xw) {
   if (!S.snap || S.snaps.track === false) return null;
   const tol = (S.doc.settings.tol || 10) / S.view.k; const q = toGrid(w); let bx = null, by = null;
   const view = [s2w([0, S.H]), s2w([S.W, 0])];
-  trackTargets(ex).concat(extra).forEach(p => {
+  trackTargets(ex, xp, xw).concat(extra || []).forEach(p => {
     if (p[0] < view[0][0] - 1 || p[0] > view[1][0] + 1 || p[1] < view[0][1] - 1 || p[1] > view[1][1] + 1) return;
     const t = toGrid(p); const dx = Math.abs(t[0] - q[0]), dy = Math.abs(t[1] - q[1]);
     if (dx < tol && (!bx || dx < bx.d || (Math.abs(dx - bx.d) < 1e-9 && Math.abs(t[1] - q[1]) < Math.abs(bx.t[1] - q[1])))) bx = { d: dx, t };
@@ -898,11 +918,11 @@ function resolvePoint(w, base, opt = {}) {
     const ga = gridAng(); const rl = v => rotP(v, [0, 0], -ga), ro = v => rotP(v, [0, 0], ga);
     const raw = rl(sub(w, base)); const horiz = Math.abs(raw[0]) >= Math.abs(raw[1]);
     let d = rl(sub(p, base)); d = horiz ? [d[0], 0] : [0, d[1]];
-    if (!s) { const tr = axisTrack(w, opt.exclude, opt.extraPts); if (tr) { const dt = rl(sub(tr.p, base)); d = horiz ? [dt[0], 0] : [0, dt[1]]; const pp = add(base, ro(d)); S.track = tr.lines.filter(l => true).map(l => [l[0], pp]); } }
+    if (!s) { const tr = axisTrack(w, opt.exclude, opt.extraPts, opt.excludePts, opt.excludeWallOf); if (tr) { const dt = rl(sub(tr.p, base)); d = horiz ? [dt[0], 0] : [0, dt[1]]; const pp = add(base, ro(d)); S.track = tr.lines.filter(l => true).map(l => [l[0], pp]); } }
     p = add(base, ro(d));
     if (S.snapHit) S.snapHit = { ...S.snapHit, p };
   } else if (!s && !opt.noTrack) {
-    const tr = axisTrack(w, opt.exclude, opt.extraPts); if (tr) { p = tr.p; S.track = tr.lines; }
+    const tr = axisTrack(w, opt.exclude, opt.extraPts, opt.excludePts, opt.excludeWallOf); if (tr) { p = tr.p; S.track = tr.lines; }
   }
   return p;
 }
@@ -910,7 +930,7 @@ function resolvePoint(w, base, opt = {}) {
 function alignDelta(list, delta) {
   S.track = []; if (!S.snap) return delta;
   const ex = new Set(list.map(e => e.id)); const tol = (S.doc.settings.tol || 10) / S.view.k;
-  const M = []; expandList(list).forEach(p => { if (p.t === 'dim') return; if (p.t === 'circle') { M.push(p.c); return; } if (p.pts) M.push(...p.pts); });
+  const M = []; expandList(list).forEach(p => { if (p.t === 'dim') { M.push(p.p1, p.p2); return; } if (p.t === 'circle') { M.push(p.c); return; } if (p.pts) M.push(...p.pts); });
   if (!M.length || M.length > 800) return delta;
   const T = trackTargets(ex); const C = cache(); C.guides.forEach(g => T.push(g.p));
   const gv = C.guides.filter(g => !ex.has(g.id));
@@ -930,7 +950,7 @@ function alignDelta(list, delta) {
 function hitTest(w, list = els()) {
   const tol = 6 / S.view.k;
   for (let i = list.length - 1; i >= 0; i--) {
-    const e = list[i];
+    const e = list[i]; if (e.lock) continue;
     if (e.t === 'guide') { const t = dot(sub(w, e.p), e.d); if (dist(add(e.p, mul(e.d, t)), w) < tol) return e; continue; }
     if (hitEl(e, w, tol)) return e;
   }
@@ -986,8 +1006,38 @@ function addEls(list, select = true) { mutate(() => { els().push(...list); if (s
 
 /* ---------- edição de vértices / arestas ---------- */
 function ensureB(el) { if (!el.b) el.b = el.pts.map(() => 0); while (el.b.length < el.pts.length) el.b.push(0); return el.b; }
+/* retângulo em qualquer rotação: devolve eixos u, v */
+function rectFrame(el) {
+  if (!el.closed || !el.pts || el.pts.length !== 4 || (el.b && el.b.some(x => x))) return null; const P = el.pts;
+  for (let i = 0; i < 4; i++) { const a = sub(P[(i + 1) % 4], P[i]), b = sub(P[(i + 2) % 4], P[(i + 1) % 4]); const la = vlen(a), lb = vlen(b); if (la < 1e-6 || lb < 1e-6 || Math.abs(dot(a, b)) / (la * lb) > 2e-3) return null; }
+  const u = nrm(sub(P[1], P[0])); return { u, v: perpL(u) };
+}
 function moveVertex(el, i, p) {
-  if (isAxisRect(el)) { const P = el.pts; const o = P[(i + 2) % 4]; const x0 = Math.min(o[0], p[0]), x1 = Math.max(o[0], p[0]), y0 = Math.min(o[1], p[1]), y1 = Math.max(o[1], p[1]); if (x1 - x0 < 1e-6 || y1 - y0 < 1e-6) return; el.pts = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(q => q.map(r4)); return; }
+  const fr = rectFrame(el);
+  if (fr) { const O = el.pts[(i + 2) % 4]; const d = sub(p, O); const du = dot(d, fr.u), dv = dot(d, fr.v); if (Math.abs(du) < 1e-6 || Math.abs(dv) < 1e-6) return; let R = [O, add(O, mul(fr.u, du)), add(add(O, mul(fr.u, du)), mul(fr.v, dv)), add(O, mul(fr.v, dv))].map(q => q.map(r4)); if (ringArea(R) < 0) R = [R[0], R[3], R[2], R[1]]; el.pts = R; return; }
+  // polígono ortogonal (no referencial da grade): esticar cria prolongamento retangular
+  const P = el.pts, n = P.length; const noB = !(el.b && el.b.some(x => x));
+  if (noB && n >= 3) {
+    const G = P.map(toGrid), gp = toGrid(p); const ax = (a, b) => Math.abs(a[0] - b[0]) < 1e-6 ? 'v' : Math.abs(a[1] - b[1]) < 1e-6 ? 'h' : null;
+    const hasPrev = el.closed || i > 0, hasNext = el.closed || i < n - 1; const ip = (i - 1 + n) % n, inx = (i + 1) % n;
+    const eP = hasPrev ? ax(G[ip], G[i]) : 'x', eN = hasNext ? ax(G[i], G[inx]) : 'x';
+    if (eP && eN && (eP !== 'x' || eN !== 'x')) {
+      const ins = []; // [indiceVizinho, ponto de jog, antes/depois]
+      const fix = (nb, e, other) => {
+        if (e === 'x') return; const N = G[nb]; const perpMove = e === 'h' ? Math.abs(gp[1] - G[i][1]) > 1e-6 : Math.abs(gp[0] - G[i][0]) > 1e-6; if (!perpMove) return;
+        const J = e === 'h' ? [N[0], gp[1]] : [gp[0], N[1]];
+        // se a outra aresta do vizinho é colinear com o jog, desliza o vizinho (sem criar vértice)
+        const O2 = G[other]; const otherAx = other != null ? ax(N, O2) : null; const jogAx = e === 'h' ? 'v' : 'h';
+        if (otherAx === jogAx) { G[nb] = J; } else ins.push([nb, J]);
+      };
+      fix(ip, eP, el.closed || ip > 0 ? (ip - 1 + n) % n : null); fix(inx, eN, el.closed || inx < n - 1 ? (inx + 1) % n : null);
+      G[i] = gp;
+      // insere jogs: entre vizinho anterior e i, e entre i e o próximo
+      let out = G.slice(); const jp = ins.find(x => x[0] === ip && hasPrev), jn = ins.find(x => x[0] === inx && hasNext);
+      if (jn) out.splice(i + 1, 0, jn[1]); if (jp) out.splice(i, 0, jp[1]);
+      el.pts = out.map(q => fromGrid(q).map(r4)); if (el.b) el.b = el.pts.map(() => 0); el.rect = false; return;
+    }
+  }
   el.pts[i] = [r4(p[0]), r4(p[1])];
 }
 function deleteVertex(el, i) { const min = el.closed ? 3 : 2; if (el.pts.length <= min) return false; el.pts.splice(i, 1); if (el.b) { el.b.splice(i, 1); if (el.closed) el.b[(i - 1 + el.pts.length) % el.pts.length] = 0; else if (i > 0) el.b[i - 1] = 0; } return true; }
@@ -1001,11 +1051,20 @@ function offsetEdge(el, i, t) {
   if ((el.closed || nextI < n) && !(el.b && el.b[(i + 1) % n])) { const x = lineInt(na, u, b, sub(P[nextI % n], b)); if (x) B = x; }
   P[i] = A.map(r4); P[(i + 1) % n] = B.map(r4);
 }
-function setEdgeLength(el, i, L) {
+function setEdgeLength(el, i, L, moveEnd = true) {
   const P = el.pts, n = P.length; const a = P[i], b = P[(i + 1) % n]; const cur = dist(a, b); if (!(L > 0) || cur < 1e-9) return;
   const u = nrm(sub(b, a)); const dl = L - cur;
-  if (isAxisRect(el)) { const j = (i + 1) % 4, k = (i + 2) % 4; P[j] = add(P[j], mul(u, dl)).map(r4); P[k] = add(P[k], mul(u, dl)).map(r4); if (ringArea(P) < 0) P.reverse(); return; }
-  P[(i + 1) % n] = add(b, mul(u, dl)).map(r4);
+  if (rectFrame(el)) { if (moveEnd) { [(i + 1) % 4, (i + 2) % 4].forEach(j => P[j] = add(P[j], mul(u, dl)).map(r4)); } else { [i, (i + 3) % 4].forEach(j => P[j] = sub(P[j], mul(u, dl)).map(r4)); } if (ringArea(P) < 0) el.pts.reverse(); return; }
+  const noB = k => !(el.b && el.b[k]);
+  if (moveEnd) {
+    const k = (i + 1) % n; const hasNext = el.closed || i + 2 < n;
+    if (hasNext && noB(k)) { const u2 = nrm(sub(P[(k + 1) % n], P[k])); const nr = [u2[1], -u2[0]]; const dd = dot(u, nr); if (Math.abs(dd) > 1e-3) return offsetEdge(el, k, dl * dd); }
+    P[k] = add(b, mul(u, dl)).map(r4);
+  } else {
+    const k = (i - 1 + n) % n; const hasPrev = el.closed || i > 0;
+    if (hasPrev && noB(k)) { const u2 = nrm(sub(P[i], P[k])); const nr = [u2[1], -u2[0]]; const dd = dot(u, nr); if (Math.abs(dd) > 1e-3) return offsetEdge(el, k, -dl * dd); }
+    P[i] = sub(a, mul(u, dl)).map(r4);
+  }
 }
 function filletVertex(el, i, R, chamfer = false) {
   const P = el.pts, n = P.length; if (!el.closed && (i === 0 || i === n - 1)) return false;
@@ -1025,7 +1084,7 @@ function filletVertex(el, i, R, chamfer = false) {
 function trimAt(w) {
   const tol = 8 / S.view.k; const list = els();
   let target = null, bestD = tol;
-  list.forEach(e => { if (!(e.t === 'line' || e.t === 'poly') || e.smooth) return; const R = flat(e); const segN = e.closed ? R.length : R.length - 1; for (let i = 0; i < segN; i++) { const pr = projSeg(w, R[i], R[(i + 1) % R.length]); const d = dist(pr.p, w); if (d < bestD) { bestD = d; target = e; } } });
+  list.forEach(e => { if (!(e.t === 'line' || e.t === 'poly') || e.smooth || e.lock) return; const R = flat(e); const segN = e.closed ? R.length : R.length - 1; for (let i = 0; i < segN; i++) { const pr = projSeg(w, R[i], R[(i + 1) % R.length]); const d = dist(pr.p, w); if (d < bestD) { bestD = d; target = e; } } });
   if (!target) { toast('Clique sobre o trecho de uma linha ou polígono'); return; }
   if (target.b && target.b.some(x => x)) { toast('Aparar ainda não suporta arestas curvas'); return; }
   // percorre o elemento como polilinha parametrizada (s acumulado)
@@ -1088,6 +1147,9 @@ function alignSel(mode) {
 }
 function deleteSel() { if (!S.sel.size) return; mutate(() => { const L = els(); for (let i = L.length - 1; i >= 0; i--) if (S.sel.has(L[i].id)) L.splice(i, 1); S.sel.clear(); }); }
 function duplicateSel(dx = 0.5, dy = -0.5) { const sel = selEls(); if (!sel.length) return; const c = sel.map(e => transformEl({ ...clone(e), id: uid() }, mT(dx, dy))); addEls(c); }
+function reorderStep(up) { const L = els(); const idx = L.map((e, i) => S.sel.has(e.id) ? i : -1).filter(i => i >= 0); if (!idx.length) return; mutate(() => { if (up) { for (let k = idx.length - 1; k >= 0; k--) { const i = idx[k]; if (i < L.length - 1 && !S.sel.has(L[i + 1].id)) { [L[i], L[i + 1]] = [L[i + 1], L[i]]; } } } else { for (const i of idx) { if (i > 0 && !S.sel.has(L[i - 1].id)) { [L[i], L[i - 1]] = [L[i - 1], L[i]]; } } } }); }
+function lockSel() { const sel = selEls(); if (!sel.length) return; mutate(() => { sel.forEach(e => e.lock = true); S.sel.clear(); }); toast(`${sel.length} elemento(s) travado(s) — “Destravar todos” na barra de seleção`); }
+function unlockAll() { const n = els().filter(e => e.lock).length; if (!n) return; mutate(() => els().forEach(e => { delete e.lock; })); toast(`${n} elemento(s) destravado(s)`); }
 function reorder(front) { const sel = selEls(); if (!sel.length) return; mutate(() => { const L = els(); const rest = L.filter(e => !S.sel.has(e.id)); L.length = 0; if (front) L.push(...rest, ...sel); else L.push(...sel, ...rest); }); }
 
 /* ---------- blocos ---------- */
@@ -1134,7 +1196,7 @@ const dirTo = (base, cur) => { const d = sub(cur || add(base, [1, 0]), base); re
 function opDrawPath(kind) { // poly | line | curve | limit
   const closed = kind === 'poly' || kind === 'limit';
   return {
-    pts: [], cur: null, typed: true, label: 'Comprimento',
+    pts: [], cur: null, typed: true, label: 'Comprimento', get extraPts() { return this.pts; },
     hint() { return this.pts.length ? `${closed ? 'Enter ou clique no 1º ponto fecha' : 'Enter conclui'} · Backspace desfaz ponto · digite o comprimento` : 'Clique o primeiro ponto'; },
     base() { return this.pts[this.pts.length - 1]; },
     onMove(p) { this.cur = p; },
@@ -1264,16 +1326,31 @@ const OPS = {
   trim: () => ({ noSnap: true, pick: true, hint() { return 'Clique no trecho a remover (entre interseções)'; }, onClick(p) { trimAt(p); } }),
   fillet: () => opVertexMod(false), chamfer: () => opVertexMod(true)
 };
+/* fillet/chanfro interativo: o raio/distância segue o mouse, pode ser digitado */
+function vertexAngle(el, i) { const P = el.pts, n = P.length; const V = P[i], A = P[(i - 1 + n) % n], B = P[(i + 1) % n]; const u1 = nrm(sub(A, V)), u2 = nrm(sub(B, V)); return { V, u1, u2, al: Math.acos(clamp(dot(u1, u2), -1, 1)) }; }
+function opRound(el, i, ch, back) {
+  const orig = clone(el); const g = vertexAngle(orig, i);
+  const valOf = p => { const bis = nrm(add(g.u1, g.u2)); const t = Math.max(0.001, dot(sub(p, g.V), bis) / Math.cos(g.al / 2)); return ch ? t : t * Math.tan(g.al / 2); };
+  return {
+    noSnap: true, typed: true, hideSel: true, edit: el.id, cur: null, label: ch ? 'Distância' : 'Raio',
+    hint() { return `Mova para ajustar ${ch ? 'a distância do chanfro' : 'o raio'} e clique · digite o valor · Enter usa ${fmt(ch ? S.doc.settings.chamfer : S.doc.settings.fillet)}`; },
+    onMove(p) { this.cur = p; },
+    apply(v) { if (!(v > 0)) return; if (ch) S.doc.settings.chamfer = r4(v); else S.doc.settings.fillet = r4(v); const t = clone(orig); if (!filletVertex(t, i, v, ch)) return; mutate(() => Object.assign(byId(el.id), t)); back(); },
+    onClick(p) { this.apply(valOf(p)); },
+    onTyped(v) { this.apply(parseNum(v)); },
+    onEnter() { this.apply(ch ? S.doc.settings.chamfer : S.doc.settings.fillet); },
+    preview() { if (!this.cur) return null; const v = valOf(this.cur); const t = clone(orig); if (!filletVertex(t, i, v, ch)) return null; const c = w2s(this.cur); return { w: elMarkup(t, { fo: .5 }) + outlineMarkup(t, PRI, 2), s: `<text x="${N(c[0] + 12)}" y="${N(c[1] - 10)}" font-size="12" font-weight="700" fill="${PRI}" font-family="Hind,sans-serif">${ch ? 'D' : 'R'} ${fmt(v)}</text>` }; }
+  };
+}
 function opVertexMod(ch) {
   return {
-    noSnap: true, pick: true, hint() { return `Clique no vértice para ${ch ? 'chanfrar' : 'arredondar'} (${ch ? 'distância' : 'raio'} na barra de opções)`; },
+    noSnap: true, pick: true, hint() { return `Clique no vértice para ${ch ? 'chanfrar' : 'arredondar'} — depois ajuste com o mouse ou digite o ${ch ? 'valor' : 'raio'}`; },
     onClick(p) {
       const sp = w2s(p); let best = null, bd = 12;
-      els().forEach(e => { if (!e.pts || e.t === 'block') return; e.pts.forEach((q, i) => { const d = dist(w2s(q), sp); if (d < bd) { bd = d; best = { e, i }; } }); });
+      els().forEach(e => { if (!e.pts || e.t === 'block' || e.lock) return; e.pts.forEach((q, i) => { const d = dist(w2s(q), sp); if (d < bd) { bd = d; best = { e, i }; } }); });
       if (!best) return toast('Clique próximo a um vértice');
-      const R = ch ? S.doc.settings.chamfer : S.doc.settings.fillet; const tmp = clone(best.e);
-      if (!filletVertex(tmp, best.i, R, ch)) return;
-      mutate(() => { Object.assign(best.e, tmp); });
+      const n = best.e.pts.length; if (!best.e.closed && (best.i === 0 || best.i === n - 1)) return toast('Escolha um vértice interno');
+      const tool = S.tool; S.op = opRound(best.e, best.i, ch, () => { S.op = OPS[tool](); renderAll(); setStatus(S.op.hint()); }); S.op.cur = p; typedLabel(S.op.label); setStatus(S.op.hint()); renderAll();
     }
   };
 }
@@ -1356,7 +1433,7 @@ function opVertex(el, i, mode) {
   const others = el.pts.filter((_, j) => j !== i);
   return {
     vmode: mode, base: el.pts[i], cur: null, typed: true, label: mode === 'rotEl' ? 'Ângulo °' : 'Distância', hideSel: true, edit: el.id,
-    exclude() { return new Set([el.id]); }, extraPts: mode === 'vmove' ? others : [],
+    exclude() { return null; }, excludePts: mode === 'vmove' ? [el.pts[i]] : [], excludeWallOf: el.id, extraPts: [],
     hint() { return mode === 'vmove' ? 'Clique a nova posição do vértice · digite a distância · Esc cancela' : mode === 'moveEl' ? 'Clique o destino do elemento' : 'Clique para definir a rotação ou digite o ângulo'; },
     onMove(p) { this.cur = p; },
     build(p) { const t = clone(orig); if (mode === 'vmove') moveVertex(t, i, p); else if (mode === 'moveEl') transformEl(t, mT(p[0] - this.base[0], p[1] - this.base[1])); else { const ref = add(this.base, [1, 0]); const a = Math.atan2(p[1] - this.base[1], p[0] - this.base[0]) - Math.atan2(ref[1] - this.base[1], ref[0] - this.base[0]); transformEl(t, mR(a, this.base)); } return t; },
@@ -1368,8 +1445,8 @@ function opVertex(el, i, mode) {
 function opEdge(el, i, mode, at) {
   const orig = clone(el); const P = orig.pts, n = P.length; const a = P[i], b = P[(i + 1) % n]; const u = nrm(sub(b, a)), nr = [u[1], -u[0]];
   return {
-    emode: mode, base: at, cur: null, typed: mode !== 'ecurve', label: mode === 'eoff' || mode === 'poff' ? 'Deslocamento' : 'Distância', hideSel: true, edit: el.id, noOrtho: mode !== 'moveEl',
-    exclude() { return new Set([el.id]); },
+    emode: mode, base: at, cur: null, typed: mode !== 'ecurve', label: mode === 'eoff' || mode === 'poff' ? 'Deslocamento' : 'Distância', hideSel: true, edit: el.id, noOrtho: ['eoff', 'ecurve', 'poff'].includes(mode),
+    exclude() { return null; }, excludePts: mode === 'eoff' ? [a, b] : [], excludeWallOf: el.id,
     hint() { return { eoff: 'Mova a aresta e clique · digite o deslocamento', vins: 'Clique a posição do novo vértice', ecurve: 'Clique um ponto por onde a aresta curva passa', poff: 'Clique para deslocar todo o contorno · digite o valor', moveEl: 'Clique o destino do elemento' }[mode]; },
     onMove(p) { this.cur = p; },
     tOf(p) { return dot(sub(p, at), nr); },
@@ -1398,7 +1475,7 @@ function showPet(ctx, sp) {
   const def = items[0][0]; ctx.mode = def;
   const fixed = S.doc.settings.petMode === 'fixo';
   pet.innerHTML = `<span class="ptitle" title="Arraste para mover o menu · duplo clique volta para perto do clique">${ctx.kind === 'vertex' ? 'Vértice' : 'Aresta'}</span>` + items.map(([k, t]) => `<button class="icon-btn" data-pet="${k}" aria-label="${t}" title="${t}" aria-pressed="${k === def}">${icon(iconOf[k])}</button>`).join('') +
-    (ctx.kind === 'vertex' ? `<label class="sr-only" for="pet-r">Raio ou distância</label><input class="inp pnum" id="pet-r" type="text" inputmode="decimal" value="${fmt(S.doc.settings.fillet, 2)}" title="Raio do fillet / distância do chanfro (m)">` : '') +
+
     `<button class="icon-btn" data-pet="pin" aria-label="${fixed ? 'Menu fixo — clique para seguir o cursor' : 'Menu segue o cursor — clique para fixar'}" title="${fixed ? 'Fixo' : 'Seguir cursor'}" aria-pressed="${fixed}">${icon('pin')}</button>`;
   pet.classList.toggle('docked', fixed); pet.classList.add('show');
   if (!fixed) { if (S.petUser) { const st = $('#stage').getBoundingClientRect(); pet.style.left = clamp(S.petUser[0], 4, st.width - pet.offsetWidth - 4) + 'px'; pet.style.top = clamp(S.petUser[1], 4, st.height - pet.offsetHeight - 4) + 'px'; } else placePet(sp); }
@@ -1412,7 +1489,7 @@ function startPetMode(mode) {
   if (!petCtx) return; const ctx = petCtx; const el = byId(ctx.el.id); if (!el) return hidePet();
   $$('#pet [data-pet]').forEach(b => { if (b.dataset.pet !== 'pin') b.setAttribute('aria-pressed', String(b.dataset.pet === mode)); });
   if (mode === 'vdel') { const t = clone(el); if (deleteVertex(t, ctx.i)) mutate(() => Object.assign(el, t)); else toast('O elemento precisa de mais vértices'); return finishPetOp(); }
-  if (mode === 'vfil' || mode === 'vcha') { const v = parseNum($('#pet-r')?.value); const R = v > 0 ? v : (mode === 'vfil' ? S.doc.settings.fillet : S.doc.settings.chamfer); if (mode === 'vfil') S.doc.settings.fillet = R; else S.doc.settings.chamfer = R; const t = clone(el); if (filletVertex(t, ctx.i, R, mode === 'vcha')) mutate(() => Object.assign(el, t)); return finishPetOp(); }
+  if (mode === 'vfil' || mode === 'vcha') { S.op = opRound(el, ctx.i, mode === 'vcha', finishPetOp); S.op.cur = s2w(ctx.sp); typedLabel(S.op.label); setStatus(S.op.hint()); renderAll(); return; }
   S.op = ctx.kind === 'vertex' ? opVertex(el, ctx.i, mode) : opEdge(el, ctx.i, mode, ctx.at);
   S.op.cur = s2w(ctx.sp); typedLabel(S.op.label); setStatus(S.op.hint()); renderAll();
 }
@@ -1422,7 +1499,7 @@ const cv = $('#cv');
 const opBase = op => !op ? null : (typeof op.base === 'function' ? op.base() : op.base) || null;
 function evPt(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
 let PD = null; // pointer down state
-function opPoint(w) { const op = S.op; if (!op || op.noSnap) { S.snapHit = null; return w; } const ex = op.exclude ? op.exclude() : null; return resolvePoint(w, opBase(op), { exclude: ex, noOrtho: op.noOrtho, extraPts: op.extraPts, noTrack: op.noTrack, noPerp: op.noPerp }); }
+function opPoint(w) { const op = S.op; if (!op || op.noSnap) { S.snapHit = null; return w; } const ex = op.exclude ? op.exclude() : null; return resolvePoint(w, opBase(op), { exclude: ex, noOrtho: op.noOrtho, extraPts: op.extraPts, noTrack: op.noTrack, noPerp: op.noPerp, excludePts: op.excludePts, excludeWallOf: op.excludeWallOf }); }
 cv.addEventListener('pointerdown', e => {
   cv.focus({ preventScroll: true }); const sp = evPt(e); const w = s2w(sp);
   if (e.button === 1 || e.button === 2 && false || S.space || S.tool === 'pan') { PD = { pan: true, sp, v: { ...S.view } }; cv.setPointerCapture(e.pointerId); cv.classList.add('panning'); e.preventDefault(); return; }
@@ -1431,6 +1508,9 @@ cv.addEventListener('pointerdown', e => {
   if (S.op) { const p = opPoint(w); PD = { op: true, sp, p }; S.op.onClick(p); renderOverlay(); return; }
   if (S.tool !== 'select') return;
   // rótulo de aresta (editar comprimento)
+  const adl = e.target.closest && e.target.closest('.adim'); const prevAd = S.adSel; S.adSel = null;
+  if (adl) { const el = byId(adl.dataset.el); if (el && !el.lock) { const k = +adl.dataset.e; S.adSel = { id: el.id, e: k }; S.sel.clear(); PD = { adim: { el, k, orig: (el.ad && el.ad.off && el.ad.off[k]) || [0, 0] }, sp, w }; cv.setPointerCapture(e.pointerId); renderAll(); refreshPanels(); setStatus('Cota interna: arraste para mover · Delete apaga · “Restaurar cotas” na barra do ambiente'); return; } }
+  if (prevAd) renderAnn();
   const lbl = e.target.closest && e.target.closest('.lbl'); if (lbl) { e.preventDefault(); setTimeout(() => openEdgeEdit(lbl.dataset.el, +lbl.dataset.edge, sp), 0); return; }
   const h = hitHandle(sp);
   if (h && (h.kind === 'vertex' || h.kind === 'edge')) { PD = { handle: h, sp, w }; cv.setPointerCapture(e.pointerId); return; }
@@ -1447,6 +1527,7 @@ cv.addEventListener('pointerdown', e => {
 cv.addEventListener('pointermove', e => {
   const sp = evPt(e); const w = s2w(sp); S.mouseS = sp; S.mouse = w;
   if (PD && PD.pan) { S.view.cx = PD.v.cx - (sp[0] - PD.sp[0]) / S.view.k; S.view.cy = PD.v.cy + (sp[1] - PD.sp[1]) / S.view.k; renderAll(); return; }
+  if (PD && PD.adim && dist(sp, PD.sp) > 2) { const { el, k, orig } = PD.adim; if (!PD.moved) { pushHist(); PD.moved = true; } el.ad = el.ad || { on: true, v: 0 }; el.ad.off = el.ad.off || {}; el.ad.off[k] = add(orig, sub(w, PD.w)).map(r4); invalidate(); renderAnn(); return; }
   if (PD && PD.newGuide) { const p = resolvePoint(w, null, { noTrack: true }); PD.p = p; const d = PD.newGuide === 'h' ? [1, 0] : [0, 1]; const L = 1e5 / S.view.k; const a = w2s(add(p, mul(d, -L))), b = w2s(add(p, mul(d, L))); renderOverlay(); $('#g-sc').insertAdjacentHTML('beforeend', `<line x1="${N(a[0])}" y1="${N(a[1])}" x2="${N(b[0])}" y2="${N(b[1])}" stroke="${PRI}" stroke-width="1.2" stroke-dasharray="6 4"/><text x="${N(sp[0] + 10)}" y="${N(sp[1] - 8)}" font-size="11" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${PD.newGuide === 'h' ? 'y ' + fmt(p[1]) : 'x ' + fmt(p[0])}</text>`); return; }
   if (PD && PD.guideMove && dist(sp, PD.sp) > 2) { const g = PD.guideMove; const p = resolvePoint(w, null, { noTrack: true, exclude: new Set([g.id]) }); const n = perpL(g.d); const t = dot(sub(p, PD.orig), n); g.p = add(PD.orig, mul(n, t)).map(r4); PD.moved = true; PD.del = sp[0] < RUL || sp[1] < RUL; invalidate(); renderAll(); return; }
   let shown = w;
@@ -1472,6 +1553,7 @@ cv.addEventListener('pointerup', e => {
   const sp = evPt(e); const st = PD; PD = null; cv.classList.remove('panning');
   if (!st) return;
   if (st.pan) return;
+  if (st.adim) { if (st.moved) { S.dirty = true; scheduleSave(); } return; }
   if (st.newGuide) { renderOverlay(); if (st.p && sp[0] > RUL && sp[1] > RUL) mutate(() => { els().push({ id: uid(), t: 'guide', p: st.p.map(r4), d: st.newGuide === 'h' ? [1, 0] : [0, 1] }); }, { keepPanel: true }); return; }
   if (st.guideMove) { const g = st.guideMove; if (!st.moved) return; const np = g.p; g.p = st.orig; if (st.del) { mutate(() => { const L = els(); L.splice(L.indexOf(g), 1); S.sel.delete(g.id); }); toast('Linha guia removida'); } else mutate(() => { g.p = np; }); return; }
   if (st.op) {
@@ -1483,7 +1565,7 @@ cv.addEventListener('pointerup', e => {
     const a = s2w(st.sp), b = s2w(sp); S.win = null;
     if (dist(st.sp, sp) > 4) {
       const cross = sp[0] < st.sp[0]; const x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), y0 = Math.min(a[1], b[1]), y1 = Math.max(a[1], b[1]);
-      els().forEach(el => { if (el.t === 'guide') return; const B = topBBox(el); if (!B) return; const inside = B[0] >= x0 && B[2] <= x1 && B[1] >= y0 && B[3] <= y1; const inter = !(B[2] < x0 || B[0] > x1 || B[3] < y0 || B[1] > y1); if (cross ? inter : inside) S.sel.add(el.id); });
+      els().forEach(el => { if (el.t === 'guide' || el.lock) return; const B = topBBox(el); if (!B) return; const inside = B[0] >= x0 && B[2] <= x1 && B[1] >= y0 && B[3] <= y1; const inter = !(B[2] < x0 || B[0] > x1 || B[3] < y0 || B[1] > y1); if (cross ? inter : inside) S.sel.add(el.id); });
     }
     refreshPanels(); renderOverlay();
   }
@@ -1497,13 +1579,27 @@ cv.addEventListener('wheel', e => { e.preventDefault(); const f = Math.exp(-e.de
 cv.addEventListener('contextmenu', e => { e.preventDefault(); if (S.op && S.op.onEnter) { S.op.onEnter(); renderOverlay(); } else if (S.op) { setTool(S.tool === 'place' ? 'select' : S.tool); } });
 cv.addEventListener('pointerleave', () => { S.hover = null; S.snapHit = null; S.track = []; renderOverlay(); });
 
-/* editar comprimento clicando na cota da aresta */
+/* editar comprimento clicando na cota da aresta — com escolha da direção */
+function arrowFor(v) { const a = Math.atan2(v[1], v[0]) * 180 / Math.PI; const ar = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗']; return ar[((Math.round(a / 45) % 8) + 8) % 8]; }
 function openEdgeEdit(id, i, sp) {
   const el = byId(id); if (!el) return; if (el.b && el.b[i]) return toast('Aresta curva: use o menu da aresta para editar');
-  const inp = $('#edit-inp'); inp.hidden = false; inp.value = fmt(edgeLen(el, i), 2); inp.style.left = (sp[0] - 42) + 'px'; inp.style.top = (sp[1] - 16) + 'px'; inp.focus(); inp.select();
-  const done = ok => { inp.hidden = true; inp.onkeydown = inp.onblur = null; if (ok) { const L = parseNum(inp.value); if (L > 0) mutate(() => setEdgeLength(byId(id), i, L)); } cv.focus(); };
+  const n = el.pts.length; const sa = w2s(el.pts[i]), sb = w2s(el.pts[(i + 1) % n]); const d = nrm(sub(sb, sa));
+  let moveEnd = S.edgeDirEnd !== undefined ? S.edgeDirEnd : true;
+  const pop = $('#edit-pop'); const inp = $('#edit-inp');
+  pop.innerHTML = `<button type="button" class="icon-btn" data-dir="0" aria-label="Aumentar/diminuir no sentido ${arrowFor(mul(d, -1))}" title="Mover a outra ponta">${arrowFor(mul(d, -1))}</button>`;
+  pop.appendChild(inp);
+  pop.insertAdjacentHTML('beforeend', `<button type="button" class="icon-btn" data-dir="1" aria-label="Aumentar/diminuir no sentido ${arrowFor(d)}" title="Mover esta ponta">${arrowFor(d)}</button>`);
+  const sync = () => $$('[data-dir]', pop).forEach(b => b.setAttribute('aria-pressed', String((b.dataset.dir === '1') === moveEnd)));
+  sync(); pop.hidden = false; inp.hidden = false; inp.value = fmt(edgeLen(el, i), 2);
+  const st = $('#stage').getBoundingClientRect(); pop.style.left = clamp(sp[0] - 90, 4, st.width - 190) + 'px'; pop.style.top = clamp(sp[1] - 24, 4, st.height - 52) + 'px';
+  inp.focus(); inp.select();
+  let closing = false;
+  const done = ok => { if (closing) return; closing = true; pop.hidden = true; document.removeEventListener('pointerdown', outside, true); if (ok) { const L = parseNum(inp.value); if (L > 0) { S.edgeDirEnd = moveEnd; mutate(() => setEdgeLength(byId(id), i, L, moveEnd)); } } cv.focus(); };
+  const outside = ev => { if (!pop.contains(ev.target)) done(false); };
+  setTimeout(() => document.addEventListener('pointerdown', outside, true), 0);
+  $$('[data-dir]', pop).forEach(b => b.onclick = () => { moveEnd = b.dataset.dir === '1'; sync(); inp.focus(); inp.select(); });
   inp.onkeydown = ev => { if (ev.key === 'Enter') { ev.preventDefault(); done(true); } if (ev.key === 'Escape') { ev.preventDefault(); done(false); } ev.stopPropagation(); };
-  setTimeout(() => { inp.onblur = () => done(false); }, 150);
+  inp.onblur = null;
 }
 /* menu pet */
 $('#pet').addEventListener('click', e => {
@@ -1530,7 +1626,7 @@ window.addEventListener('keydown', e => {
   const ctrl = e.ctrlKey || e.metaKey; const k = e.key.toLowerCase();
   if (ctrl && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
   if (ctrl && k === 'y') { e.preventDefault(); redo(); return; }
-  if (ctrl && k === 'a') { e.preventDefault(); S.sel = new Set(els().filter(x => x.t !== 'guide').map(x => x.id)); refreshPanels(); renderOverlay(); return; }
+  if (ctrl && k === 'a') { e.preventDefault(); S.sel = new Set(els().filter(x => x.t !== 'guide' && !x.lock).map(x => x.id)); refreshPanels(); renderOverlay(); return; }
   if (ctrl && k === 'c') { const sel = selEls(); if (sel.length) { const c = selCenter(); S.clip = sel.map(x => transformEl(clone(x), mT(-c[0], -c[1]))); toast(`${sel.length} elemento(s) copiado(s)`); } return; }
   if (ctrl && k === 'v') { e.preventDefault(); if (S.clip) startPlace(S.clip, 'cópia'); return; }
   if (ctrl && k === 'd') { e.preventDefault(); duplicateSel(); return; }
@@ -1538,6 +1634,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape') { if (S.editBlock && S.tool === 'select' && !S.op && !S.sel.size) { exitBlock(); return; } if (S.tool !== 'select' || S.op) setTool('select'); else { S.sel.clear(); refreshPanels(); renderOverlay(); } return; }
   if (e.key === 'Enter') { if (S.op && S.op.onEnter) { S.op.onEnter(); renderOverlay(); } return; }
   if (e.key === 'Backspace' && S.op && S.op.onBack) { e.preventDefault(); S.op.onBack(); renderOverlay(); return; }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && S.adSel) { e.preventDefault(); const { id, e: k } = S.adSel; S.adSel = null; mutate(() => { const el = byId(id); el.ad = el.ad || { on: true, v: 0 }; el.ad.hide = el.ad.hide || {}; el.ad.hide[k] = true; }); return; }
   if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); deleteSel(); return; }
   if (e.key === ' ') { S.space = true; e.preventDefault(); return; }
   if (e.key === 'F8') { e.preventDefault(); toggle('ortho'); return; }
@@ -1580,22 +1677,25 @@ function renderOptbar() {
   ob.classList.toggle('block-mode', !!S.editBlock);
   let h = '';
   if (S.editBlock) { const def = S.doc.blocks[S.editBlock]; h += `<span class="tname">Editando bloco</span><span class="hint">${esc(def?.name)} · ${instancesOf(S.editBlock)} cópia(s) serão atualizadas</span><button class="btn primary sm" id="ob-exit-block">${icon('save')}Concluir</button><span class="vsep"></span>`; }
-  h += `<span class="tname">${TOOL_NAMES[t] || ''}</span>`;
+  if (!(t === 'select' && S.sel.size && !S.op)) h += `<span class="tname">${TOOL_NAMES[t] || ''}</span>`;
   if (['rect', 'poly', 'circle'].includes(t)) {
     h += `<div class="of"><label for="ob-role">Papel</label><select class="sel" id="ob-role">${['room', 'unit', 'layout', 'line'].map(r => `<option value="${r}" ${d.role === r ? 'selected' : ''}>${ROLES[r]}</option>`).join('')}</select></div>`;
     h += `<div class="of"><label for="ob-usage">Categoria</label>${usageBtn('ob-usage', d.usage)}</div>`;
     h += `<label class="chk" title="Guias perimetrais de parede (externa, entre ambientes, shaft) — controle no botão PAREDES da barra inferior"><input type="checkbox" id="ob-guide" ${d.guide ? 'checked' : ''}>Guias de parede</label>`;
   }
   if (t === 'dim') h += `<div class="seg" role="group" aria-label="Estilo de cota"><button id="ob-dl" aria-pressed="${(st.dimStyle || 'line') === 'line'}">Com linha</button><button id="ob-dc" aria-pressed="${st.dimStyle === 'text'}">Só texto</button></div><span class="vsep"></span><label class="chk" title="Mostra as medidas internas de todos os ambientes junto a um vértice"><input type="checkbox" id="ob-auto" ${st.autoDims ? 'checked' : ''}>Cotas internas automáticas</label>`;
-  if (t === 'select' && !S.op) { const g = selEls().filter(x => x.t === 'poly' || x.t === 'circle'); if (g.length) { const u0 = g[0].usage; h += `<div class="of"><label for="ob-susage">Categoria</label>${usageBtn('ob-susage', u0, g.some(x => x.usage !== u0))}</div>`; } }
-  if (['move', 'rotate', 'mirror'].includes(t) || (t === 'select' && S.sel.size)) h += `<button class="btn sm" id="ob-copy" aria-pressed="${!!st.copyMode}" title="Mantém o original e cria cópia (vale para mover, rotacionar, espelhar e o menu do elemento)">${icon('copy')}Cópia</button>`;
+  if (['move', 'rotate', 'mirror'].includes(t)) h += `<button class="btn sm" id="ob-copy" aria-pressed="${!!st.copyMode}" title="Mantém o original e cria cópia (vale para mover, rotacionar, espelhar e o menu do elemento)">${icon('copy')}Cópia</button>`;
   if (t === 'guide') h += `<div class="seg" role="group" aria-label="Direção da guia">${[['h', 'Horizontal'], ['v', 'Vertical'], ['2p', '2 pontos']].map(([k, n]) => `<button data-gm="${k}" aria-pressed="${(st.guideMode || 'h') === k}">${n}</button>`).join('')}</div><button class="btn sm" id="ob-clear-guides">${icon('trash')}Limpar guias</button>`;
   if (t === 'offset') h += `<div class="of"><label for="ob-off">Distância</label><input class="inp num" id="ob-off" value="${fmt(st.offset, 2)}" inputmode="decimal"><span class="hint">m</span></div><label class="chk"><input type="checkbox" id="ob-offcopy" ${st.offsetCopy !== false ? 'checked' : ''}>Criar cópia</label>`;
   if (t === 'fillet') h += `<div class="of"><label for="ob-fil">Raio</label><input class="inp num" id="ob-fil" value="${fmt(st.fillet, 2)}" inputmode="decimal"><span class="hint">m</span></div><button class="btn sm" id="ob-fil-all" title="Aplica em todos os vértices dos elementos selecionados">Todos os vértices da seleção</button>`;
   if (t === 'chamfer') h += `<div class="of"><label for="ob-cha">Distância</label><input class="inp num" id="ob-cha" value="${fmt(st.chamfer, 2)}" inputmode="decimal"><span class="hint">m</span></div><button class="btn sm" id="ob-cha-all">Todos os vértices da seleção</button>`;
+  if (t === 'select' && !S.op && (S.sel.size)) h += selBarHTML();
+  if (t === 'select' && !S.sel.size && els().some(e => e.lock)) h += `<button class="btn sm" id="ob-unlock">${icon('unlock')}Destravar todos (${els().filter(e => e.lock).length})</button>`;
   if (t === 'select' && !S.editBlock && !S.sel.size) h += `<span class="hint">Clique no vértice ou na aresta do elemento selecionado para abrir o menu de edição · clique na cota da aresta para digitar a medida · duplo clique no bloco para editá-lo</span>`;
   if (S.op && S.op.hint && t !== 'select') h += `<span class="hint" id="ob-hint"></span>`;
   ob.innerHTML = h; typedLabel(S.op && S.op.label);
+  if (t === 'select' && S.sel.size && !S.op) bindSelBar(ob);
+  $('#ob-unlock', ob)?.addEventListener('click', unlockAll);
   const on = (id, ev, f) => { const x = $('#' + id); if (x) x.addEventListener(ev, f); };
   on('ob-exit-block', 'click', exitBlock);
   on('ob-role', 'change', e => { d.role = e.target.value; scheduleSave(); });
@@ -1607,6 +1707,7 @@ function renderOptbar() {
   on('ob-dc', 'click', () => { st.dimStyle = 'text'; renderOptbar(); renderOverlay(); });
   on('ob-auto', 'change', e => { mutate(() => { st.autoDims = e.target.checked; }); });
   on('ob-copy', 'click', () => toggle('copy'));
+  on('ob-copy2', 'click', () => toggle('copy'));
   $$('[data-gm]', ob).forEach(b => b.addEventListener('click', () => { st.guideMode = b.dataset.gm; setTool('guide'); }));
   on('ob-clear-guides', 'click', () => mutate(() => { const L = els(); for (let i = L.length - 1; i >= 0; i--) if (L[i].t === 'guide') L.splice(i, 1); }));
   on('ob-off', 'change', e => { const v = parseNum(e.target.value); if (v > 0) st.offset = v; e.target.value = fmt(st.offset, 2); });
@@ -1634,77 +1735,24 @@ function addSheet(copyFrom) {
 function setPanel(p) { S.panel = p; $$('.dock-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.panel === p))); $$('.panel').forEach(x => x.hidden = x.id !== 'p-' + p); refreshPanels(); }
 let panelT; function refreshPanels() { clearTimeout(panelT); panelT = setTimeout(() => { if (S.tool === 'select' && !S.op) renderOptbar(); const p = S.panel; if (p === 'props') renderProps(); if (p === 'sheets') renderSheetsPanel(); if (p === 'lib') renderLib(); if (p === 'areas') renderAreas(); }, 30); }
 function renderProps() {
-  const P = $('#p-props'); const sel = selEls(); const d = S.doc.defaults, set = S.doc.settings;
-  if (document.activeElement && P.contains(document.activeElement) && document.activeElement.matches('input[type=text],input:not([type])')) return; // não atrapalha digitação
-  let h = '';
-  if (!sel.length) {
-    h += `<div class="sec"><h3>Estilo padrão de novos elementos</h3>${styleFields(d.st, 'def')}</div>`;
-    h += `<div class="sec"><h3>Prancheta</h3><div class="row2"><div class="field"><label for="set-grid">Grade (m)</label><input class="inp" id="set-grid" value="${fmt(set.grid, 2)}" inputmode="decimal"></div><div class="field"><label for="set-tol">Tolerância snap (px)</label><input class="inp" id="set-tol" value="${set.tol}" inputmode="numeric"></div></div>
-      <div class="field"><label for="set-pet">Menu de edição (vértice/aresta)</label><select class="sel" id="set-pet"><option value="cursor" ${set.petMode !== 'fixo' ? 'selected' : ''}>Segue o cursor</option><option value="fixo" ${set.petMode === 'fixo' ? 'selected' : ''}>Fixo na base da prancheta</option></select></div></div>`;
-    h += `<div class="sec"><h3>Categorias de uso</h3><p class="note">${G.on ? 'Lidas do projeto Giraffe (usos).' : 'Lista padrão — dentro do Giraffe o app lê os usos do projeto.'}</p>${Object.entries(S.usages.reduce((a, u) => { (a[u.group || 'Usos do projeto'] = a[u.group || 'Usos do projeto'] || []).push(u); return a; }, {})).map(([g, us]) => `<p class="note" style="margin:8px 0 4px;font-weight:600">${esc(g)}</p><div>${us.map(u => `<span class="tag" style="opacity:1"><span class="sw" style="display:inline-block;width:9px;height:9px;background:${u.color || '#ccc'};margin-right:4px"></span>${esc(u.name)}</span>`).join(' ')}</div>`).join('')}</div>`;
-    P.innerHTML = h; bindStyle(P, 'def', d.st, () => scheduleSave());
-    const on = (id, f) => { const x = $('#' + id, P); if (x) x.addEventListener('change', f); };
-    on('set-grid', e => { const v = parseNum(e.target.value); if (v > 0) set.grid = v; renderAll(); scheduleSave(); });
-    on('set-tol', e => { const v = parseInt(e.target.value); if (v > 2) set.tol = v; scheduleSave(); });
-    on('set-pet', e => { set.petMode = e.target.value; scheduleSave(); });
-    return;
-  }
-  const one = sel.length === 1 ? sel[0] : null; const geo = sel.filter(e => e.t === 'poly' || e.t === 'circle' || e.t === 'line');
-  // leitura
-  h += `<div class="sec"><h3>${one ? ({ poly: 'Polígono', line: one.smooth ? 'Curva' : 'Linha', circle: 'Círculo', dim: 'Cota', block: 'Bloco', guide: 'Linha guia' }[one.t]) : sel.length + ' elementos'}</h3>`;
-  const A = selArea(sel);
-  h += `<div class="readout">${A > 0 ? `<span>Área</span><b>${fmt(A)} m²</b>` : ''}${one && (one.pts || one.t === 'circle') && one.t !== 'block' ? `<span>Perímetro</span><b>${fmt(perimeter(one))} m</b>` : ''}${one && one.t === 'dim' ? `<span>Medida</span><b>${fmt(dist(one.p1, one.p2))} m</b>` : ''}${one && one.t === 'block' ? `<span>Bloco</span><b>${esc(S.doc.blocks[one.bid]?.name)}</b><span>Cópias</span><b>${instancesOf(one.bid)}</b>` : ''}</div>`;
-  if (geo.length) {
-    const nm = one ? (one.name || '') : '';
-    if (one) h += `<div class="field"><label for="pp-name">Nome</label><input class="inp" id="pp-name" list="room-names" value="${esc(nm)}" placeholder="ex.: Dormitório 1"><datalist id="room-names">${ROOM_NAMES.map(n => `<option value="${n}">`).join('')}</datalist></div>`;
-    const roleV = geo.every(e => e.role === geo[0].role) ? geo[0].role : ''; const useV = geo.every(e => e.usage === geo[0].usage) ? geo[0].usage : '';
-    h += `<div class="row2"><div class="field"><label for="pp-role">Papel</label><select class="sel" id="pp-role">${roleV ? '' : '<option value="">(vários)</option>'}${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${roleV === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div><div class="field"><label for="pp-usage">Categoria de uso</label>${usageBtn('pp-usage', useV, !useV && geo.some(e => e.usage))}</div></div>`;
-    const gv = geo.find(e => e.closed && e.role === 'room'); if (gv) h += `<label class="chk"><input type="checkbox" id="pp-gon" ${gv.guide > 0 ? 'checked' : ''}>Guias de parede</label>${gv.guide > 0 ? `<div class="icon-grid" role="group" aria-label="Guias deste ambiente" style="gap:6px;margin:2px 0 4px">${set.walls.map(w => { const onv = gv.walls && gv.walls[w.k] !== undefined ? gv.walls[w.k] : w.on; return `<button class="btn sm wbtn" data-wk="${w.k}" aria-pressed="${onv}" title="${esc(w.name)} — ${fmt(w.d, 2)} m"><span style="display:inline-block;width:14px;height:3px;background:${w.color}"></span>${fmt(w.d, 2)}</button>`; }).join('')}${gv.walls ? `<button class="btn sm" id="pp-wreset" title="Voltar ao padrão do menu PAREDES">Padrão</button>` : ''}</div>` : ''}`;
-    const rooms = geo.filter(e => e.closed && e.role === 'room' && e.pts);
-    if (rooms.length) { const r0 = rooms[0]; const adOn = r0.ad ? r0.ad.on : set.autoDims; h += `<div style="margin-top:8px"><label class="chk"><input type="checkbox" id="pp-ad" ${adOn ? 'checked' : ''}>Cota interna automática</label>${adOn ? `<div class="icon-grid" role="group" aria-label="Vértice da cota interna"><button class="icon-btn" id="pp-adp" aria-label="Vértice anterior" title="Vértice anterior">${icon('rotate').replace('<svg', '<svg style="transform:scaleX(-1)"')}</button><button class="icon-btn" id="pp-adn" aria-label="Próximo vértice" title="Próximo vértice">${icon('rotate')}</button><button class="icon-btn" id="pp-ado" aria-pressed="${!!(r0.ad && r0.ad.out)}" aria-label="Texto do lado de fora" title="Texto fora do ambiente">${icon('flipV')}</button><span class="note" style="align-self:center;margin:0 6px">vértice ${((r0.ad && r0.ad.v) || 0) + 1}/${r0.pts.length}</span></div>` : ''}</div>`; }
-    h += `</div><div class="sec"><h3>Aparência</h3>${styleFields(geo[0].st || {}, 'pp')}</div>`;
-  } else h += '</div>';
-  if (one && one.t === 'dim') h += `<div class="sec"><h3>Cota</h3><div class="seg" role="group" aria-label="Tipo de cota" style="width:100%;margin-bottom:10px"><button style="flex:1" id="dm-l1" aria-pressed="${one.showLine !== false}">Com linha</button><button style="flex:1" id="dm-l0" aria-pressed="${one.showLine === false}">Só texto</button></div><button class="btn sm" id="dm-side" style="width:100%;margin-bottom:10px">${icon('flipV')}Inverter lado do texto</button><div class="field"><label for="dm-pos">Posição do texto</label><select class="sel" id="dm-pos">${[['center', 'Centro'], ['start', 'Canto inicial'], ['end', 'Canto final']].map(([k, v]) => `<option value="${k}" ${(one.textPos || 'center') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div><div class="row3"><input type="color" id="dm-col" value="${one.st?.stroke || '#2b2b2b'}" aria-label="Cor da cota"><span class="note">Cor da cota</span><span></span></div></div>`;
-  if (one && one.t === 'block') { const def = S.doc.blocks[one.bid]; h += `<div class="sec"><h3>Bloco</h3><div class="field"><label for="bk-name">Nome do bloco</label><input class="inp" id="bk-name" value="${esc(def?.name)}"></div><div class="field"><label for="bk-kind">Tipo</label><select class="sel" id="bk-kind">${['unidade', 'pavimento', 'mobiliario', 'outro'].map(k => `<option ${def?.kind === k ? 'selected' : ''} value="${k}">${{ unidade: 'Tipologia de unidade', pavimento: 'Tipologia de pavimento', mobiliario: 'Mobiliário', outro: 'Outro' }[k]}</option>`).join('')}</select></div><div class="btn-row"><button class="btn" id="bk-edit">${icon('edit')}Editar bloco</button><button class="btn" id="bk-explode">${icon('explode')}Explodir</button><button class="btn primary" id="bk-save">${icon('book')}Salvar na biblioteca</button></div></div>`; }
-  // organizar
-  h += `<div class="sec"><h3>Organizar</h3><div class="icon-grid">
-    <button class="icon-btn" data-q="rot90" aria-label="Girar 90° anti-horário" title="Girar 90°">${icon('rotate')}</button>
-    <button class="icon-btn" data-q="flipH" aria-label="Espelhar na horizontal" title="Espelhar ↔">${icon('flipH')}</button>
-    <button class="icon-btn" data-q="flipV" aria-label="Espelhar na vertical" title="Espelhar ↕">${icon('flipV')}</button>
-    <button class="icon-btn" data-q="front" aria-label="Trazer para frente" title="Trazer para frente">${icon('front')}</button>
-    <button class="icon-btn" data-q="back" aria-label="Enviar para trás" title="Enviar para trás">${icon('back')}</button>
-    <button class="icon-btn" data-q="dup" aria-label="Duplicar (Ctrl+D)" title="Duplicar (Ctrl+D)">${icon('dup')}</button>
-    <button class="icon-btn" data-q="del" aria-label="Apagar (Delete)" title="Apagar">${icon('trash')}</button></div>`;
-  if (sel.length > 1) h += `<h3 style="margin-top:12px">Alinhar</h3><div class="icon-grid">${[['l', 'alL', 'Alinhar à esquerda'], ['hc', 'alHC', 'Centralizar na horizontal'], ['r', 'alR', 'Alinhar à direita'], ['t', 'alT', 'Alinhar ao topo'], ['vc', 'alVC', 'Centralizar na vertical'], ['b', 'alB', 'Alinhar à base'], ['dh', 'distH', 'Distribuir na horizontal'], ['dv', 'distV', 'Distribuir na vertical']].map(([k, ic, t]) => `<button class="icon-btn" data-al="${k}" aria-label="${t}" title="${t}">${icon(ic)}</button>`).join('')}</div>`;
-  h += `<div class="btn-row" style="margin-top:10px"><button class="btn" id="mk-block">${icon('block')}Criar bloco</button></div></div>`;
-  P.innerHTML = h;
-  // binds
-  const on = (id, ev, f) => { const x = $('#' + id, P); if (x) x.addEventListener(ev, f); };
-  on('pp-name', 'change', e => mutate(() => { one.name = e.target.value.trim(); }, { keepPanel: true }));
-  on('pp-role', 'change', e => { const v = e.target.value; if (!v) return; mutate(() => geo.forEach(x => { x.role = v; if (v === 'limit') { x.st = newStyle('limit'); x.usage = ''; } if (v === 'unit') { x.st = { ...x.st, fo: 0.12, dash: 'dash', sw: 1.6 }; x.guide = 0; } })); });
-  on('pp-usage', 'click', e => openUsagePicker(e.currentTarget, useV, v => mutate(() => geo.forEach(x => { x.usage = v; if (x.st) x.st.byUse = true; }))));
-  on('pp-gon', 'change', e => mutate(() => geo.forEach(x => { if (x.closed && x.role === 'room') x.guide = e.target.checked ? 1 : 0; })));
-  $$('[data-wk]', P).forEach(b => b.addEventListener('click', () => { const k = b.dataset.wk; const nv = b.getAttribute('aria-pressed') !== 'true'; mutate(() => geo.forEach(x => { if (x.closed && x.role === 'room') { x.walls = x.walls || {}; x.walls[k] = nv; } })); }));
-  on('pp-wreset', 'click', () => mutate(() => geo.forEach(x => { delete x.walls; })));
-  const adRooms = geo.filter(e => e.closed && e.role === 'room' && e.pts); const adOf = x => (x.ad = x.ad || { on: !!set.autoDims, v: 0, out: false });
-  on('pp-ad', 'change', e => mutate(() => adRooms.forEach(x => { adOf(x).on = e.target.checked; })));
-  on('pp-adn', 'click', () => mutate(() => adRooms.forEach(x => { const a = adOf(x); a.on = true; a.v = ((a.v || 0) + 1) % x.pts.length; })));
-  on('pp-adp', 'click', () => mutate(() => adRooms.forEach(x => { const a = adOf(x); a.on = true; a.v = ((a.v || 0) - 1 + x.pts.length) % x.pts.length; })));
-  on('pp-ado', 'click', () => mutate(() => adRooms.forEach(x => { const a = adOf(x); a.out = !a.out; })));
-  if (geo.length) bindStyle(P, 'pp', null, (k, v) => mutate(() => geo.forEach(x => { x.st = x.st || {}; x.st[k] = v; if (k === 'fill') x.st.byUse = false; }), { keepPanel: true }));
-  on('dm-l1', 'click', () => mutate(() => { one.showLine = true; }));
-  on('dm-l0', 'click', () => mutate(() => { one.showLine = false; }));
-  on('dm-side', 'click', () => mutate(() => { one.side = (one.side || 1) * -1; }));
-  on('dm-pos', 'change', e => mutate(() => { one.textPos = e.target.value; }));
-  on('dm-col', 'input', e => mutate(() => { one.st = { ...(one.st || {}), stroke: e.target.value }; }, { keepPanel: true }));
-  on('bk-name', 'change', e => mutate(() => { S.doc.blocks[one.bid].name = e.target.value.trim() || 'Bloco'; }));
-  on('bk-kind', 'change', e => mutate(() => { S.doc.blocks[one.bid].kind = e.target.value; }));
-  on('bk-edit', 'click', () => enterBlock(one.bid));
-  on('bk-explode', 'click', explodeSel);
-  on('bk-save', 'click', () => saveTypologyDialog(one));
-  on('mk-block', 'click', () => askDialog('Criar bloco', [{ id: 'name', label: 'Nome do bloco', value: 'Tipo ' + String.fromCharCode(65 + Object.values(S.doc.blocks).filter(b => b.kind !== 'mobiliario').length) }, { id: 'kind', label: 'Tipo', type: 'select', options: [['unidade', 'Tipologia de unidade'], ['pavimento', 'Tipologia de pavimento'], ['outro', 'Outro']] }], v => createBlockFromSel(v.name, v.kind)));
-  $$('[data-al]', P).forEach(b => b.addEventListener('click', () => alignSel(b.dataset.al)));
-  $$('[data-q]', P).forEach(b => b.addEventListener('click', () => { const q = b.dataset.q, c = selCenter(); if (q === 'rot90') mutate(() => applyM(selEls(), mR(Math.PI / 2, c))); if (q === 'flipH') mutate(() => applyM(selEls(), mMirror(c, add(c, [0, 1])))); if (q === 'flipV') mutate(() => applyM(selEls(), mMirror(c, add(c, [1, 0])))); if (q === 'front') reorder(true); if (q === 'back') reorder(false); if (q === 'dup') duplicateSel(); if (q === 'del') deleteSel(); }));
+  const P = $('#p-props'); const d = S.doc.defaults, set = S.doc.settings;
+  if (document.activeElement && P.contains(document.activeElement) && document.activeElement.matches('input[type=text],input:not([type])')) return;
+  let h = `<p class="note">As edições dos elementos selecionados ficam na barra superior.</p>`;
+  h += `<div class="sec"><h3>Estilo padrão de novos elementos</h3>${styleFields(d.st, 'def')}</div>`;
+  h += `<div class="sec"><h3>Prancheta</h3><div class="row2"><div class="field"><label for="set-grid">Grade (m)</label><input class="inp" id="set-grid" value="${fmt(set.grid, 2)}" inputmode="decimal"></div><div class="field"><label for="set-tol">Tolerância snap (px)</label><input class="inp" id="set-tol" value="${set.tol}" inputmode="numeric"></div></div>
+    <div class="field"><label for="set-pet">Menu de edição (vértice/aresta)</label><select class="sel" id="set-pet"><option value="cursor" ${set.petMode !== 'fixo' ? 'selected' : ''}>Perto do clique (arraste pela faixa para mover)</option><option value="fixo" ${set.petMode === 'fixo' ? 'selected' : ''}>Fixo na base da prancheta</option></select></div></div>`;
+  h += `<div class="sec"><h3>Cotas</h3><div class="row2"><div class="field"><label for="set-dfs">Tamanho do texto (px)</label><input class="inp" id="set-dfs" value="${set.dimFont || 12}" inputmode="numeric"></div><div class="field"><label for="set-dcol">Cor das cotas internas</label><input type="color" id="set-dcol" value="${set.dimColor || '#1b1b1b'}"></div></div><label class="chk"><input type="checkbox" id="set-auto" ${set.autoDims ? 'checked' : ''}>Cotas internas automáticas em todos os ambientes</label></div>`;
+  const nl = els().filter(e => e.lock).length; if (nl) h += `<div class="sec"><h3>Travados</h3><button class="btn" id="set-unlock">${icon('unlock')}Destravar todos (${nl})</button></div>`;
+  h += `<div class="sec"><h3>Categorias de uso</h3><p class="note">${G.on ? 'Lidas do projeto Giraffe (usos).' : 'Lista padrão — dentro do Giraffe o app lê os usos do projeto.'}</p>${Object.entries(S.usages.reduce((a, u) => { (a[u.group || 'Usos do projeto'] = a[u.group || 'Usos do projeto'] || []).push(u); return a; }, {})).map(([g, us]) => `<p class="note" style="margin:8px 0 4px;font-weight:600">${esc(g)}</p><div>${us.map(u => `<span class="tag" style="opacity:1"><span class="sw" style="display:inline-block;width:9px;height:9px;background:${u.color || '#ccc'};margin-right:4px"></span>${esc(u.name)}</span>`).join(' ')}</div>`).join('')}</div>`;
+  P.innerHTML = h; bindStyle(P, 'def', d.st, () => scheduleSave());
+  const on = (id, f, ev = 'change') => { const x = $('#' + id, P); if (x) x.addEventListener(ev, f); };
+  on('set-grid', e => { const v = parseNum(e.target.value); if (v > 0) set.grid = v; renderAll(); scheduleSave(); });
+  on('set-tol', e => { const v = parseInt(e.target.value); if (v > 2) set.tol = v; scheduleSave(); });
+  on('set-pet', e => { set.petMode = e.target.value; scheduleSave(); });
+  on('set-dfs', e => { const v = parseNum(e.target.value); if (v >= 6 && v <= 48) set.dimFont = v; renderAll(); scheduleSave(); });
+  on('set-dcol', e => { set.dimColor = e.target.value; renderAll(); scheduleSave(); }, 'input');
+  on('set-auto', e => mutate(() => { set.autoDims = e.target.checked; }));
+  on('set-unlock', unlockAll, 'click');
 }
 function styleFields(st, p) {
   return `<div class="row3"><input type="color" id="${p}-fill" value="${/^#/.test(st.fill || '') ? st.fill : '#ffffff'}" aria-label="Cor de preenchimento"><input type="range" id="${p}-fo" min="0" max="1" step="0.05" value="${st.fo ?? 1}" aria-label="Opacidade do preenchimento"><span class="note" id="${p}-fo-v" style="margin:0;text-align:right">${Math.round((st.fo ?? 1) * 100)}%</span></div>
@@ -1755,6 +1803,88 @@ function askDialog(title, fields, cb, okLabel = 'OK') {
   f.innerHTML = `<h2>${esc(title)}</h2>` + fields.map(x => x.type === 'note' ? `<p>${esc(x.label)}</p>` : x.type === 'select' ? `<div class="field"><label for="dlg-${x.id}">${esc(x.label)}</label><select class="sel" id="dlg-${x.id}">${x.options.map(([k, v]) => `<option value="${k}" ${x.value === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>` : `<div class="field"><label for="dlg-${x.id}">${esc(x.label)}</label><input class="inp" id="dlg-${x.id}" value="${esc(x.value || '')}" ${x.placeholder ? `placeholder="${esc(x.placeholder)}"` : ''}></div>`).join('') + `<div class="btn-row" style="margin-top:16px"><button class="btn" value="cancel">Cancelar</button><button class="btn primary" value="ok" id="dlg-ok">${esc(okLabel)}</button></div>`;
   dlg.onclose = () => { if (dlg.returnValue === 'ok') { const v = {}; fields.forEach(x => { const e = $('#dlg-' + x.id); if (e) v[x.id] = e.value; }); cb(v); } cv.focus(); };
   dlg.returnValue = ''; dlg.showModal(); const first = f.querySelector('input,select'); if (first) { first.focus(); first.select && first.select(); }
+}
+
+/* ---------- barra superior de seleção: todas as edições do que está selecionado ---------- */
+const TYPE_NAMES = { poly: 'Polígono', line: 'Linha', circle: 'Círculo', dim: 'Cota', block: 'Bloco', guide: 'Linha guia' };
+const grp = (label, inner) => `<div class="grp" role="group" aria-label="${label}" title="${label}">${inner}</div>`;
+function selBarHTML() {
+  const sel = selEls(); const one = sel.length === 1 ? sel[0] : null; const set = S.doc.settings;
+  const geo = sel.filter(e => e.t === 'poly' || e.t === 'circle' || e.t === 'line'); const shapes = sel.filter(e => e.t === 'poly' || e.t === 'circle');
+  const rooms = geo.filter(e => e.closed && e.role === 'room' && e.pts); const A = selArea(sel);
+  let h = `<span class="tname">${one ? (one.t === 'line' && one.smooth ? 'Curva' : TYPE_NAMES[one.t]) : sel.length + ' itens'}</span>`;
+  h += `<span class="hint">${A > 0 ? fmt(A) + ' m²' : ''}${one && (one.pts || one.t === 'circle') && one.t !== 'block' ? ' · per. ' + fmt(perimeter(one)) + ' m' : ''}${one && one.t === 'dim' ? fmt(dist(one.p1, one.p2)) + ' m' : ''}</span>`;
+  if (geo.length) {
+    const roleV = geo.every(e => e.role === geo[0].role) ? geo[0].role : '';
+    let ident = '';
+    if (one && one.t !== 'line') ident += `<label class="sr-only" for="sb-name">Nome</label><input class="inp" id="sb-name" list="room-names" value="${esc(one.name || '')}" placeholder="Nome" style="width:130px"><datalist id="room-names">${ROOM_NAMES.map(n => `<option value="${n}">`).join('')}</datalist>`;
+    ident += `<label class="sr-only" for="sb-role">Papel</label><select class="sel" id="sb-role" title="Papel">${roleV ? '' : '<option value="">(vários)</option>'}${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${roleV === k ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
+    if (shapes.length) { const u0 = shapes[0].usage; ident += usageBtn('sb-usage', u0, shapes.some(x => x.usage !== u0)); }
+    h += grp('Identificação', ident);
+    const st = geo[0].st || {};
+    let ap = '';
+    if (shapes.length) ap += `<input type="color" id="sb-fill" value="${/^#/.test(effFill(shapes[0])) ? effFill(shapes[0]) : '#ffffff'}" aria-label="Cor de preenchimento" title="Preenchimento${st.byUse ? ' (pela categoria)' : ''}"><label class="sr-only" for="sb-fo">Opacidade %</label><input class="inp num" id="sb-fo" value="${Math.round((st.fo ?? 1) * 100)}" inputmode="numeric" title="Opacidade do preenchimento (%)" style="width:64px"><span class="hint">%</span><button class="icon-btn" id="sb-byuse" aria-pressed="${!!st.byUse}" aria-label="Cor pela categoria de uso" title="Cor pela categoria de uso">${icon('palette')}</button>`;
+    ap += `<input type="color" id="sb-stroke" value="${st.stroke || '#333333'}" aria-label="Cor da linha" title="Cor da linha"><label class="sr-only" for="sb-dash">Tipo de linha</label><select class="sel" id="sb-dash" title="Tipo de linha">${Object.entries(DASH_NAMES).map(([k, v]) => `<option value="${k}" ${(st.dash || 'solid') === k ? 'selected' : ''}>${v}</option>`).join('')}</select><label class="sr-only" for="sb-sw">Espessura</label><input class="inp num" id="sb-sw" value="${st.sw ?? 1}" inputmode="decimal" title="Espessura da linha (px)" style="width:56px">`;
+    h += grp('Aparência', ap);
+  }
+  if (rooms.length) {
+    const r0 = rooms[0]; let w = `<label class="chk"><input type="checkbox" id="sb-gon" ${r0.guide > 0 ? 'checked' : ''}>Guias</label>`;
+    if (r0.guide > 0) w += set.walls.map(x => { const onv = r0.walls && r0.walls[x.k] !== undefined ? r0.walls[x.k] : x.on; return `<button class="btn sm wbtn" data-wk="${x.k}" aria-pressed="${onv}" title="${esc(x.name)} — ${fmt(x.d, 2)} m"><span style="display:inline-block;width:14px;height:3px;background:${x.color}"></span>${fmt(x.d, 2)}</button>`; }).join('') + (r0.walls ? `<button class="btn sm" id="sb-wreset" title="Voltar ao padrão do menu PAREDES">Padrão</button>` : '');
+    h += grp('Paredes', w);
+    const adOn = r0.ad ? r0.ad.on : set.autoDims; const ad = r0.ad || {};
+    let c = `<label class="chk"><input type="checkbox" id="sb-ad" ${adOn ? 'checked' : ''}>Mostrar</label>`;
+    if (adOn) c += `<button class="icon-btn" id="sb-adp" aria-label="Vértice anterior" title="Vértice anterior">${icon('prev')}</button><button class="icon-btn" id="sb-adn" aria-label="Próximo vértice" title="Próximo vértice">${icon('next')}</button><button class="icon-btn" id="sb-adall" aria-pressed="${!!ad.all}" aria-label="Em todas as arestas" title="Em todas as arestas">${icon('allEdges')}</button><button class="icon-btn" id="sb-ado" aria-pressed="${!!ad.out}" aria-label="Texto do lado de fora" title="Texto fora do ambiente">${icon('flipV')}</button>${ad.hide || ad.off ? `<button class="btn sm" id="sb-adreset" title="Volta as cotas apagadas e movidas">Restaurar</button>` : ''}`;
+    h += grp('Cota interna', c);
+  }
+  if (one && one.t === 'dim') h += grp('Cota', `<div class="seg" role="group" aria-label="Tipo de cota"><button id="sb-dl1" aria-pressed="${one.showLine !== false}">Com linha</button><button id="sb-dl0" aria-pressed="${one.showLine === false}">Só texto</button></div><label class="sr-only" for="sb-dpos">Posição do texto</label><select class="sel" id="sb-dpos" title="Posição do texto">${[['center', 'Centro'], ['start', 'Canto inicial'], ['end', 'Canto final']].map(([k, v]) => `<option value="${k}" ${(one.textPos || 'center') === k ? 'selected' : ''}>${v}</option>`).join('')}</select><button class="icon-btn" id="sb-dside" aria-label="Inverter lado do texto" title="Inverter lado do texto">${icon('flipV')}</button><label class="sr-only" for="sb-dfs">Tamanho do texto</label><input class="inp num" id="sb-dfs" value="${one.fs || set.dimFont || 12}" inputmode="numeric" title="Tamanho do texto (px)" style="width:56px"><input type="color" id="sb-dcol" value="${one.st?.stroke || '#2b2b2b'}" aria-label="Cor da cota" title="Cor da cota">`);
+  if (one && one.t === 'block') { const def = S.doc.blocks[one.bid]; h += grp('Bloco', `<label class="sr-only" for="sb-bname">Nome do bloco</label><input class="inp" id="sb-bname" value="${esc(def?.name)}" style="width:160px" title="Nome do bloco"><label class="sr-only" for="sb-bkind">Tipo</label><select class="sel" id="sb-bkind" title="Tipo do bloco">${[['unidade', 'Unidade'], ['pavimento', 'Pavimento'], ['mobiliario', 'Mobiliário'], ['outro', 'Outro']].map(([k, v]) => `<option value="${k}" ${def?.kind === k ? 'selected' : ''}>${v}</option>`).join('')}</select><span class="hint">${instancesOf(one.bid)} cópia(s)</span><button class="icon-btn" id="sb-bedit" aria-label="Editar bloco" title="Editar bloco">${icon('edit')}</button><button class="icon-btn" id="sb-bexp" aria-label="Explodir" title="Explodir">${icon('explode')}</button><button class="icon-btn" id="sb-bsave" aria-label="Salvar na biblioteca" title="Salvar na biblioteca">${icon('book')}</button>`); }
+  h += grp('Ordem', `<button class="icon-btn" id="sb-front" aria-label="Trazer para a frente de tudo" title="Trazer para a frente de tudo">${icon('front')}</button><button class="icon-btn" id="sb-fwd" aria-label="Avançar um nível" title="Avançar um nível">${icon('up')}</button><button class="icon-btn" id="sb-bwd" aria-label="Recuar um nível" title="Recuar um nível">${icon('down')}</button><button class="icon-btn" id="sb-back" aria-label="Enviar para trás de tudo" title="Enviar para trás de tudo">${icon('back')}</button>`);
+  let tr = `<button class="icon-btn" id="sb-rot" aria-label="Girar 90°" title="Girar 90°">${icon('rotate')}</button><button class="icon-btn" id="sb-fh" aria-label="Espelhar na horizontal" title="Espelhar ↔">${icon('flipH')}</button><button class="icon-btn" id="sb-fv" aria-label="Espelhar na vertical" title="Espelhar ↕">${icon('flipV')}</button>`;
+  if (sel.length > 1) tr += [['l', 'alL', 'Alinhar à esquerda'], ['hc', 'alHC', 'Centralizar na horizontal'], ['r', 'alR', 'Alinhar à direita'], ['t', 'alT', 'Alinhar ao topo'], ['vc', 'alVC', 'Centralizar na vertical'], ['b', 'alB', 'Alinhar à base'], ['dh', 'distH', 'Distribuir na horizontal'], ['dv', 'distV', 'Distribuir na vertical']].map(([k, ic, t]) => `<button class="icon-btn" data-al="${k}" aria-label="${t}" title="${t}">${icon(ic)}</button>`).join('');
+  h += grp('Organizar', tr);
+  h += grp('Ações', `<button class="icon-btn" id="ob-copy2" aria-pressed="${!!set.copyMode}" aria-label="Modo cópia" title="Cópia: mover, rotacionar e espelhar mantêm o original">${icon('copy')}</button><button class="icon-btn" id="sb-dup" aria-label="Duplicar (Ctrl+D)" title="Duplicar (Ctrl+D)">${icon('dup')}</button><button class="icon-btn" id="sb-block" aria-label="Criar bloco" title="Criar bloco">${icon('block')}</button><button class="icon-btn" id="sb-lock" aria-label="Travar" title="Travar (não seleciona nem edita)">${icon('lock')}</button><button class="icon-btn" id="sb-del" aria-label="Apagar (Delete)" title="Apagar">${icon('trash')}</button>`);
+  return h;
+}
+function bindSelBar(ob) {
+  const sel = selEls(); const one = sel.length === 1 ? sel[0] : null; const set = S.doc.settings;
+  const geo = sel.filter(e => e.t === 'poly' || e.t === 'circle' || e.t === 'line'); const shapes = sel.filter(e => e.t === 'poly' || e.t === 'circle');
+  const rooms = geo.filter(e => e.closed && e.role === 'room' && e.pts);
+  const on = (id, ev, f) => { const x = $('#' + id, ob); if (x) x.addEventListener(ev, f); };
+  const st = (k, v, extra) => mutate(() => geo.forEach(x => { x.st = x.st || {}; x.st[k] = v; if (extra) extra(x); }));
+  on('sb-name', 'change', e => mutate(() => { one.name = e.target.value.trim(); }));
+  on('sb-role', 'change', e => { const v = e.target.value; if (!v) return; mutate(() => geo.forEach(x => { x.role = v; if (v === 'limit') { x.st = newStyle('limit'); x.usage = ''; } if (v === 'unit') { x.st = { ...x.st, fo: 0.12, dash: 'dash', sw: 1.6 }; x.guide = 0; } })); });
+  on('sb-usage', 'click', e => { const u0 = shapes[0]?.usage; openUsagePicker(e.currentTarget, u0, v => mutate(() => shapes.forEach(x => { x.usage = v; x.st = x.st || {}; x.st.byUse = !!v; if (v && usageColor(v)) x.st.fill = usageColor(v); }))); });
+  on('sb-fill', 'change', e => st('fill', e.target.value, x => { x.st.byUse = false; }));
+  on('sb-fo', 'change', e => { const v = parseNum(e.target.value); if (v >= 0) st('fo', clamp(v, 0, 100) / 100); });
+  on('sb-byuse', 'click', () => { const nv = !(geo[0].st && geo[0].st.byUse); st('byUse', nv); });
+  on('sb-stroke', 'change', e => st('stroke', e.target.value));
+  on('sb-dash', 'change', e => st('dash', e.target.value));
+  on('sb-sw', 'change', e => { const v = parseNum(e.target.value); if (v >= 0) st('sw', v); });
+  on('sb-gon', 'change', e => mutate(() => rooms.forEach(x => { x.guide = e.target.checked ? 1 : 0; })));
+  $$('[data-wk]', ob).forEach(b => b.addEventListener('click', () => { const k = b.dataset.wk; const nv = b.getAttribute('aria-pressed') !== 'true'; mutate(() => rooms.forEach(x => { x.walls = x.walls || {}; x.walls[k] = nv; })); }));
+  on('sb-wreset', 'click', () => mutate(() => rooms.forEach(x => { delete x.walls; })));
+  const adOf = x => (x.ad = x.ad || { on: !!set.autoDims, v: 0, out: false });
+  on('sb-ad', 'change', e => mutate(() => rooms.forEach(x => { adOf(x).on = e.target.checked; })));
+  on('sb-adn', 'click', () => mutate(() => rooms.forEach(x => { const a = adOf(x); a.on = true; a.all = false; a.v = ((a.v || 0) + 1) % x.pts.length; })));
+  on('sb-adp', 'click', () => mutate(() => rooms.forEach(x => { const a = adOf(x); a.on = true; a.all = false; a.v = ((a.v || 0) - 1 + x.pts.length) % x.pts.length; })));
+  on('sb-adall', 'click', () => mutate(() => rooms.forEach(x => { const a = adOf(x); a.all = !a.all; })));
+  on('sb-ado', 'click', () => mutate(() => rooms.forEach(x => { const a = adOf(x); a.out = !a.out; })));
+  on('sb-adreset', 'click', () => mutate(() => rooms.forEach(x => { if (x.ad) { delete x.ad.hide; delete x.ad.off; } })));
+  on('sb-dl1', 'click', () => mutate(() => { one.showLine = true; }));
+  on('sb-dl0', 'click', () => mutate(() => { one.showLine = false; }));
+  on('sb-dpos', 'change', e => mutate(() => { one.textPos = e.target.value; }));
+  on('sb-dside', 'click', () => mutate(() => { one.side = (one.side || 1) * -1; }));
+  on('sb-dfs', 'change', e => { const v = parseNum(e.target.value); if (v >= 6 && v <= 48) mutate(() => { one.fs = v; }); });
+  on('sb-dcol', 'change', e => mutate(() => { one.st = { ...(one.st || {}), stroke: e.target.value }; }));
+  on('sb-bname', 'change', e => mutate(() => { S.doc.blocks[one.bid].name = e.target.value.trim() || 'Bloco'; }));
+  on('sb-bkind', 'change', e => mutate(() => { S.doc.blocks[one.bid].kind = e.target.value; }));
+  on('sb-bedit', 'click', () => enterBlock(one.bid)); on('sb-bexp', 'click', explodeSel); on('sb-bsave', 'click', () => saveTypologyDialog(one));
+  on('sb-front', 'click', () => reorder(true)); on('sb-back', 'click', () => reorder(false)); on('sb-fwd', 'click', () => reorderStep(true)); on('sb-bwd', 'click', () => reorderStep(false));
+  const c = selCenter();
+  on('sb-rot', 'click', () => mutate(() => applyM(selEls(), mR(Math.PI / 2, c)))); on('sb-fh', 'click', () => mutate(() => applyM(selEls(), mMirror(c, add(c, [0, 1]))))); on('sb-fv', 'click', () => mutate(() => applyM(selEls(), mMirror(c, add(c, [1, 0])))));
+  $$('[data-al]', ob).forEach(b => b.addEventListener('click', () => alignSel(b.dataset.al)));
+  on('sb-dup', 'click', () => duplicateSel()); on('sb-del', 'click', deleteSel); on('sb-lock', 'click', lockSel);
+  on('sb-block', 'click', () => askDialog('Criar bloco', [{ id: 'name', label: 'Nome do bloco', value: 'Tipo ' + String.fromCharCode(65 + Object.values(S.doc.blocks).filter(b => b.kind !== 'mobiliario').length) }, { id: 'kind', label: 'Tipo', type: 'select', options: [['unidade', 'Tipologia de unidade'], ['pavimento', 'Tipologia de pavimento'], ['outro', 'Outro']] }], v => createBlockFromSel(v.name, v.kind)));
 }
 
 /* ---------- mobiliário (biblioteca embutida) ---------- */
@@ -1939,7 +2069,9 @@ function getPA() { return G.state && G.state.get('selectedProjectApp'); }
 async function setPublic(changes) { const pa = getPA(); if (!pa) throw new Error('selectedProjectApp indisponível'); await gInvoke('updateProjectApp', [pa.app, { ...pa, public: { ...(pa.public || {}), ...changes } }], 12000); }
 async function saveProjectLib() { if (!G.on) return; try { await setPublic({ kvManchasLib: LIB.projeto }); } catch (e) { toast('Falha ao salvar biblioteca do projeto: ' + e.message); } }
 function loadProjectLib() { const pa = getPA(); LIB.projeto = (pa && pa.public && Array.isArray(pa.public.kvManchasLib)) ? clone(pa.public.kvManchasLib) : []; }
-function normColor(c) { if (!c) return null; if (typeof c === 'string') return c; if (Array.isArray(c)) return '#' + c.slice(0, 3).map(v => Math.round(v <= 1 && c.every(x => x <= 1) ? v * 255 : v).toString(16).padStart(2, '0')).join(''); return null; }
+function normColor(c) { if (!c) return null; if (typeof c === 'string') { const t = c.trim(); return /^(#|rgb|hsl)/i.test(t) ? t : null; } if (Array.isArray(c) && c.length >= 3 && c.every(x => typeof x === 'number')) return '#' + c.slice(0, 3).map(v => Math.round(c.slice(0, 3).every(x => x <= 1) ? v * 255 : v).toString(16).padStart(2, '0')).join(''); if (typeof c === 'object' && c.r != null) return normColor([c.r, c.g, c.b]); return null; }
+/* procura recursivamente a primeira cor plausível em chaves de cor/preenchimento */
+function findColor(o, depth = 0) { if (!o || typeof o !== 'object' || depth > 4) return null; const keys = Object.keys(o); const pri = keys.filter(k => /colou?r|fill/i.test(k) && !/stroke|line|outline|text/i.test(k)); for (const k of pri) { const c = normColor(o[k]); if (c) return c; } for (const k of pri) { const c = findColor(o[k], depth + 1); if (c) return c; } for (const k of keys) { if (o[k] && typeof o[k] === 'object' && !Array.isArray(o[k])) { const c = findColor(o[k], depth + 1); if (c) return c; } } return null; }
 async function initGiraffe() {
   if (window.parent === window) return false;
   try {
@@ -1951,7 +2083,7 @@ async function initGiraffe() {
     if (arr[0]) console.info('[KV Manchas] exemplo de uso do projeto:', JSON.stringify(arr[0]).slice(0, 600));
     const GK = ['category', 'categoria', 'group', 'grupo', 'typology', 'tipologia', 'type', 'usageType', 'class', 'kind', 'program'];
     const grp = u => { for (const k of GK) { const v = u[k] ?? (u.properties && u.properties[k]); if (typeof v === 'string' && v.trim()) return v.trim(); } const n = String(u.name || ''); const m = n.match(/^(.+?)\s*[-–:/]\s+/); return m ? m[1] : 'Usos do projeto'; };
-    const list = arr.map(u => ({ name: u.name || u.id || u._k, group: grp(u), color: normColor(u.color || u.fillColor || u.colour || (u.style && u.style.color) || (u.properties && u.properties.color)) || '#cccccc' })).filter(u => u.name);
+    const list = arr.map(u => ({ name: u.name || u.id || u._k, group: grp(u), color: normColor(u.color) || findColor(u) || '#cccccc', raw: u })).filter(u => u.name);
     if (list.length) S.usages = list;
     try { const u = G.state.get('giraffe_user'); G.user = (u && (u.name || u.email)) || ''; } catch (_) { }
     try { const p = G.state.get('project'); G.pid = p && (p.id || (p.properties && p.properties.id)); } catch (_) { }
@@ -1961,32 +2093,61 @@ async function initGiraffe() {
 }
 /* conversão local (m) <-> lng/lat — equiretangular local em torno da origem da folha */
 function mPerDeg(lat) { const f = lat * Math.PI / 180; return [111412.84 * Math.cos(f) - 93.5 * Math.cos(3 * f), 111132.92 - 559.82 * Math.cos(2 * f) + 1.175 * Math.cos(4 * f)]; }
-function toLL(p, o) { const r = (o.rot || 0) * Math.PI / 180; const q = rotP(p, [0, 0], r); const [mx, my] = mPerDeg(o.lat); return [o.lng + q[0] / mx, o.lat + q[1] / my]; }
-function fromLL(ll, o) { const [mx, my] = mPerDeg(o.lat); const q = [(ll[0] - o.lng) * mx, (ll[1] - o.lat) * my]; return rotP(q, [0, 0], -(o.rot || 0) * Math.PI / 180); }
+/* folha → mapa: o “norte” da grade do app vira o norte da grade do mapa (rotação do mapa em settings.mapRot) */
+const mapRot = () => (S.doc.settings.mapRot || 0) * Math.PI / 180;
+function toLL(p, o) { const q = rotP(toGrid(p), [0, 0], mapRot()); const [mx, my] = mPerDeg(o.lat); return [o.lng + q[0] / mx, o.lat + q[1] / my]; }
+function fromLL(ll, o) { const [mx, my] = mPerDeg(o.lat); const q = [(ll[0] - o.lng) * mx, (ll[1] - o.lat) * my]; return fromGrid(rotP(q, [0, 0], -mapRot())); }
+/* coleta feições de qualquer formato de retorno (array, FeatureCollection, mapa por id, blocos) */
+const BLOCK_KEYS = ['blockId', 'block_id', '_blockId', 'blockRef', 'block', 'definitionId'];
+async function collectFeatures(res, out = [], depth = 0) {
+  if (!res || depth > 5) return out;
+  if (Array.isArray(res)) { for (const r of res) await collectFeatures(r, out, depth + 1); return out; }
+  if (typeof res !== 'object') return out;
+  if (res.type === 'FeatureCollection' && Array.isArray(res.features)) { for (const f of res.features) await collectFeatures(f, out, depth + 1); return out; }
+  if (res.type === 'Feature' || res.geometry || res.properties) {
+    const pr = res.properties || {}; const bk = BLOCK_KEYS.map(k => pr[k] ?? res[k]).find(v => typeof v === 'string' || typeof v === 'number');
+    if (bk != null && G.on) {
+      try { const def = await gInvoke('getBlock', [bk]); console.info('[KV Manchas] bloco', bk, JSON.stringify(def).slice(0, 800)); const inner = await collectFeatures(def && (def.features || def.featureCollection || def.geojson || def.sections || def), [], depth + 1); inner.forEach(f => { f.__block = { id: bk, inst: res, name: def && def.name }; out.push(f); }); if (inner.length) return out; } catch (e) { console.warn('[KV Manchas] getBlock falhou', e); }
+    }
+    if (res.geometry) { if (res.geometry.type === 'GeometryCollection') res.geometry.geometries.forEach(g => out.push({ ...res, geometry: g })); else out.push(res); }
+    if (Array.isArray(res.features)) await collectFeatures(res.features, out, depth + 1);
+    return out;
+  }
+  for (const v of Object.values(res)) await collectFeatures(v, out, depth + 1);
+  return out;
+}
 async function importFromGiraffe() {
   try {
-    const res = await gInvoke('getSelectedFeatures', []);
-    let feats = Array.isArray(res) ? res : res && res.features ? res.features : res && typeof res === 'object' ? Object.values(res) : [];
-    feats = feats.filter(f => f && f.geometry);
-    if (!feats.length) return toast('Selecione elementos no mapa do Giraffe antes de importar');
-    const sh = sheet();
-    if (!sh.geo) { const all = []; feats.forEach(f => { const g = f.geometry; const c = g.type === 'Polygon' ? g.coordinates[0] : g.type === 'MultiPolygon' ? g.coordinates[0][0] : g.type === 'LineString' ? g.coordinates : g.type === 'Point' ? [g.coordinates] : []; all.push(...c); }); const b = bboxPts(all); sh.geo = { lng: (b[0] + b[2]) / 2, lat: (b[1] + b[3]) / 2, rot: 0 }; }
-    const o = sh.geo; const out = [];
+    let res = await gInvoke('getSelectedFeatures', []);
+    console.info('[KV Manchas] getSelectedFeatures (bruto):', JSON.stringify(res).slice(0, 1500));
+    let feats = (await collectFeatures(res)).filter(f => f && f.geometry && f.geometry.coordinates);
+    if (!feats.length) { for (const k of ['selectedFeatures', 'selected', 'selection']) { try { const v = G.state.get(k); if (v) { console.info('[KV Manchas] giraffeState.' + k, JSON.stringify(v).slice(0, 800)); feats = (await collectFeatures(v)).filter(f => f && f.geometry && f.geometry.coordinates); if (feats.length) break; } } catch (_) { } } }
+    if (!feats.length) return toast('Nenhuma geometria encontrada na seleção do mapa — use Giraffe → “Diagnóstico” e me envie o arquivo');
+    const sh = sheet(); const isLL = c => Math.abs(c[0]) <= 180 && Math.abs(c[1]) <= 90;
+    const coordsOf = g => g.type === 'Polygon' ? g.coordinates[0] : g.type === 'MultiPolygon' ? g.coordinates[0][0] : g.type === 'LineString' ? g.coordinates : g.type === 'MultiLineString' ? g.coordinates[0] : g.type === 'Point' ? [g.coordinates] : [];
+    if (!sh.geo) { const all = []; feats.forEach(f => all.push(...coordsOf(f.geometry).filter(isLL))); if (!all.length) return toast('Coordenadas da seleção não estão em lng/lat — envie o Diagnóstico'); const b = bboxPts(all); sh.geo = { lng: (b[0] + b[2]) / 2, lat: (b[1] + b[3]) / 2 }; }
+    const o = sh.geo; const out = []; const groups = {};
     feats.forEach(f => {
       const g = f.geometry, pr = f.properties || {}; const usage = pr.usage || pr._usage || ''; const col = normColor(pr.color || pr.fillColor) || usageColor(usage);
+      const conv = c => isLL(c) ? fromLL(c, o) : c; // coordenadas locais em metros ficam como estão
       const polys = g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
-      polys.forEach(pg => { let R = pg[0].map(ll => fromLL(ll, o)); if (R.length > 2 && dist(R[0], R[R.length - 1]) < 1e-6) R.pop(); if (R.length >= 3) out.push(mkPoly(R, { usage, name: pr.name || '', st: { ...newStyle('room'), fill: col || '#cccccc', byUse: !!usage && !!usageColor(usage) }, guide: 0, src: { id: f.id ?? pr.id ?? null } })); });
-      if (g.type === 'LineString') out.push(mkLine(g.coordinates.map(ll => fromLL(ll, o))));
+      const made = [];
+      polys.forEach(pg => { let R = pg[0].map(conv); if (R.length > 2 && dist(R[0], R[R.length - 1]) < 1e-6) R.pop(); if (R.length >= 3) made.push(mkPoly(R, { usage, name: pr.name || '', st: { ...newStyle('room'), fill: col || '#cccccc', byUse: !!usage && !!usageColor(usage) }, guide: 0, src: { id: f.id ?? pr.id ?? null } })); });
+      if (g.type === 'LineString') made.push(mkLine(g.coordinates.map(conv))); if (g.type === 'MultiLineString') g.coordinates.forEach(l => made.push(mkLine(l.map(conv))));
+      if (f.__block) (groups[f.__block.id] = groups[f.__block.id] || { name: f.__block.name, els: [] }).els.push(...made); else out.push(...made);
     });
-    if (!out.length) return toast('Nenhum polígono ou linha nas feições selecionadas');
-    addEls(out); fitView(out); toast(`${out.length} elemento(s) copiados do Giraffe`);
+    // seleções que eram blocos no Giraffe voltam como blocos do app
+    const blocksOut = [];
+    Object.entries(groups).forEach(([gid, gr]) => { if (!gr.els.length) return; const B = unionBBox(gr.els); const bid = uid(); S.doc.blocks[bid] = { id: bid, name: gr.name || 'Bloco Giraffe', kind: 'unidade', rev: 1, giraffeId: gid, els: gr.els.map(e => transformEl(e, mT(-B[0], -B[1]))) }; blocksOut.push({ id: uid(), t: 'block', bid, m: mT(B[0], B[1]) }); });
+    const all = out.concat(blocksOut); if (!all.length) return toast('Nenhum polígono ou linha nas feições selecionadas');
+    addEls(all); fitView(all); toast(`${all.length} elemento(s) copiados do Giraffe${blocksOut.length ? ` (${blocksOut.length} como bloco)` : ''}`);
   } catch (e) { toast('Falha ao importar: ' + e.message); console.warn(e); }
 }
 async function pickOrigin() {
   try { const r = await gInvoke('drawPoint', [], 120000); const c = r && (r.geometry ? r.geometry.coordinates : Array.isArray(r) ? r : r.coordinates || (r.lng != null ? [r.lng, r.lat] : null)); if (!c) throw new Error('ponto não retornado'); sheet().geo = { lng: c[0], lat: c[1], rot: sheet().geo?.rot || 0 }; scheduleSave(); toast('Origem da folha definida no mapa'); return true; }
   catch (e) { toast('Não foi possível obter o ponto: ' + e.message); return false; }
 }
-async function exportToGiraffe(all) {
+async function exportToGiraffe(all, asBlock = false) {
   const sh = sheet(); if (!sh.geo) { toast('Clique no mapa para posicionar a origem (canto 0,0) da folha'); if (!(await pickOrigin())) return; }
   const o = sh.geo; const src = all ? sh.els : selEls(); if (!src.length) return toast(all ? 'Folha vazia' : 'Selecione os elementos a enviar');
   const prims = expandList(src).filter(p => p.t !== 'dim' && p.t !== 'guide' && p.role !== 'limit');
@@ -1995,13 +2156,29 @@ async function exportToGiraffe(all) {
     const R = flat(p); if (R.length < 2) return null; const ll = R.map(q => toLL(q, o));
     const closed = p.closed || p.t === 'circle'; const geometry = closed ? { type: 'Polygon', coordinates: [ll.concat([ll[0]])] } : { type: 'LineString', coordinates: ll };
     const props = { layerId: 'default', sp_tag: 'kv-manchas', kvGroup: layer, kvManchas: { sheet: sh.id, el: p._top, name: p.name || '', role: p.role } };
-    if (p.usage) props.usage = p.usage; if (closed) props.color = effFill(p);
+    if (p.usage) props.usage = p.usage;
+    // sem uso, ou quando pedido, leva as cores/linhas do app; com uso, o template do Giraffe define cor, pisos, linhas etc.
+    if (!p.usage || S.doc.settings.sendColors) { if (closed) props.color = effFill(p); if (p.st && p.st.stroke) props.strokeColor = p.st.stroke; }
     return { type: 'Feature', geometry, properties: props };
   }).filter(Boolean);
+  if (asBlock) {
+    try { const name = (src.length === 1 && src[0].t === 'block' ? S.doc.blocks[src[0].bid]?.name : null) || sh.name; const res = await gInvoke('createBlock', [{ name, features: { type: 'FeatureCollection', features: feats } }], 20000); console.info('[KV Manchas] createBlock →', JSON.stringify(res).slice(0, 600)); const id = res && (res.id || res.blockId || (typeof res === 'string' ? res : null)); if (!id) throw new Error('createBlock não devolveu id'); toast('Bloco criado no Giraffe — clique no mapa para posicionar'); await gInvoke('insertBlock', [id], 120000); return; }
+    catch (e) { console.warn('[KV Manchas] envio como bloco falhou, enviando como seções', e); toast('Envio como bloco falhou (' + e.message + ') — enviando como seções'); }
+  }
   try { await gInvoke('createRawSections', [feats], 20000); toast(`${feats.length} feição(ões) enviadas ao mapa (marcadas como “${layer}”)`); }
   catch (e) { toast('Falha ao enviar ao Giraffe: ' + e.message); console.warn('[KV Manchas] createRawSections', e, feats[0]); }
 }
 
+async function giraffeDiagnostics() {
+  const d = { app: 'kv-manchas', v: VERSION, when: new Date().toISOString() };
+  const cut = (x, n = 4000) => { try { return JSON.parse(JSON.stringify(x, (k, v) => typeof v === 'string' && v.length > 300 ? v.slice(0, 300) + '…' : v)); } catch (_) { return String(x); } };
+  try { const u = await gInvoke('getProjectUsages', []); d.usages = cut(Array.isArray(u) ? u.slice(0, 4) : Object.fromEntries(Object.entries(u || {}).slice(0, 4))); } catch (e) { d.usagesErr = e.message; }
+  try { d.selected = cut(await gInvoke('getSelectedFeatures', [])); } catch (e) { d.selectedErr = e.message; }
+  try { const b = await gInvoke('getBlocks', []); d.blocks = cut(Object.fromEntries(Object.entries(b || {}).slice(0, 2))); } catch (e) { d.blocksErr = e.message; }
+  d.state = {}; ['selectedProjectApp', 'project', 'projectSettings', 'settings', 'mapSettings', 'grid'].forEach(k => { try { const v = G.state.get(k); if (v !== undefined) d.state[k] = k === 'selectedProjectApp' ? { app: v && v.app, publicKeys: Object.keys((v && v.public) || {}) } : cut(v); } catch (_) { } });
+  let txt = JSON.stringify(d, null, 1); if (txt.length > 400000) txt = txt.slice(0, 400000);
+  download('kv-manchas-diagnostico-giraffe.json', txt); toast('Diagnóstico baixado — me envie o arquivo');
+}
 /* ---------- menus do cabeçalho ---------- */
 function openMenu(btn, menu, html, bind) {
   const m = $(menu); if (m.classList.contains('show')) return closeMenus();
@@ -2014,10 +2191,16 @@ $('#cmd-giraffe').addEventListener('click', e => openMenu(e.currentTarget, '#men
   <button role="menuitem" data-g="imp" ${G.on ? '' : 'disabled'}>${icon('download')}Copiar seleção do mapa para a folha</button>
   <button role="menuitem" data-g="exs" ${G.on ? '' : 'disabled'}>${icon('upload')}Enviar seleção para o mapa</button>
   <button role="menuitem" data-g="exa" ${G.on ? '' : 'disabled'}>${icon('upload')}Enviar folha inteira para o mapa</button>
+  <button role="menuitem" data-g="exb" ${G.on ? '' : 'disabled'}>${icon('block')}Enviar seleção como bloco (experimental)</button>
   <button role="menuitem" data-g="org" ${G.on ? '' : 'disabled'}>${icon('map')}Definir origem da folha no mapa</button><hr>
+  <label class="chk" style="padding:0 16px"><input type="checkbox" id="g-colors" ${S.doc.settings.sendColors ? 'checked' : ''}>Enviar cores e linhas do app (ignora o template do uso)</label>
+  <div style="padding:4px 16px"><label class="note" for="g-rot" style="display:block;margin:0 0 4px">Rotação da grade do mapa (°) — a vertical da grade do app vira esta direção</label><input class="inp num" id="g-rot" value="${fmt(S.doc.settings.mapRot || 0, 1)}" inputmode="decimal" style="width:100%"></div>
+  <button role="menuitem" data-g="diag" ${G.on ? '' : 'disabled'}>${icon('file')}Diagnóstico (baixar JSON para suporte)</button>
   <div style="padding:4px 16px 8px"><label class="note" for="g-layer" style="display:block;margin:0 0 4px">Grupo / marcador das feições enviadas</label><input class="inp" id="g-layer" style="width:100%" value="${esc(S.doc.settings.giraffeLayer || 'KV Manchas')}"></div>
   ${G.on ? '' : '<p class="note" style="padding:0 16px">Abra este app como painel dentro do Giraffe para copiar elementos entre o mapa e a folha.</p>'}`, m => {
-  $$('[data-g]', m).forEach(b => b.addEventListener('click', () => { const k = b.dataset.g; closeMenus(); if (k === 'imp') importFromGiraffe(); if (k === 'exs') exportToGiraffe(false); if (k === 'exa') exportToGiraffe(true); if (k === 'org') pickOrigin(); }));
+  $$('[data-g]', m).forEach(b => b.addEventListener('click', () => { const k = b.dataset.g; closeMenus(); if (k === 'imp') importFromGiraffe(); if (k === 'exs') exportToGiraffe(false); if (k === 'exa') exportToGiraffe(true); if (k === 'exb') exportToGiraffe(false, true); if (k === 'org') pickOrigin(); if (k === 'diag') giraffeDiagnostics(); }));
+  $('#g-colors', m).addEventListener('change', ev => { S.doc.settings.sendColors = ev.target.checked; scheduleSave(); });
+  $('#g-rot', m).addEventListener('change', ev => { const v = parseNum(ev.target.value); if (isFinite(v)) S.doc.settings.mapRot = v; scheduleSave(); });
   $('#g-layer', m).addEventListener('change', ev => { S.doc.settings.giraffeLayer = ev.target.value.trim() || 'KV Manchas'; scheduleSave(); });
 }));
 $('#cmd-file').addEventListener('click', e => openMenu(e.currentTarget, '#menu-file', `<div class="mh">Documento</div>
@@ -2127,6 +2310,7 @@ async function init() {
   $('#tg-gridmenu').addEventListener('click', e => gridMenu(e.currentTarget)); $('#tg-wallmenu').addEventListener('click', e => wallMenu(e.currentTarget)); $('#tg-copy').addEventListener('click', () => toggle('copy'));
   $('#tg-snap').addEventListener('contextmenu', e => { e.preventDefault(); snapMenu($('#tg-snapmenu')); });
   new ResizeObserver(resize).observe($('#stage'));
+  $('#optbar').addEventListener('wheel', e => { const ob = e.currentTarget; if (ob.scrollWidth > ob.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { ob.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
   if (window.innerWidth < 900) $('#dock').hidden = true;
   renderTabs(); setTool('select'); resize(); fitView(); refreshPanels(); syncCopyBtns(); setSave(G.on ? 'ok' : '');
   window.addEventListener('beforeunload', () => { if ($('#save-state').dataset.s === 'pend') saveNow(); });
