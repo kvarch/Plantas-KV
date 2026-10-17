@@ -332,11 +332,12 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <button class="tog" id="tg-wallmenu" aria-label="Configurar guias de parede" aria-haspopup="menu" aria-expanded="false" title="Tipos de parede: externa, entre ambientes, shaft" style="min-width:32px;padding:0 4px">▾</button>
   <button class="tog" id="tg-labels" aria-pressed="true" title="Rótulos de nome e área">Rótulos</button>
   <button class="tog" id="tg-layout" aria-pressed="true" title="Mostrar mobiliário/layout na vista de manchas (na planta sempre aparece)">Layout</button>
+  <button class="tog" id="tg-nbr" aria-pressed="false" title="Áreas de aproximação ABNT NBR 9050 (conferência, não é documentação)">NBR 9050</button>
   <button class="tog" id="tg-copy" aria-pressed="false" title="Cópia: mover, rotacionar e espelhar mantêm o original">Cópia</button>
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V13 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V15 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -377,8 +378,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V13 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V13';
+/* KV Manchas — Beta V15 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V15';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -648,7 +649,7 @@ function expandEl(el, M, out, depth, top, chain) {
   const c = clone(el); if (M !== MI) transformEl(c, M); c._top = top; c._chain = chain || []; out.push(c);
 }
 function expandList(list, M = MI) { const out = []; list.forEach(e => expandEl(e, M, out, 0, e.id, null)); return out; }
-let CACHE = null; const invalidate = () => { CACHE = null; ARCH = null; GEN = null; };
+let CACHE = null; const invalidate = () => { CACHE = null; ARCH = null; GEN = null; NBRC = null; };
 function cache() {
   if (CACHE) return CACHE;
   const prims = expandList(els()).filter(p => p.t !== 'guide');
@@ -769,6 +770,7 @@ function renderAll() {
   // guias perimetrais (paredes)
   let gh = '';
   if (S.showWall && S.mode !== 'arch') cache().wallR.forEach(w => { gh += `<path d="M${w.R.map(p => `${N(p[0])} ${N(p[1])}`).join('L')}Z" fill="none" stroke="${w.color}" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" opacity=".75"/>`; });
+  try { gh += nbrMarkup(); } catch (e) { console.warn(e); }
   $('#g-guides').innerHTML = gh;
   renderAnn(); renderRulers(); renderOverlay();
   $('#cmd-zoom-read').textContent = `${Math.round(k)} px/m`;
@@ -874,6 +876,7 @@ function renderOverlay() {
       P.forEach(p => { const q = w2s(p); s += `<rect x="${N(q[0] - 4.5)}" y="${N(q[1] - 4.5)}" width="9" height="9" fill="${PRI}" stroke="#fff" stroke-width="1"/>`; });
     } else if (e.t === 'circle') { const c = w2s(e.c); s += `<rect x="${N(c[0] - 4.5)}" y="${N(c[1] - 4.5)}" width="9" height="9" fill="${PRI}" stroke="#fff"/>`; const r = w2s(add(e.c, [e.r, 0])); s += `<rect x="${N(r[0] - 4.5)}" y="${N(r[1] - 4.5)}" width="9" height="9" fill="${PRI}" stroke="#fff"/>`; }
     else if (e.t === 'dim') { [e.p1, e.p2].forEach(p => { const q = w2s(p); s += `<rect x="${N(q[0] - 4.5)}" y="${N(q[1] - 4.5)}" width="9" height="9" fill="${PRI}" stroke="#fff"/>`; }); }
+    else if (e.t === 'open') { const op = S.mode === 'arch' ? poseOfTop(e) : null; if (op) { const W = openW(e); [-1, 1].forEach(sd => { const q = w2s(add(add(op.c, mul(op.u, sd * W / 2)), mul(op.n, (op.T || 0.15) / 2))); s += `<rect x="${N(q[0] - 5)}" y="${N(q[1] - 5)}" width="10" height="10" fill="${PRI}" stroke="#fff" stroke-width="1"/>`; }); const a0 = add(op.c, mul(op.u, -op.s)), sL = op.s - W / 2, sR = op.L - op.s - W / 2; const m1 = w2s(add(add(a0, mul(op.u, sL / 2)), mul(op.n, -0.12))), m2 = w2s(add(add(a0, mul(op.u, op.s + W / 2 + sR / 2)), mul(op.n, -0.12))); s += `<text x="${N(m1[0])}" y="${N(m1[1])}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${fmt(sL)}</text><text x="${N(m2[0])}" y="${N(m2[1])}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${fmt(sR)}</text>`; } }
     else if (e.t === 'block') { const o = w2s([e.m[4], e.m[5]]); s += `<path d="M${N(o[0] - 7)} ${N(o[1])}h14M${N(o[0])} ${N(o[1] - 7)}v14" stroke="${PRI}" stroke-width="2"/>`; }
   });
   // área total da seleção
@@ -917,6 +920,7 @@ function snapPoint(w, opt = {}) {
   const near = (list, type) => { let best = null, bd = tol; list.forEach(it => { if (!ok(it)) return; const d = dist(it.p, w); if (d < bd) { bd = d; best = { p: it.p, type: it.top === '__ref' ? 'ref' : type }; } }); return best; };
   const sn = S.snaps; let r = null;
   const extra = (opt.extraPts || []).map(p => ({ p, top: '__x' }));
+  if (S.mode === 'arch') { try { arch().opens.forEach(op => { const W = openW(op.o), T = op.T || 0.15; [[-W / 2, 0], [W / 2, 0], [-W / 2, T], [W / 2, T]].forEach(([a, t]) => extra.push({ p: add(add(op.c, mul(op.u, a)), mul(op.n, t)), top: op.o._top || op.o.id })); }); } catch (_) { } }
   if (sn.end) r = near(C.verts.concat(extra), 'end'); if (r) return (S.snapHit = r);
   // segmentos próximos
   const nearSegs = C.segs.filter(s => ok(s) && Math.min(s.a[0], s.b[0]) - tol <= w[0] && Math.max(s.a[0], s.b[0]) + tol >= w[0] && Math.min(s.a[1], s.b[1]) - tol <= w[1] && Math.max(s.a[1], s.b[1]) + tol >= w[1]);
@@ -955,13 +959,23 @@ function axisTrack(w, ex, extra = [], xp, xw) {
     if (dy < tol && (!by || dy < by.d || (Math.abs(dy - by.d) < 1e-9 && Math.abs(t[0] - q[0]) < Math.abs(by.t[0] - q[0])))) by = { d: dy, t };
   });
   if (!bx && !by) return null;
+  // linha de rastreamento × guias de parede (e arestas): ponto de interseção para desenhar já afastado na espessura da parede
+  if (!(bx && by)) {
+    const C = cache(); let best = null; const segsT = (S.showWall && S.snaps.wall ? C.wallS.filter(s => s.top !== xw) : []).concat(C.segs.filter(s => !ex || !ex.has(s.top)));
+    segsT.forEach(sg => { const a = toGrid(sg.a), b = toGrid(sg.b);
+      if (bx) { const X = bx.t[0]; if ((a[0] - X) * (b[0] - X) > 0 || Math.abs(a[0] - b[0]) < 1e-9) return; const y = a[1] + (b[1] - a[1]) * (X - a[0]) / (b[0] - a[0]); const d = Math.abs(y - q[1]); if (d < tol && (!best || d < best.d)) best = { d, p: [X, y] }; }
+      else { const Y = by.t[1]; if ((a[1] - Y) * (b[1] - Y) > 0 || Math.abs(a[1] - b[1]) < 1e-9) return; const x = a[0] + (b[0] - a[0]) * (Y - a[1]) / (b[1] - a[1]); const d = Math.abs(x - q[0]); if (d < tol && (!best || d < best.d)) best = { d, p: [x, Y] }; } });
+    if (best) { const lines = [[fromGrid(bx ? bx.t : by.t), fromGrid(best.p)]]; return { p: fromGrid(best.p), lines, hit: true }; }
+  }
   const r = [bx ? bx.t[0] : q[0], by ? by.t[1] : q[1]]; const lines = [];
   if (bx) lines.push([fromGrid(bx.t), fromGrid(r)]); if (by) lines.push([fromGrid(by.t), fromGrid(r)]);
   return { p: fromGrid(r), lines };
 }
 function resolvePoint(w, base, opt = {}) {
   S.track = [];
-  const s = snapPoint(w, { ...opt, base });
+  let s = snapPoint(w, { ...opt, base });
+  // snap sobre uma linha (guia de parede, aresta): tenta a interseção com a linha de rastreamento de um vértice
+  if (s && ['wallE', 'edge'].includes(s.type) && !opt.noTrack) { const tr = axisTrack(w, opt.exclude, opt.extraPts, opt.excludePts, opt.excludeWallOf); if (tr && tr.lines.length) { s = { p: tr.p, type: 'int' }; S.snapHit = s; S.track = tr.lines; } }
   let p = s ? s.p : w;
   const orto = S.ortho !== S.shift;
   if (base && orto && !opt.noOrtho) {
@@ -972,7 +986,7 @@ function resolvePoint(w, base, opt = {}) {
     p = add(base, ro(d));
     if (S.snapHit) S.snapHit = { ...S.snapHit, p };
   } else if (!s && !opt.noTrack) {
-    const tr = axisTrack(w, opt.exclude, opt.extraPts, opt.excludePts, opt.excludeWallOf); if (tr) { p = tr.p; S.track = tr.lines; }
+    const tr = axisTrack(w, opt.exclude, opt.extraPts, opt.excludePts, opt.excludeWallOf); if (tr) { p = tr.p; S.track = tr.lines; if (tr.hit) S.snapHit = { p, type: 'track' }; }
   }
   return p;
 }
@@ -1024,6 +1038,7 @@ function hitHandle(sp) {
   const sel = selEls(); if (sel.length > 30) return null;
   for (let j = sel.length - 1; j >= 0; j--) {
     const e = sel[j];
+    if (e.t === 'open') { if (S.mode !== 'arch') continue; const op = poseOfTop(e); if (!op) continue; const W = openW(e); for (const sd of [-1, 1]) { const q = w2s(add(add(op.c, mul(op.u, sd * W / 2)), mul(op.n, (op.T || 0.15) / 2))); if (dist(q, sp) < 10) return { el: e, kind: 'oend', side: sd }; } continue; }
     if (e.t === 'circle') { if (dist(w2s(add(e.c, [e.r, 0])), sp) < 9) return { el: e, kind: 'radius' }; if (dist(w2s(e.c), sp) < 9) return { el: e, kind: 'center' }; continue; }
     if (e.t === 'dim') { if (dist(w2s(e.p1), sp) < 9) return { el: e, kind: 'dimp', i: 1 }; if (dist(w2s(e.p2), sp) < 9) return { el: e, kind: 'dimp', i: 2 }; continue; }
     if (!e.pts || e.t === 'block') continue;
@@ -1572,6 +1587,7 @@ cv.addEventListener('pointerdown', e => {
   if (adl) { const el = byId(adl.dataset.el); if (el && !el.lock) { const k = +adl.dataset.e; S.adSel = { id: el.id, e: k }; S.sel.clear(); PD = { adim: { el, k, orig: (el.ad && el.ad.off && el.ad.off[k]) || [0, 0] }, sp, w }; cv.setPointerCapture(e.pointerId); renderAll(); refreshPanels(); setStatus('Cota interna: arraste para mover · Delete apaga · “Restaurar cotas” na barra do ambiente'); return; } }
   if (prevAd) renderAnn();
   const lbl = e.target.closest && e.target.closest('.lbl'); if (lbl) { e.preventDefault(); setTimeout(() => openEdgeEdit(lbl.dataset.el, +lbl.dataset.edge, sp), 0); return; }
+  { const ho0 = hitHandle(sp); if (ho0 && ho0.kind === 'oend') { cancelOp(); S.op = opOpenResize(ho0.el, ho0.side); S.op.dragFinish = true; PD = { op: true, sp }; cv.setPointerCapture(e.pointerId); renderAll(); return; } }
   if (S.mode === 'arch') { const ho = hitTest(w); if (ho && ho.t === 'open') { S.sel = new Set([ho.id]); PD = { body: ho, sp, w }; cv.setPointerCapture(e.pointerId); refreshPanels(); renderOverlay(); return; } }
   const h = hitHandle(sp);
   if (h && (h.kind === 'vertex' || h.kind === 'edge')) { PD = { handle: h, sp, w }; cv.setPointerCapture(e.pointerId); return; }
@@ -1753,7 +1769,7 @@ function renderOptbar() {
   }
   if (t === 'dim') h += `<div class="seg" role="group" aria-label="Estilo de cota"><button id="ob-dl" aria-pressed="${(st.dimStyle || 'line') === 'line'}">Com linha</button><button id="ob-dc" aria-pressed="${st.dimStyle === 'text'}">Só texto</button></div><span class="vsep"></span><label class="chk" title="Mostra as medidas internas de todos os ambientes junto a um vértice"><input type="checkbox" id="ob-auto" ${st.autoDims ? 'checked' : ''}>Cotas internas automáticas</label>`;
   if (['move', 'rotate', 'mirror'].includes(t)) h += `<button class="btn sm" id="ob-copy" aria-pressed="${!!st.copyMode}" title="Mantém o original e cria cópia (vale para mover, rotacionar, espelhar e o menu do elemento)">${icon('copy')}Cópia</button>`;
-  if (t === 'open') { const kind = st.openKind || 'giro'; h += `<div class="seg" role="group" aria-label="Tipo de abertura">${Object.entries(OPEN_KINDS).map(([k, n]) => `<button data-ok="${k}" aria-pressed="${kind === k}">${n.replace('Porta-janela de correr', 'Porta-janela').replace('Porta de ', '')}</button>`).join('')}</div>` + widthPicker('ob-ow', st.openW || 0.8, kind) + `<div class="of"><label for="ob-bon">Boneca</label><input class="inp num" id="ob-bon" value="${fmt(st.boneca ?? 0.1, 2)}" inputmode="decimal" title="Distância mínima da porta ao canto (m)"></div>`; }
+  if (t === 'open') { const kind = st.openKind || 'giro'; h += `<label class="sr-only" for="ob-okind">Tipo de abertura</label><select class="sel" id="ob-okind" title="Tipo de abertura">${Object.entries(OPEN_KINDS).map(([k, n]) => `<option value="${k}" ${kind === k ? 'selected' : ''}>${n}</option>`).join('')}</select>` + widthPicker('ob-ow', st.openW || 0.8, kind) + panelsPicker('ob-op', st.openPanels, kind) + `<div class="of"><label for="ob-bon">Boneca</label><input class="inp num" id="ob-bon" value="${fmt(st.boneca ?? 0.1, 2)}" inputmode="decimal" title="Distância mínima da porta ao canto (m)"></div>`; }
   if (t === 'limit') h += `<div class="seg" role="group" aria-label="Forma do limite"><button data-lm="rect" aria-pressed="${st.limitMode !== 'poly'}">Retângulo</button><button data-lm="poly" aria-pressed="${st.limitMode === 'poly'}">Polígono</button></div><span class="hint">O quadro de áreas soma o que está dentro do limite</span>`;
   if (t === 'guide') h += `<div class="seg" role="group" aria-label="Direção da guia">${[['h', 'Horizontal'], ['v', 'Vertical'], ['2p', '2 pontos']].map(([k, n]) => `<button data-gm="${k}" aria-pressed="${(st.guideMode || 'h') === k}">${n}</button>`).join('')}</div><button class="btn sm" id="ob-clear-guides">${icon('trash')}Limpar guias</button>`;
   if (t === 'offset') h += `<div class="of"><label for="ob-off">Distância</label><input class="inp num" id="ob-off" value="${fmt(st.offset, 2)}" inputmode="decimal"><span class="hint">m</span></div><label class="chk"><input type="checkbox" id="ob-offcopy" ${st.offsetCopy !== false ? 'checked' : ''}>Criar cópia</label>`;
@@ -1777,7 +1793,8 @@ function renderOptbar() {
   on('ob-dc', 'click', () => { st.dimStyle = 'text'; renderOptbar(); renderOverlay(); });
   on('ob-auto', 'change', e => { mutate(() => { st.autoDims = e.target.checked; }); });
   on('ob-copy', 'click', () => toggle('copy'));
-  $$('[data-ok]', ob).forEach(b => b.addEventListener('click', () => { st.openKind = b.dataset.ok; if (b.dataset.ok === 'janela' && st.openW < 1) st.openW = 1.2; if (b.dataset.ok === 'giro' && st.openW > 1) st.openW = 0.8; setTool('open'); }));
+  on('ob-okind', 'change', e => { const k = e.target.value; st.openKind = k; const def = { giro: 0.8, cortafogo: 0.9, correr: 0.8, janela: 1.2, pjanela: 2.0, maximar: 0.6, vao: 1.0 }; st.openW = def[k]; delete st.openPanels; setTool('open'); });
+  on('ob-op', 'change', e => { st.openPanels = e.target.value ? +e.target.value : undefined; setTool('open'); });
   bindWidthPicker(ob, 'ob-ow', v => { st.openW = v; setTool('open'); });
   on('ob-bon', 'change', e => { const v = parseNum(e.target.value); if (v >= 0) st.boneca = v; scheduleSave(); });
   on('ob-copy2', 'click', () => toggle('copy'));
@@ -1816,7 +1833,12 @@ function renderProps() {
   h += `<div class="sec"><h3>Prancheta</h3><div class="row2"><div class="field"><label for="set-grid">Grade (m)</label><input class="inp" id="set-grid" value="${fmt(set.grid, 2)}" inputmode="decimal"></div><div class="field"><label for="set-tol">Tolerância snap (px)</label><input class="inp" id="set-tol" value="${set.tol}" inputmode="numeric"></div></div>
     <div class="field"><label for="set-pet">Menu de edição (vértice/aresta)</label><select class="sel" id="set-pet"><option value="cursor" ${set.petMode !== 'fixo' ? 'selected' : ''}>Perto do clique (arraste pela faixa para mover)</option><option value="fixo" ${set.petMode === 'fixo' ? 'selected' : ''}>Fixo na base da prancheta</option></select></div></div>`;
   h += `<div class="sec"><h3>Cotas</h3><div class="row2"><div class="field"><label for="set-dfs">Tamanho do texto (px)</label><input class="inp" id="set-dfs" value="${set.dimFont || 12}" inputmode="numeric"></div><div class="field"><label for="set-dcol">Cor das cotas internas</label><input type="color" id="set-dcol" value="${set.dimColor || '#1b1b1b'}"></div></div><label class="chk"><input type="checkbox" id="set-auto" ${set.autoDims ? 'checked' : ''}>Cotas internas automáticas em todos os ambientes</label></div>`;
-  h += `<div class="sec"><h3>Planta arquitetônica</h3><div class="field"><label for="set-wh">Hachura das paredes</label><select class="sel" id="set-wh">${Object.entries(WALLH).map(([k, w]) => `<option value="${k}" ${(set.wallHatch || 'escura') === k ? 'selected' : ''}>${w.name}</option>`).join('')}</select></div><div class="row2"><div class="field"><label for="set-par">Guarda-corpo da varanda (m)</label><input class="inp" id="set-par" value="${fmt(set.parapet ?? 0.23, 2)}" inputmode="decimal"></div><div class="field"><label for="set-bon">Boneca das portas (m)</label><input class="inp" id="set-bon" value="${fmt(set.boneca ?? 0.1, 2)}" inputmode="decimal"></div></div><div class="field"><label for="set-ds">Representação das portas de giro</label><select class="sel" id="set-ds">${[['fechada', 'Fechada (batentes + folha)'], ['aberta', 'Aberta com arco'], ['tracejada', 'Aberta com arco tracejado']].map(([k, v]) => `<option value="${k}" ${(set.doorStyle || 'fechada') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div><label class="chk"><input type="checkbox" id="set-env" ${set.showEnv ? 'checked' : ''}>Mostrar o perímetro construído (automático) na vista de manchas</label><div class="field"><label for="set-uu">Uso da mancha geral das unidades</label><select class="sel" id="set-uu"><option value="">Automático (uso predominante dos ambientes)</option>${S.usages.map(u => `<option value="${esc(u.name)}" ${set.unitUsage === u.name ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}</select></div><p class="note">A parede externa usa a medida “Externa” do menu PAREDES. Arestas marcadas como meia parede usam metade.</p></div>`;
+  h += `<div class="sec"><h3>Planta arquitetônica</h3><div class="field"><label for="set-wh">Hachura das paredes</label><select class="sel" id="set-wh">${Object.entries(WALLH).map(([k, w]) => `<option value="${k}" ${(set.wallHatch || 'escura') === k ? 'selected' : ''}>${w.name}</option>`).join('')}</select></div><div class="row2"><div class="field"><label for="set-par">Guarda-corpo da varanda (m)</label><input class="inp" id="set-par" value="${fmt(set.parapet ?? 0.23, 2)}" inputmode="decimal"></div><div class="field"><label for="set-bon">Boneca das portas (m)</label><input class="inp" id="set-bon" value="${fmt(set.boneca ?? 0.1, 2)}" inputmode="decimal"></div></div><div class="field"><label for="set-ds">Representação das portas de giro</label><select class="sel" id="set-ds">${[['fechada', 'Fechada (batentes + folha)'], ['fechada-tracejada', 'Fechada + folha e giro tracejados'], ['aberta', 'Aberta com arco'], ['tracejada', 'Aberta com arco tracejado']].map(([k, v]) => `<option value="${k}" ${(set.doorStyle || 'fechada') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div><label class="chk"><input type="checkbox" id="set-env" ${set.showEnv ? 'checked' : ''}>Mostrar o perímetro construído (automático) na vista de manchas</label><div class="field"><label for="set-uu">Uso da mancha geral das unidades</label><select class="sel" id="set-uu"><option value="">Automático (uso predominante dos ambientes)</option>${S.usages.map(u => `<option value="${esc(u.name)}" ${set.unitUsage === u.name ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}</select></div><p class="note">A parede externa usa a medida “Externa” do menu PAREDES. Arestas marcadas como meia parede usam metade.</p></div>`;
+  const ns = nbrSet();
+  h += `<div class="sec"><h3>ABNT NBR 9050 — áreas de aproximação</h3><p class="note">Somente para conferência (não são elementos de documentação). Valores de referência: confira com a versão vigente da norma.</p><div class="field"><label for="set-nbrc">Checagem de conflitos</label><select class="sel" id="set-nbrc">${[['ligar', 'Checar ao ligar as áreas (padrão)'], ['auto', 'Checagem automática (sempre, avisa e mostra conflitos)'], ['off', 'Desligada']].map(([k, v]) => `<option value="${k}" ${(set.nbrCheck || 'ligar') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
+    <div class="row2"><div class="field"><label for="nb-pd">Puxar: profundidade</label><input class="inp" id="nb-pd" value="${fmt(ns.pullDepth)}" inputmode="decimal"></div><div class="field"><label for="nb-pe">Puxar: lateral à maçaneta</label><input class="inp" id="nb-pe" value="${fmt(ns.pullExtra)}" inputmode="decimal"></div></div>
+    <div class="row2"><div class="field"><label for="nb-ud">Empurrar: profundidade</label><input class="inp" id="nb-ud" value="${fmt(ns.pushDepth)}" inputmode="decimal"></div><div class="field"><label for="nb-ue">Empurrar: lateral à maçaneta</label><input class="inp" id="nb-ue" value="${fmt(ns.pushExtra)}" inputmode="decimal"></div></div>
+    <div class="field"><label for="nb-min">Portas a partir de (vão livre, m)</label><input class="inp" id="nb-min" value="${fmt(ns.minDoor)}" inputmode="decimal"></div></div>`;
   const nl = els().filter(e => e.lock).length; if (nl) h += `<div class="sec"><h3>Travados</h3><button class="btn" id="set-unlock">${icon('unlock')}Destravar todos (${nl})</button></div>`;
   h += `<div class="sec"><h3>Categorias de uso</h3><p class="note">${G.on ? 'Lidas do projeto Giraffe (usos).' : 'Lista padrão — dentro do Giraffe o app lê os usos do projeto.'}</p>${Object.entries(S.usages.reduce((a, u) => { (a[u.group || 'Usos do projeto'] = a[u.group || 'Usos do projeto'] || []).push(u); return a; }, {})).map(([g, us]) => `<p class="note" style="margin:8px 0 4px;font-weight:600">${esc(g)}</p><div>${us.map(u => `<span class="tag" style="opacity:1"><span class="sw" style="display:inline-block;width:9px;height:9px;background:${u.color || '#ccc'};margin-right:4px"></span>${esc(u.name)}</span>`).join(' ')}</div>`).join('')}</div>`;
   P.innerHTML = h; bindStyle(P, 'def', d.st, () => scheduleSave());
@@ -1828,6 +1850,8 @@ function renderProps() {
   on('set-dcol', e => { set.dimColor = e.target.value; renderAll(); scheduleSave(); }, 'input');
   on('set-auto', e => mutate(() => { set.autoDims = e.target.checked; }));
   on('set-unlock', unlockAll, 'click');
+  on('set-nbrc', e => { set.nbrCheck = e.target.value; invalidate(); renderAll(); scheduleSave(); });
+  [['nb-pd', 'pullDepth'], ['nb-pe', 'pullExtra'], ['nb-ud', 'pushDepth'], ['nb-ue', 'pushExtra'], ['nb-min', 'minDoor']].forEach(([id, k]) => on(id, e => { const v = parseNum(e.target.value); if (v >= 0) { set.nbr = { ...(set.nbr || {}), [k]: v }; invalidate(); renderAll(); scheduleSave(); } }));
   on('set-uu', e => { set.unitUsage = e.target.value; invalidate(); renderAll(); refreshPanels(); scheduleSave(); });
   on('set-ds', e => { set.doorStyle = e.target.value; invalidate(); renderAll(); scheduleSave(); });
   on('set-wh', e => { set.wallHatch = e.target.value; renderAll(); scheduleSave(); });
@@ -1886,7 +1910,8 @@ function askDialog(title, fields, cb, okLabel = 'OK') {
   dlg.returnValue = ''; dlg.showModal(); const first = f.querySelector('input,select'); if (first) { first.focus(); first.select && first.select(); }
 }
 
-function widthPicker(id, cur, kind) { const pre = kind === 'giro' ? [0.6, 0.7, 0.8, 0.9] : kind === 'janela' ? [0.6, 1.0, 1.2, 1.5, 2.0] : [1.2, 1.5, 2.0, 2.4]; return `<div class="seg" role="group" aria-label="Largura">${pre.map(v => `<button data-wp="${id}" data-v="${v}" aria-pressed="${Math.abs(v - cur) < 1e-6}">${Math.round(v * 100)}</button>`).join('')}</div><label class="sr-only" for="${id}">Largura personalizada (cm)</label><input class="inp num" id="${id}" value="${Math.round(cur * 100)}" inputmode="numeric" title="Largura personalizada (cm)" style="width:64px"><span class="hint">cm</span>`; }
+function widthPicker(id, cur, kind) { const pre = kind === 'giro' ? [0.6, 0.7, 0.8, 0.9] : kind === 'cortafogo' ? [0.8, 0.9, 1.0] : kind === 'janela' ? [0.6, 1.0, 1.2, 1.5, 2.0] : kind === 'maximar' ? [0.4, 0.6, 0.8, 1.0] : kind === 'vao' ? [0.8, 1.0, 1.2, 1.5] : [1.2, 1.5, 2.0, 2.4]; return `<div class="seg" role="group" aria-label="Largura">${pre.map(v => `<button data-wp="${id}" data-v="${v}" aria-pressed="${Math.abs(v - cur) < 1e-6}">${Math.round(v * 100)}</button>`).join('')}</div><label class="sr-only" for="${id}">Largura personalizada (cm)</label><input class="inp num" id="${id}" value="${Math.round(cur * 100)}" inputmode="numeric" title="Largura personalizada (cm)${kind === 'giro' || kind === 'cortafogo' ? ' — vão livre' : ''}" style="width:64px"><span class="hint">${kind === 'giro' || kind === 'cortafogo' ? 'cm livres' : 'cm'}</span>`; }
+function panelsPicker(id, cur, kind) { if (!['janela', 'pjanela', 'correr', 'maximar'].includes(kind)) return ''; return `<label class="sr-only" for="${id}">Folhas</label><select class="sel" id="${id}" title="Número de folhas" style="max-width:110px"><option value="">Folhas: auto</option>${[1, 2, 3, 4, 5, 6].map(v => `<option value="${v}" ${cur === v ? 'selected' : ''}>${v} folha${v > 1 ? 's' : ''}</option>`).join('')}</select>`; }
 function bindWidthPicker(root, id, cb) { $$(`[data-wp="${id}"]`, root).forEach(b => b.addEventListener('click', () => cb(+b.dataset.v))); const i = $('#' + id, root); if (i) i.addEventListener('change', () => { const v = parseNum(i.value); if (v >= 20 && v <= 800) cb(v / 100); }); }
 /* ---------- barra superior de seleção: todas as edições do que está selecionado ---------- */
 const TYPE_NAMES = { open: 'Abertura', poly: 'Polígono', line: 'Linha', circle: 'Círculo', dim: 'Cota', block: 'Bloco', guide: 'Linha guia' };
@@ -1920,7 +1945,7 @@ function selBarHTML() {
     h += grp('Cota interna', c);
   }
   if (rooms.length) { const r0 = rooms[0]; h += grp('Planta', `<label class="sr-only" for="sb-floor">Piso</label><select class="sel" id="sb-floor" title="Hachura de piso">${Object.entries(FLOORS).map(([k, f]) => `<option value="${k}" ${(r0.floor || 'auto') === k ? 'selected' : ''}>${k === 'auto' ? 'Piso: auto (' + FLOORS[floorKey({ ...r0, floor: null })].name + ')' : f.name}</option>`).join('')}</select><label class="sr-only" for="sb-balc">Varanda</label><select class="sel" id="sb-balc" title="Comportamento como varanda (guarda-corpo em vez de parede externa)"><option value="" ${r0.balc == null ? 'selected' : ''}>Varanda: auto (${isBalcony({ ...r0, balc: null }) ? 'sim' : 'não'})</option><option value="1" ${r0.balc === true ? 'selected' : ''}>É varanda</option><option value="0" ${r0.balc === false ? 'selected' : ''}>Não é varanda</option></select>`); }
-  if (one && one.t === 'open') { const anc = S.openAnchor || 'center'; h += grp('Abertura', `<label class="sr-only" for="sb-okind">Tipo</label><select class="sel" id="sb-okind">${Object.entries(OPEN_KINDS).map(([k, n]) => `<option value="${k}" ${one.kind === k ? 'selected' : ''}>${n}</option>`).join('')}</select>${widthPicker('sb-ow', one.w, one.kind)}<div class="seg" role="group" aria-label="Lado que cresce"><button data-anc="start" aria-pressed="${anc === 'start'}" title="Mantém o lado direito, cresce para a esquerda">◀</button><button data-anc="center" aria-pressed="${anc === 'center'}" title="Cresce pelos dois lados">●</button><button data-anc="end" aria-pressed="${anc === 'end'}" title="Mantém o lado esquerdo, cresce para a direita">▶</button></div>${one.kind === 'giro' ? `<label class="sr-only" for="sb-ost">Representação</label><select class="sel" id="sb-ost" title="Representação da porta">${[['', 'Padrão (' + ({ fechada: 'fechada', aberta: 'com arco', tracejada: 'arco tracejado' }[S.doc.settings.doorStyle || 'fechada']) + ')'], ['fechada', 'Fechada'], ['aberta', 'Aberta com arco'], ['tracejada', 'Arco tracejado']].map(([k, v]) => `<option value="${k}" ${(one.style || '') === k ? 'selected' : ''}>${v}</option>`).join('')}</select>` : ''}<button class="icon-btn" id="sb-ofh" aria-label="Espelhar no sentido da parede" title="Espelhar ↔ (lado da dobradiça)">${icon('flipH')}</button><button class="icon-btn" id="sb-ofv" aria-label="Espelhar no sentido da abertura" title="Espelhar ↕ (lado para onde abre)">${icon('flipV')}</button>`); }
+  if (one && one.t === 'open') { const anc = S.openAnchor || 'center'; h += grp('Abertura', `<label class="sr-only" for="sb-okind">Tipo</label><select class="sel" id="sb-okind">${Object.entries(OPEN_KINDS).map(([k, n]) => `<option value="${k}" ${one.kind === k ? 'selected' : ''}>${n}</option>`).join('')}</select>${widthPicker('sb-ow', one.w, one.kind)}${panelsPicker('sb-op', one.panels, one.kind)}${WIN[one.kind] ? `<div class="seg" role="group" aria-label="Canto a 45 graus"><button data-mt="start" aria-pressed="${one.miter === 'start'}" title="Canto 45° neste lado (sem batente) — junção na quina">◤ 45°</button><button data-mt="" aria-pressed="${!one.miter}" title="Sem canto 45°">—</button><button data-mt="end" aria-pressed="${one.miter === 'end'}" title="Canto 45° neste lado (sem batente) — junção na quina">45° ◥</button></div>` : ''}<div class="seg" role="group" aria-label="Lado que cresce"><button data-anc="start" aria-pressed="${anc === 'start'}" title="Mantém o lado direito, cresce para a esquerda">◀</button><button data-anc="center" aria-pressed="${anc === 'center'}" title="Cresce pelos dois lados">●</button><button data-anc="end" aria-pressed="${anc === 'end'}" title="Mantém o lado esquerdo, cresce para a direita">▶</button></div>${one.kind === 'giro' || one.kind === 'cortafogo' ? `<label class="sr-only" for="sb-ost">Representação</label><select class="sel" id="sb-ost" title="Representação da porta">${[['', 'Padrão (' + ({ fechada: 'fechada', 'fechada-tracejada': 'fechada + giro tracejado', aberta: 'com arco', tracejada: 'arco tracejado' }[S.doc.settings.doorStyle || 'fechada']) + ')'], ['fechada', 'Fechada'], ['fechada-tracejada', 'Fechada + giro tracejado'], ['aberta', 'Aberta com arco'], ['tracejada', 'Aberta tracejada']].map(([k, v]) => `<option value="${k}" ${(one.style || '') === k ? 'selected' : ''}>${v}</option>`).join('')}</select>` : ''}${(one.kind === 'giro' || one.kind === 'cortafogo') && one.w >= (nbrSet().minDoor - 1e-6) ? `<button class="btn sm" id="sb-onbr" aria-pressed="${!!one.nbr}" title="Mostrar a área de aproximação NBR 9050 desta porta">NBR</button>` : ''}<button class="icon-btn" id="sb-ofh" aria-label="Espelhar no sentido da parede" title="Espelhar ↔ (lado da dobradiça)">${icon('flipH')}</button><button class="icon-btn" id="sb-ofv" aria-label="Espelhar no sentido da abertura" title="Espelhar ↕ (lado para onde abre)">${icon('flipV')}</button>`); }
   if (one && one.t === 'dim') h += grp('Cota', `<div class="seg" role="group" aria-label="Tipo de cota"><button id="sb-dl1" aria-pressed="${one.showLine !== false}">Com linha</button><button id="sb-dl0" aria-pressed="${one.showLine === false}">Só texto</button></div><label class="sr-only" for="sb-dpos">Posição do texto</label><select class="sel" id="sb-dpos" title="Posição do texto">${[['center', 'Centro'], ['start', 'Canto inicial'], ['end', 'Canto final']].map(([k, v]) => `<option value="${k}" ${(one.textPos || 'center') === k ? 'selected' : ''}>${v}</option>`).join('')}</select><button class="icon-btn" id="sb-dside" aria-label="Inverter lado do texto" title="Inverter lado do texto">${icon('flipV')}</button><label class="sr-only" for="sb-dfs">Tamanho do texto</label><input class="inp num" id="sb-dfs" value="${one.fs || set.dimFont || 12}" inputmode="numeric" title="Tamanho do texto (px)" style="width:56px"><input type="color" id="sb-dcol" value="${one.st?.stroke || '#2b2b2b'}" aria-label="Cor da cota" title="Cor da cota">`);
   if (one && one.t === 'block') { const def = S.doc.blocks[one.bid]; h += grp('Bloco', `<label class="sr-only" for="sb-bname">Nome do bloco</label><input class="inp" id="sb-bname" value="${esc(def?.name)}" style="width:160px" title="Nome do bloco"><label class="sr-only" for="sb-bkind">Tipo</label><select class="sel" id="sb-bkind" title="Tipo do bloco">${[['unidade', 'Unidade'], ['pavimento', 'Pavimento'], ['mobiliario', 'Mobiliário'], ['outro', 'Outro']].map(([k, v]) => `<option value="${k}" ${def?.kind === k ? 'selected' : ''}>${v}</option>`).join('')}</select><span class="hint">${instancesOf(one.bid)} cópia(s)</span><button class="icon-btn" id="sb-bedit" aria-label="Editar bloco" title="Editar bloco">${icon('edit')}</button><button class="icon-btn" id="sb-bexp" aria-label="Explodir" title="Explodir">${icon('explode')}</button><button class="icon-btn" id="sb-bsave" aria-label="Salvar na biblioteca" title="Salvar na biblioteca">${icon('book')}</button>`); }
   h += grp('Ordem', `<button class="icon-btn" id="sb-front" aria-label="Trazer para a frente de tudo" title="Trazer para a frente de tudo">${icon('front')}</button><button class="icon-btn" id="sb-fwd" aria-label="Avançar um nível" title="Avançar um nível">${icon('up')}</button><button class="icon-btn" id="sb-bwd" aria-label="Recuar um nível" title="Recuar um nível">${icon('down')}</button><button class="icon-btn" id="sb-back" aria-label="Enviar para trás de tudo" title="Enviar para trás de tudo">${icon('back')}</button>`);
@@ -1962,6 +1987,9 @@ function bindSelBar(ob) {
     bindWidthPicker(ob, 'sb-ow', v => { const anc = S.openAnchor || 'center'; mutate(() => { const o = byId(one.id); const dw = v - o.w; if (o.host) { if (anc === 'start') o.host.s -= dw / 2; if (anc === 'end') o.host.s += dw / 2; } o.w = v; }); });
     $$('[data-anc]', ob).forEach(b => b.addEventListener('click', () => { S.openAnchor = b.dataset.anc; renderOptbar(); }));
     on('sb-ofh', 'click', () => mutate(() => { one.flipH = !one.flipH; }));
+    on('sb-onbr', 'click', () => mutate(() => { one.nbr = !one.nbr; }));
+    $$('[data-mt]', ob).forEach(b => b.addEventListener('click', () => mutate(() => { if (b.dataset.mt) one.miter = b.dataset.mt; else delete one.miter; })));
+    on('sb-op', 'change', e => mutate(() => { if (e.target.value) one.panels = +e.target.value; else delete one.panels; }));
     on('sb-ost', 'change', e => mutate(() => { if (e.target.value) one.style = e.target.value; else delete one.style; }));
     on('sb-ofv', 'click', () => mutate(() => { one.flipV = !one.flipV; }));
   }
@@ -1995,7 +2023,12 @@ const FLOORS = {
   liso: { name: 'Cor da mancha' }
 };
 const WALLH = { escura: { name: 'Sólida escura', fill: '#3b3b3b' }, cinza: { name: 'Sólida cinza', fill: '#7e7e7e' }, clara: { name: 'Cinza claro (drywall)', fill: '#b9b9b9' }, branca: { name: 'Branca (só contorno)', fill: '#ffffff' }, alvenaria: { name: 'Hachura 45°' }, concreto: { name: 'Concreto (pontilhado)' } };
-const OPEN_KINDS = { giro: 'Porta de giro', correr: 'Porta de correr', janela: 'Janela', pjanela: 'Porta-janela de correr' };
+const OPEN_KINDS = { giro: 'Porta de giro', cortafogo: 'Porta corta-fogo', correr: 'Porta de correr', janela: 'Janela', pjanela: 'Porta-janela de correr', maximar: 'Janela maxim-ar', vao: 'Vão (sem esquadria)' };
+const JAMB = { giro: 0.05, cortafogo: 0.04 };
+/* largura total do vão na parede: portas de giro são especificadas pelo vão livre */
+const openW = o => (o.w || 0.8) + 2 * (JAMB[o.kind || 'giro'] || 0);
+const autoPanels = o => { const k = o.kind || 'giro', w = o.w || 0.8; if (k === 'maximar') return w > 1.2 ? 2 : 1; if (k === 'correr') return 2; return w <= 1.0 ? 1 : w <= 1.8 ? 2 : w <= 2.6 ? 3 : 4; };
+const WIN = { pjanela: { D: 0.12, Df: 0.6, jw: 0.08, mw: 0.035, emb: 0.03, strips: 2 }, janela: { D: 0.08, Df: 0.45, jw: 0.06, mw: 0.03, emb: 0.025, strips: 2 }, maximar: { D: 0.04, Df: 0.3, jw: 0.05, mw: 0.02, emb: 0.025, strips: 1 } };
 function patternDefs() {
   let h = '';
   Object.entries(FLOORS).forEach(([k, f]) => {
@@ -2049,6 +2082,10 @@ function archFor(prims, withOpen = true) {
       const extra = bands.length ? pc.intersection(pc.union(...bands), near) : [];
       if (extra.length) wallSolid = pc.union(solid, extra);
     }
+    // paredes no contorno dos shafts (espessura “ambiente × shaft”), unidas às demais
+    const shD = ((S.doc.settings.walls || []).find(w => w.k === 'shaft') || { d: 0.10 }).d || 0.10;
+    const shRings = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3 && p.shaftWall !== false).map(p => [closeR(offsetRing(flat(p), shD, true))]);
+    if (shRings.length) wallSolid = wallSolid.length ? pc.union(wallSolid, ...shRings) : pc.union(...shRings);
     const cutsAll = holes.concat(shafts);
     const raw = wallSolid.length ? (cutsAll.length ? pc.difference(wallSolid, ...cutsAll) : wallSolid) : [];
     out.raw = raw;
@@ -2063,7 +2100,7 @@ function archFor(prims, withOpen = true) {
     if (withOpen) {
       const key = p => (p._chain || []).map(c => c.inst.id).join('/') + ':' + p.id;
       const byKey = new Map(rooms.map(r => [key(r), r]));
-      prims.filter(p => p.t === 'open').forEach(o => { const host = byKey.get((o._chain || []).map(c => c.inst.id).join('/') + ':' + (o.host && o.host.room)); const pose = resolveOpening(o, host); pose.T = wallThick(pose, raw); pose.cut = openingRect(pose, o.w, -0.01, pose.T + 0.01); pose.o = o; out.opens.push(pose); });
+      prims.filter(p => p.t === 'open').forEach(o => { const host = byKey.get((o._chain || []).map(c => c.inst.id).join('/') + ':' + (o.host && o.host.room)); const pose = resolveOpening(o, host); pose.T = wallThick(pose, raw); pose.cut = openingCut(pose, o, -0.01, pose.T + 0.01); pose.o = o; out.opens.push(pose); });
       const cuts = out.opens.map(op => [closeR(op.cut)]);
       out.walls = cuts.length && raw.length ? pc.difference(raw, ...cuts) : raw;
       // hachura de parede por trecho (amarrada à face = aresta do ambiente)
@@ -2081,7 +2118,7 @@ function envArea(list) { const a = archFor(expandList(list).filter(p => p.t !== 
 
 /* ---------- aberturas (portas e janelas) hospedadas na aresta de um ambiente ---------- */
 function resolveOpening(o, host) {
-  const w = o.w || 0.8;
+  const w = openW(o);
   if (host && host.t === 'poly' && host.pts) {
     const P = host.pts, n = P.length;
     const edge = i => { if (i == null || i < 0 || i >= n || (host.b && host.b[i])) return null; const a = P[i], b = P[(i + 1) % n]; const L = dist(a, b); if (L < w + 0.02) return null; return { i, a, b, L, u: nrm(sub(b, a)) }; };
@@ -2095,48 +2132,68 @@ function resolveOpening(o, host) {
   const u = o.d || [1, 0]; return { ok: false, c: o.p || [0, 0], u, n: [u[1], -u[0]], L: w };
 }
 function wallThick(pose, raw) { if (!raw || !raw.length) return 0.15; let t = 0.004; while (t < 0.8 && inMP(add(pose.c, mul(pose.n, t)), raw)) t += 0.005; return t > 0.03 ? r4(t) : 0.15; }
+/* contorno do vão com canto a 45° opcional (junção de duas aberturas na quina): lado sem batente */
+function openingCut(pose, o, t0, t1) { const W = openW(o); const m = WIN[o.kind] ? o.miter : null; const l = t => -W / 2 - (m === 'start' ? Math.max(t, 0) : 0), r = t => W / 2 + (m === 'end' ? Math.max(t, 0) : 0); const P = (s, t) => add(add(pose.c, mul(pose.u, s)), mul(pose.n, t)); return [P(l(t0), t0), P(r(t0), t0), P(r(t1), t1), P(l(t1), t1)]; }
 function openingRect(pose, w, t0, t1) { const a = add(pose.c, mul(pose.u, -w / 2)), b = add(pose.c, mul(pose.u, w / 2)); return [add(a, mul(pose.n, t0)), add(b, mul(pose.n, t0)), add(b, mul(pose.n, t1)), add(a, mul(pose.n, t1))]; }
 function syncOpenings() {
   const L = els(); L.forEach(o => { if (o.t !== 'open') return; const host = L.find(e => e.id === (o.host && o.host.room)); const r = resolveOpening(o, host); if (r.ok) { o.host = { room: host.id, edge: r.edge, s: r4(r.s) }; o.p = r.c.map(r4); o.d = r.u.map(r4); } });
 }
-/* símbolo da abertura (coordenadas de mundo) — padrão gráfico KV:
-   portas: batentes brancos nas pontas + folha fechada fina (ou aberta com arco, opcional);
-   janelas/porta-janelas: montantes nas pontas e no meio, duas linhas de folhas de correr e peitoril em branco. */
+/* símbolo da abertura (coordenadas de mundo) — padrão gráfico KV (referências das pranchas)
+   t = 0 é a face do ambiente hospedeiro (face interna), t = T a outra face; s ao longo da parede, centro em 0. */
 function openingMarkup(pose, o, opt = {}) {
-  const w = o.w || 0.8, T = pose.T || 0.15, u = pose.u, n = pose.n; const k = o.kind || 'giro';
+  const k = o.kind || 'giro'; const W = openW(o), w = o.w || 0.8, T = pose.T || 0.15, u = pose.u, n = pose.n;
   const P = (s, t) => add(add(pose.c, mul(u, s)), mul(n, t)); const pts = a => a.map(q => `${N(q[0])} ${N(q[1])}`).join('L');
-  const st = `vector-effect="non-scaling-stroke" stroke-linejoin="miter"`; const col = opt.col || '#1f1f1f'; const sw = opt.sw || 0.8;
-  const box = (s0, s1, t0, t1, fill = '#ffffff', ww = sw) => `<path d="M${pts([P(s0, t0), P(s1, t0), P(s1, t1), P(s0, t1)])}Z" fill="${fill}" stroke="${col}" stroke-width="${ww}" ${st}/>`;
-  const line = (s0, s1, t, ww = sw * 0.8) => `<path d="M${pts([P(s0, t), P(s1, t)])}" fill="none" stroke="${col}" stroke-width="${ww}" ${st}/>`;
-  let h = `<path d="M${pts(openingRect(pose, w, 0, T))}Z" fill="#ffffff" stroke="none"/>`; // vão
-  const jb = 0.05; // largura do batente/montante
-  if (k === 'giro') {
-    const into = o.flipV ? 1 : -1; const pr = 0.025; const t0 = into < 0 ? -pr : 0, t1 = into < 0 ? T : T + pr;
-    h += box(-w / 2, -w / 2 + jb, t0, t1) + box(w / 2 - jb, w / 2, t0, t1);
-    const style = o.style || S.doc.settings.doorStyle || 'fechada';
-    if (style === 'fechada') { const far = into < 0 ? T : 0; const lt = Math.min(0.035, T * 0.3); const f0 = into < 0 ? far - lt - 0.01 : far + 0.01, f1 = into < 0 ? far - 0.01 : far + lt + 0.01; h += box(-w / 2 + jb, w / 2 - jb, f0, f1); }
-    else {
-      const hs = o.flipH ? 1 : -1; const face = into < 0 ? 0 : T; const lw = w - 2 * jb;
-      const H = P(hs * (w / 2 - jb), face); const tip = add(H, mul(n, into * lw)); const closed = P(-hs * (w / 2 - jb), face);
-      const lt = 0.035; const L2 = add(tip, mul(u, -hs * lt)), L3 = add(H, mul(u, -hs * lt));
-      h += `<path d="M${pts([H, tip, L2, L3])}Z" fill="#ffffff" stroke="${col}" stroke-width="${sw}" ${st}/>`;
-      const cr = crs(sub(tip, H), sub(closed, H)); const bul = Math.tan(Math.PI / 8) * (cr > 0 ? 1 : -1);
-      h += `<path d="${pathD({ pts: [tip, closed], b: [bul, 0], closed: false })}" fill="none" stroke="${col}" stroke-width="${sw * 0.7}" ${style === 'tracejada' ? 'stroke-dasharray="4 3"' : ''} ${st}/>`;
+  const st = `vector-effect="non-scaling-stroke" stroke-linejoin="miter"`; const col = opt.col || '#1f1f1f'; const k0 = opt.sw ? opt.sw / 0.8 : 1;
+  const thin = 0.7 * k0, mid = 0.9 * k0, thick = 1.4 * k0;
+  const box = (s0, s1, t0, t1, ww = mid, fill = '#ffffff', extra = '') => `<path d="M${pts([P(s0, t0), P(s1, t0), P(s1, t1), P(s0, t1)])}Z" fill="${fill}" stroke="${col}" stroke-width="${ww}" ${extra} ${st}/>`;
+  const line = (a, b, ww = thin, extra = '') => `<path d="M${pts([a, b])}" fill="none" stroke="${col}" stroke-width="${ww}" ${extra} ${st}/>`;
+  const style = o.style || (k === 'cortafogo' ? 'aberta' : (S.doc.settings.doorStyle || 'fechada'));
+  let h = `<path d="M${pts(openingRect(pose, W, 0, T))}Z" fill="#ffffff" stroke="none"/>`;
+  const faces = () => line(P(-W / 2, 0), P(W / 2, 0), thin) + line(P(-W / 2, T), P(W / 2, T), thin); // faces do vão
+  const swingLeaf = (face, into, dashed) => { // folha aberta 90° + arco
+    const hs = o.flipH ? 1 : -1; const lt = k === 'cortafogo' ? 0.05 : 0.035; const H = P(hs * w / 2, face); const tip = add(H, mul(n, into * w)); const closed = P(-hs * w / 2, face);
+    const L2 = add(tip, mul(u, -hs * lt)), L3 = add(H, mul(u, -hs * lt)); const dash = dashed ? 'stroke-dasharray="4 3"' : '';
+    const cr = crs(sub(tip, H), sub(closed, H)); const bul = Math.tan(Math.PI / 8) * (cr > 0 ? 1 : -1);
+    return `<path d="M${pts([H, tip, L2, L3])}Z" fill="${dashed ? 'none' : '#ffffff'}" stroke="${col}" stroke-width="${dashed ? thin : mid}" ${dash} ${st}/><path d="${pathD({ pts: [tip, closed], b: [bul, 0], closed: false })}" fill="none" stroke="${col}" stroke-width="${thin}" ${dash} ${st}/>`;
+  };
+  if (k === 'giro' || k === 'cortafogo') {
+    const into = o.flipV ? 1 : -1; const face = into < 0 ? 0 : T; const sgn = into < 0 ? 1 : -1; // folha alinhada à face do lado para onde abre
+    const jw = JAMB[k];
+    if (k === 'giro') {
+      h += box(-W / 2, -W / 2 + jw, 0, T, mid) + box(W / 2 - jw, W / 2, 0, T, mid); // batentes de 5 cm na espessura da parede
+      if (style !== 'aberta' && style !== 'tracejada') h += box(-w / 2 - 0.01, w / 2 + 0.01, face, face + sgn * 0.035, mid); // folha fechada entra 1 cm em cada batente
+    } else { // corta-fogo (referência): batente pequeno em “dente” alinhado à face do lado do giro
+      const dJ = Math.min(0.09, T * 0.6), th = 0.02, td = 0.045;
+      [-1, 1].forEach(sd => { const a0 = sd * W / 2, a1 = sd * (W / 2 - jw); h += `<path d="M${pts([P(a0, face), P(a1, face), P(a1, face + sgn * td), P(a1 + sd * th, face + sgn * td), P(a1 + sd * th, face + sgn * dJ), P(a0, face + sgn * dJ)])}Z" fill="#ffffff" stroke="${col}" stroke-width="${thick}" ${st}/>`; });
+      if (style === 'fechada' || style === 'fechada-tracejada') h += box(-w / 2 - 0.01, w / 2 + 0.01, face, face + sgn * 0.05, mid);
     }
-  } else if (k === 'janela' || k === 'pjanela') {
-    const panels = w <= 1.0 ? 1 : w <= 1.8 ? 2 : w <= 2.6 ? 3 : 4; const f0 = T * 0.16, f1 = T * 0.5; // caixilho do lado interno
-    h += box(-w / 2, w / 2, f1, T, '#ffffff', sw * 0.7); // peitoril / soleira
-    h += line(-w / 2 + jb, w / 2 - jb, f0 + (f1 - f0) * 0.34) + line(-w / 2 + jb, w / 2 - jb, f0 + (f1 - f0) * 0.66);
-    for (let i = 0; i <= panels; i++) { const sc = -w / 2 + (w * i) / panels; const s0 = i === 0 ? sc : i === panels ? sc - jb : sc - jb / 2; h += box(s0, s0 + jb, f0, f1); }
-    if (k === 'pjanela') h += line(-w / 2, w / 2, T, sw);
-  } else { // porta de correr: batentes + duas folhas sobrepostas
-    h += box(-w / 2, -w / 2 + jb, 0, T) + box(w / 2 - jb, w / 2, 0, T);
-    const lt = Math.min(0.035, T / 4); const a1 = T * 0.36, a2 = T * 0.64; const ov = 0.05; const sgn = o.flipH ? -1 : 1; const wi = w / 2 - jb;
-    h += `<path d="M${pts([P(-wi, a1 - lt / 2), P(sgn * ov, a1 - lt / 2), P(sgn * ov, a1 + lt / 2), P(-wi, a1 + lt / 2)])}Z" fill="#fff" stroke="${col}" stroke-width="${sw}" ${st}/>`;
-    h += `<path d="M${pts([P(wi, a2 - lt / 2), P(-sgn * ov, a2 - lt / 2), P(-sgn * ov, a2 + lt / 2), P(wi, a2 + lt / 2)])}Z" fill="#fff" stroke="${col}" stroke-width="${sw}" ${st}/>`;
+    if (style === 'aberta') h += swingLeaf(face, into, false);
+    if (style === 'tracejada' || style === 'fechada-tracejada') h += swingLeaf(face, into, true);
+  } else if (WIN[k]) {
+    const sp = WIN[k]; const D = Math.min(sp.D, T * sp.Df); const np = o.panels || autoPanels(o); const mt = o.miter || null;
+    const L = t => -W / 2 - (mt === 'start' ? t : 0), R = t => W / 2 + (mt === 'end' ? t : 0); // ponta a 45° acompanha a profundidade
+    const quad = (a0, a1, b0, b1, t0, t1, ww) => `<path d="M${pts([P(a0, t0), P(b0, t0), P(b1, t1), P(a1, t1)])}Z" fill="#ffffff" stroke="${col}" stroke-width="${ww}" ${st}/>`;
+    h = `<path d="M${pts(openingCut(pose, o, 0, T))}Z" fill="#ffffff" stroke="none"/>`;
+    h += quad(L(D), L(T), R(D), R(T), D, T, thin); // peitoril / soleira
+    const x0 = mt === 'start' ? null : -W / 2 - sp.emb + sp.jw, x1 = mt === 'end' ? null : W / 2 + sp.emb - sp.jw;
+    const xs0 = x0 ?? -W / 2, xs1 = x1 ?? W / 2; const seg = (xs1 - xs0) / np;
+    for (let i = 0; i < np; i++) {
+      const a = xs0 + i * seg + (i ? sp.mw / 2 : 0), b = xs0 + (i + 1) * seg - (i < np - 1 ? sp.mw / 2 : 0);
+      const aa = t => (i === 0 && mt === 'start') ? L(t) : a, bb = t => (i === np - 1 && mt === 'end') ? R(t) : b;
+      if (sp.strips === 2) h += quad(aa(0), aa(D / 2), bb(0), bb(D / 2), 0, D / 2, thin) + quad(aa(D / 2), aa(D), bb(D / 2), bb(D), D / 2, D, thin);
+      else h += quad(aa(0), aa(D), bb(0), bb(D), 0, D, thin) + line(P(aa(D / 2), D / 2), P(bb(D / 2), D / 2), thin);
+    }
+    for (let i = 1; i < np; i++) { const c = xs0 + i * seg; h += box(c - sp.mw / 2, c + sp.mw / 2, 0, D, thick); } // montantes
+    if (x0 != null) h += box(-W / 2 - sp.emb, x0, 0, D, thick); else h += line(P(L(0), 0), P(L(T), T), thick); // batente ou junta a 45°
+    if (x1 != null) h += box(x1, W / 2 + sp.emb, 0, D, thick); else h += line(P(R(0), 0), P(R(T), T), thick);
+    if (k === 'pjanela') h += line(P(L(T), T), P(R(T), T), mid);
+  } else if (k === 'vao') {
+    h += box(-W / 2, W / 2, 0, T, thin);
+  } else { // porta de correr de madeira: 1ª folha alinhada à face com o batente; as demais para dentro da parede
+    const jw = 0.05; h += box(-W / 2, -W / 2 + jw, 0, T, mid) + box(W / 2 - jw, W / 2, 0, T, mid) + faces();
+    const np = o.panels || autoPanels(o); const lt = Math.min(0.035, (T - 0.01) / np); const f = o.flipV ? T : 0, dir = o.flipV ? -1 : 1; const x0 = -W / 2 + jw, x1 = W / 2 - jw; const seg = (x1 - x0) / np; const ov = 0.04;
+    for (let i = 0; i < np; i++) { const ii = o.flipH ? np - 1 - i : i; const a = Math.max(x0, x0 + ii * seg - ov / 2), b = Math.min(x1, x0 + (ii + 1) * seg + ov / 2); h += box(a, b, f + dir * i * lt, f + dir * (i + 1) * lt, mid); }
   }
-  // faces da parede interrompidas: linhas de contorno do vão nas pontas
-  h += `<path d="M${pts([P(-w / 2, 0), P(-w / 2, T)])}M${pts([P(w / 2, 0), P(w / 2, T)])}" fill="none" stroke="${col}" stroke-width="${sw}" ${st}/>`;
   return h;
 }
 function mpPath(mp) { return (mp || []).map(pl => pl.map(R => 'M' + R.map(q => `${N(q[0])} ${N(q[1])}`).join('L') + 'Z').join('')).join(''); }
@@ -2188,7 +2245,7 @@ function placeOpeningAt(p, w) {
   return { room: rc.src, rc, i, s, c: add(a, mul(u, s)), u, n: mul([u[1], -u[0]], sg), L, ok: true, T: 0.15 };
 }
 function poseOfTop(o) { const A = arch(); return A.opens.find(op => op.o && op.o.id === o.id && (!op.o._chain || !op.o._chain.length)) || null; }
-function opHitRegion(op) { const w = op.o.w || 0.8; const R = openingRect(op, w, -0.02, (op.T || 0.15) + 0.02); if (op.o.kind === 'giro' && (op.o.style || S.doc.settings.doorStyle || 'fechada') !== 'fechada') { const into = op.o.flipV ? 1 : -1; const t0 = into < 0 ? -w : op.T, t1 = into < 0 ? 0 : op.T + w; return [R, openingRect(op, w, t0, t1)]; } return [R]; }
+function opHitRegion(op) { const w = openW(op.o); const R = openingRect(op, w, -0.02, (op.T || 0.15) + 0.02); if ((op.o.kind === 'giro' || op.o.kind === 'cortafogo') && ['aberta', 'tracejada'].includes(op.o.style || (op.o.kind === 'cortafogo' ? 'aberta' : (S.doc.settings.doorStyle || 'fechada')))) { const into = op.o.flipV ? 1 : -1; const t0 = into < 0 ? -w : op.T, t1 = into < 0 ? 0 : op.T + w; return [R, openingRect(op, w, t0, t1)]; } return [R]; }
 /* parede sob o cursor: arestas de ambientes que formam as duas faces (também dentro de blocos) */
 function wallAt(w) {
   if (S.mode !== 'arch') return null; const A = arch(); if (!inMP(w, A.walls) && !inMP(w, A.raw)) return null;
@@ -2219,17 +2276,17 @@ function opOpening(existing) {
   const set = S.doc.settings;
   return {
     cur: null, pl: null, noSnap: true, pick: false,
-    get w() { return existing ? existing.w : (set.openW || 0.8); }, get kind() { return existing ? existing.kind : (set.openKind || 'giro'); },
+    get w() { return existing ? existing.w : (set.openW || 0.8); }, get kind() { return existing ? existing.kind : (set.openKind || 'giro'); }, get W() { return openW({ kind: this.kind, w: this.w }); },
     hint() { return existing ? 'Arraste/clique para reposicionar a abertura na parede' : `Aponte a aresta de um ambiente e clique para inserir ${OPEN_KINDS[this.kind].toLowerCase()} (${fmt(this.w * 100, 0)} cm) · encaixa nas bonecas`; },
-    onMove(p) { this.cur = p; this.pl = placeOpeningAt(p, this.w); if (this.pl) { const A = arch(); this.pl.T = wallThick(this.pl, A.raw); } },
+    onMove(p) { this.cur = p; this.pl = placeOpeningAt(p, this.W); if (this.pl) { const A = arch(); this.pl.T = wallThick(this.pl, A.raw); } },
     onClick(p) {
-      const pl = placeOpeningAt(p, this.w); if (!pl) return toast('Aponte para a aresta de um ambiente (na parede)');
+      const pl = placeOpeningAt(p, this.W); if (!pl) return toast('Aponte para a aresta de um ambiente (na parede)');
       const Mi = pl.rc.M === MI ? MI : mInv(pl.rc.M); const lp = mApply(Mi, pl.c).map(r4), ld = nrm(mVec(Mi, pl.u)).map(r4);
       if (existing) { if (pl.rc.inst) return toast('Para mover a porta para dentro de um bloco, edite o bloco'); mutate(() => { const o = byId(existing.id); o.host = { room: pl.room.id, edge: pl.i, s: r4(pl.s) }; o.p = lp; o.d = ld; }); finishPetOp(); return; }
-      const o = { id: uid(), t: 'open', kind: this.kind, w: this.w, host: { room: pl.room.id, edge: pl.i, s: r4(pl.s) }, p: lp, d: ld, flipH: false, flipV: false };
+      const o = { id: uid(), t: 'open', kind: this.kind, w: this.w, ...(set.openPanels ? { panels: set.openPanels } : {}), host: { room: pl.room.id, edge: pl.i, s: r4(pl.s) }, p: lp, d: ld, flipH: false, flipV: false };
       mutate(() => { pl.rc.list.push(o); if (!pl.rc.inst) S.sel = new Set([o.id]); }); if (pl.rc.inst) toast(`Abertura inserida no bloco “${pl.rc.bname}” — vale para todas as cópias`);
     },
-    preview() { if (!this.pl) return null; const o = existing || { w: this.w, kind: this.kind }; const c = w2s(this.pl.c); const bonInfo = `${fmt(this.pl.s - this.w / 2)} | ${fmt(this.pl.L - this.pl.s - this.w / 2)}`; return { w: openingMarkup(this.pl, o, { col: PRI, sw: 1.6 }), s: `<text x="${N(c[0] + 12)}" y="${N(c[1] - 12)}" font-size="11" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${bonInfo}</text>` }; }
+    preview() { if (!this.pl) return null; const o = existing || { w: this.w, kind: this.kind, panels: set.openPanels || undefined }; const c = w2s(this.pl.c); const bonInfo = `${fmt(this.pl.s - this.W / 2)} | ${fmt(this.pl.L - this.pl.s - this.W / 2)}`; return { w: openingMarkup(this.pl, o, { col: PRI, sw: 1.6 }), s: `<text x="${N(c[0] + 12)}" y="${N(c[1] - 12)}" font-size="11" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${bonInfo}</text>` }; }
   };
 }
 
@@ -2272,6 +2329,84 @@ function generalManchas(prims) {
   return out;
 }
 let GEN = null; function gen() { if (!GEN) { try { GEN = generalManchas(); } catch (e) { console.warn('[KV Manchas] manchas gerais', e); GEN = []; } } return GEN; }
+
+/* redimensionar abertura pelas pontas (vale o vão total; portas de giro guardam o vão livre) */
+function opOpenResize(el, side) {
+  const op0 = poseOfTop(el); if (!op0) return null; const jb = 2 * (JAMB[el.kind || 'giro'] || 0); const W0 = openW(el);
+  const a0 = add(op0.c, mul(op0.u, -op0.s)); const fixed = op0.s - side * W0 / 2; const L = op0.L; const bon = S.doc.settings.boneca ?? 0.10;
+  return {
+    noSnap: true, cur: null, typed: true, label: 'Largura (cm)', hideSel: false,
+    hint() { return 'Arraste a ponta da abertura · encaixa na parede (0) e na boneca · digite a largura em cm'; },
+    endOf(p) { let e = clamp(dot(sub(p, a0), op0.u), 0, L); const tl = 12 / S.view.k; [0, bon, L - bon, L].some(t => { if (Math.abs(e - t) < tl) { e = t; return true; } return false; }); return e; },
+    build(e) { let W = Math.abs(e - fixed); W = Math.max(W, jb + 0.3); const sNew = side > 0 ? fixed + W / 2 : fixed - W / 2; return { w: r4(W - jb), s: r4(clamp(sNew, W / 2, L - W / 2)) }; },
+    onMove(p) { this.cur = p; },
+    commit(r) { mutate(() => { const o = byId(el.id); o.w = r.w; if (o.host) o.host.s = r.s; }); finishPetOp(); },
+    onClick(p) { this.commit(this.build(this.endOf(p))); },
+    onTyped(v) { const x = parseNum(v); if (!(x > 10)) return; const W = x / 100 + jb; const e = fixed + side * W; this.commit(this.build(e)); },
+    preview() { if (!this.cur) return null; const r = this.build(this.endOf(this.cur)); const pose = { ...op0, s: r.s, c: add(a0, mul(op0.u, r.s)) }; const o = { ...el, w: r.w }; const W = openW(o); const c = w2s(this.cur); return { w: openingMarkup(pose, o, { col: PRI, sw: 1.4 }), s: `<text x="${N(c[0] + 12)}" y="${N(c[1] - 12)}" font-size="11.5" font-weight="700" fill="${PRI}" font-family="Hind,sans-serif">${(el.kind === 'giro' || el.kind === 'cortafogo') ? 'vão livre ' : ''}${fmt(r.w * 100, 0)} cm · ${fmt(r.s - W / 2)} | ${fmt(L - r.s - W / 2)}</text>` }; }
+  };
+}
+
+/* ================= ABNT NBR 9050 — áreas de aproximação (somente conferência) =================
+   Valores de referência configuráveis em Ajustes; confira sempre com a versão vigente da norma. */
+const bedNBR = (w, l, cm) => [{ r: [w + (cm === 2 ? 0 : 0), 0, w + 0.90, cm === 2 ? l - 0.42 : l], t: 'Faixa livre lateral à cama (0,90)' }];
+const NBR_MOB = {
+  vaso: [{ r: [0.42, -0.52, 1.22, 0.68], t: 'Área de transferência lateral (0,80 × 1,20)' }],
+  bide: [{ r: [0.38, -0.52, 1.18, 0.68], t: 'Área de transferência lateral (0,80 × 1,20)' }],
+  lavatorio: [{ r: [0.0, -0.95, 0.80, 0.25], t: 'Aproximação frontal ao lavatório (M.R. 0,80 × 1,20)' }],
+  lavatorio2: [{ r: [-0.05, -0.95, 0.75, 0.25], t: 'Aproximação frontal ao lavatório (M.R. 0,80 × 1,20)' }],
+  chuveiro: [{ r: [0.05, -1.20, 0.85, 0], t: 'Área de transferência ao box (0,80 × 1,20)' }],
+  chuveiro2: [{ r: [0.2, -1.20, 1.0, 0], t: 'Área de transferência ao box (0,80 × 1,20)' }],
+  banheira: [{ r: [0.4, -0.80, 1.6, 0], t: 'Área de transferência à banheira (1,20 × 0,80)' }],
+  bancada: [{ r: [0.15, -1.20, 0.95, 0], t: 'Aproximação frontal à pia (M.R. 0,80 × 1,20)' }],
+  pia: [{ r: [0.2, -1.20, 1.0, 0], t: 'Aproximação frontal à pia (M.R. 0,80 × 1,20)' }],
+  cooktop: [{ r: [-0.1, -1.20, 0.7, 0], t: 'Aproximação frontal ao fogão (M.R. 0,80 × 1,20)' }],
+  tanque: [{ r: [-0.1, -1.20, 0.7, 0], t: 'Aproximação frontal ao tanque (M.R. 0,80 × 1,20)' }],
+  geladeira: [{ r: [-0.025, -1.20, 0.775, 0], t: 'Aproximação frontal (M.R. 0,80 × 1,20)' }],
+  maquina: [{ r: [-0.1, -1.20, 0.7, 0], t: 'Aproximação frontal (M.R. 0,80 × 1,20)' }],
+  armario: [{ r: [0, -0.90, 1.6, 0], t: 'Faixa livre frontal ao armário (0,90)' }],
+  escrivaninha: [{ r: [0.2, -1.20, 1.0, 0], t: 'Aproximação frontal (M.R. 0,80 × 1,20)' }],
+  'mesa-4': [{ r: [-0.4, 0.6, 0.4, 1.8], t: 'Aproximação frontal à mesa (M.R. 0,80 × 1,20)' }],
+  'mesa-6': [{ r: [-0.45, 0.9, 0.45, 2.1], t: 'Aproximação frontal à mesa (M.R. 0,80 × 1,20)' }],
+  'cama-casal': bedNBR(1.4, 1.9), 'cama-queen': bedNBR(1.58, 1.98), 'cama-king': bedNBR(1.93, 2.03), 'cama-solteiro': bedNBR(0.88, 1.88),
+  'cama-casal-cm': bedNBR(1.4, 1.9, 2), 'cama-queen-cm': bedNBR(1.58, 1.98, 2), 'cama-king-cm': bedNBR(1.93, 2.03, 2), 'cama-solteiro-cm': bedNBR(0.88, 1.88, 1)
+};
+const nbrSet = () => ({ pullDepth: 1.50, pullExtra: 0.60, pushDepth: 1.20, pushExtra: 0.30, minDoor: 0.80, ...(S.doc.settings.nbr || {}) });
+let NBRC = null;
+function nbrAreas() {
+  if (NBRC) return NBRC; const out = []; const C = cache(); const A = arch(); const ns = nbrSet();
+  // portas de giro / corta-fogo com vão livre ≥ 0,80
+  A.opens.forEach(op => { const o = op.o; if (!(o.kind === 'giro' || o.kind === 'cortafogo') || (o.w || 0) < ns.minDoor - 1e-6) return;
+    const w = o.w, T = op.T || 0.15, hs = o.flipH ? 1 : -1, into = o.flipV ? 1 : -1; const P = (s, t) => add(add(op.c, mul(op.u, s)), mul(op.n, t));
+    const rect = (s0, s1, t0, t1) => [P(s0, t0), P(s1, t0), P(s1, t1), P(s0, t1)];
+    const ext = e => [Math.min(hs * w / 2, -hs * (w / 2 + e)), Math.max(hs * w / 2, -hs * (w / 2 + e))];
+    const face = into < 0 ? 0 : T, other = into < 0 ? T : 0; const [a1, b1] = ext(ns.pullExtra), [a2, b2] = ext(ns.pushExtra);
+    const top = o._top || o.id; const show = !!o.nbr;
+    out.push({ R: rect(a1, b1, face, face + into * ns.pullDepth), t: 'Aproximação à porta — lado de puxar', top, door: true, show });
+    out.push({ R: rect(a2, b2, other, other - into * ns.pushDepth), t: 'Aproximação à porta — lado de empurrar', top, door: true, show }); });
+  // mobiliário da biblioteca
+  const seen = new Set();
+  C.prims.forEach(p => { const ch = p._chain || []; const k = ch.findIndex(c => String(c.bid).startsWith('lib-')); if (k < 0) return; const key = ch.slice(0, k + 1).map(c => c.inst.id).join('/'); if (seen.has(key)) return; seen.add(key);
+    const def = NBR_MOB[String(ch[k].bid).slice(4)]; if (!def) return; const M = ch[k].M;
+    def.forEach(d => { const [x0, y0, x1, y1] = d.r; out.push({ R: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(q => mApply(M, q)), t: d.t, inst: key, top: p._top }); }); });
+  // checagem de conflitos
+  const mode = S.doc.settings.nbrCheck || 'ligar'; const doCheck = mode === 'auto' || (mode === 'ligar' && S.showNBR);
+  if (doCheck && PCL()) {
+    const pc = PCL(); const obst = [];
+    if (A.walls.length) obst.push({ mp: A.walls, B: null });
+    C.prims.forEach(p => { if (p.role !== 'layout' && p.role !== 'shaft') return; const R = flat(p); if (R.length < 3) return; const ch = p._chain || []; const k = ch.findIndex(c => String(c.bid).startsWith('lib-')); obst.push({ mp: [[closeR(R)]], B: bboxPts(R), inst: k >= 0 ? ch.slice(0, k + 1).map(c => c.inst.id).join('/') : null }); });
+    out.forEach(a => { const B = bboxPts(a.R); a.conflict = obst.some(ob => { if (ob.inst && ob.inst === a.inst) return false; if (ob.B && (ob.B[2] < B[0] || ob.B[0] > B[2] || ob.B[3] < B[1] || ob.B[1] > B[3])) return false; try { return mpArea(pc.intersection([closeR(a.R)], ob.mp)) > 0.01; } catch (_) { return false; } }); });
+  }
+  NBRC = out; return out;
+}
+let lastNbrConf = 0;
+function nbrMarkup() {
+  const mode = S.doc.settings.nbrCheck || 'ligar'; let list; try { list = nbrAreas(); } catch (e) { console.warn(e); return ''; }
+  const vis = list.filter(a => S.showNBR || a.show || (mode === 'auto' && a.conflict));
+  const nConf = list.filter(a => a.conflict).length; if (mode === 'auto' && nConf > lastNbrConf) toast(`NBR 9050: ${nConf} área(s) de aproximação em conflito`); lastNbrConf = nConf;
+  const tb = $('#tg-nbr'); if (tb) tb.textContent = nConf ? `NBR 9050 (${nConf}!)` : 'NBR 9050';
+  return vis.map(a => `<path d="M${a.R.map(q => `${N(q[0])} ${N(q[1])}`).join('L')}Z" fill="${a.conflict ? 'rgba(216,57,24,.18)' : 'none'}" stroke="${a.conflict ? '#c0161a' : '#e0592a'}" stroke-width="${a.conflict ? 1.4 : 1}" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"><title>${esc(a.t)}${a.conflict ? ' — EM CONFLITO' : ''}</title></path>`).join('');
+}
 
 /* ---------- mobiliário (biblioteca embutida) ---------- */
 const FS = { fill: '#ffffff', fo: 1, stroke: '#6a6a6a', sw: 0.8, dash: 'solid', byUse: false };
@@ -2328,11 +2463,11 @@ const FURN = [
   ['maquina', 'Máquina de lavar', () => [fr(0, 0, 0.6, 0.6), fc(0.3, 0.3, 0.22), fc(0.3, 0.3, 0.15, { fill: '#f6f6f6' })]],
   ['planta', 'Vaso de planta', () => [fc(0, 0, 0.25, { fill: '#f6f6f6' }), fc(0, 0, 0.15)]]
 ];
-const ESQ = [['giro', 0.6], ['giro', 0.7], ['giro', 0.8], ['giro', 0.9], ['correr', 0.8], ['correr', 1.2], ['janela', 1.0], ['janela', 1.2], ['janela', 1.5], ['janela', 2.0], ['pjanela', 1.5], ['pjanela', 2.0], ['pjanela', 2.4]];
+const ESQ = [['giro', 0.6], ['giro', 0.7], ['giro', 0.8], ['giro', 0.9], ['cortafogo', 0.8], ['cortafogo', 0.9], ['correr', 0.8], ['correr', 1.2], ['janela', 1.0], ['janela', 1.2], ['janela', 1.5], ['janela', 2.0], ['pjanela', 1.5], ['pjanela', 2.0], ['pjanela', 2.4], ['pjanela', 3.0], ['maximar', 0.6], ['maximar', 0.8], ['vao', 0.8], ['vao', 1.2]];
 function esqThumb(kind, w) {
-  const T = 0.15, m = 0.35; const pose = { c: [m + w / 2, 0], u: [1, 0], n: [0, 1], T }; const W = w + 2 * m; const arc = kind === 'giro' && (S.doc.settings.doorStyle || 'fechada') !== 'fechada'; const H = arc ? w + T + 0.1 : T + 0.3;
+  const T = 0.15, m = 0.35; const Wo = openW({ kind, w }); const pose = { c: [m + Wo / 2, 0], u: [1, 0], n: [0, 1], T }; const W = Wo + 2 * m; const arc = (kind === 'giro' || kind === 'cortafogo') && (S.doc.settings.doorStyle || 'fechada') !== 'fechada'; const H = arc ? w + T + 0.1 : T + 0.3;
   const y0 = arc ? -w - 0.05 : -0.15; const s = Math.min(64 / W, 48 / H); const ox = (72 - W * s) / 2, oy = (56 + H * s) / 2 + y0 * s;
-  const wall = `<path d="M0 0H${m}V${T}H0ZM${m + w} 0H${W}V${T}H${m + w}Z" fill="#3b3b3b"/>`;
+  const wall = `<path d="M0 0H${m}V${T}H0ZM${m + Wo} 0H${W}V${T}H${m + Wo}Z" fill="#3b3b3b"/>`;
   return `<svg viewBox="0 0 72 56" aria-hidden="true"><g transform="matrix(${s} 0 0 ${-s} ${ox} ${oy})">${wall}${openingMarkup(pose, { kind, w, flipH: false, flipV: false })}</g></svg>`;
 }
 function furnBlock(key) {
@@ -2378,10 +2513,10 @@ function renderLib() {
   if (S.libTab === 'esq') {
     const SH = [[0.4, 0.4], [0.6, 0.6], [0.6, 0.9], [0.6, 1.2], [0.9, 0.9], [1.2, 1.2]];
     h += `<h3 class="note" style="font-weight:600;margin:0 0 6px">Shafts (furos descontados da mancha geral)</h3><div class="furn-grid" style="margin-bottom:14px">${SH.map(([a, b]) => `<button class="furn" data-shaft="${a}x${b}" aria-label="Inserir shaft ${fmt(a)} × ${fmt(b)}">${thumbSVG([{ id: 'x', t: 'poly', closed: true, role: 'shaft', pts: [[0, 0], [a, 0], [a, b], [0, b]], st: newStyle('shaft') }])}<span>Shaft ${fmt(a)} × ${fmt(b)}</span></button>`).join('')}<button class="furn" data-shaft="poly" aria-label="Desenhar shaft poligonal">${thumbSVG([{ id: 'y', t: 'poly', closed: true, role: 'shaft', pts: [[0, 0], [1, 0], [1, 0.5], [0.5, 0.5], [0.5, 1], [0, 1]], st: newStyle('shaft') }])}<span>Shaft poligonal (desenhar)</span></button></div>`;
-    h += `<p class="note">Clique e aponte a parede na planta: a esquadria se alinha, fura a parede e ajusta o batente à espessura. Encaixa na boneca (${fmt((S.doc.settings.boneca ?? 0.1) * 100, 0)} cm).</p><div class="furn-grid">${ESQ.map(([k, w]) => `<button class="furn" data-esq="${k}" data-w="${w}" aria-label="Inserir ${esc(OPEN_KINDS[k])} ${Math.round(w * 100)} cm">${esqThumb(k, w)}<span>${esc(OPEN_KINDS[k])} ${Math.round(w * 100)}</span></button>`).join('')}</div>`;
+    h += `<p class="note">Clique e aponte a parede na planta: a esquadria se alinha, fura a parede e ajusta o batente à espessura. Encaixa na boneca (${fmt((S.doc.settings.boneca ?? 0.1) * 100, 0)} cm).</p><div class="furn-grid">${ESQ.map(([k, w]) => `<button class="furn" data-esq="${k}" data-w="${w}" aria-label="Inserir ${esc(OPEN_KINDS[k])} ${Math.round(w * 100)} cm">${esqThumb(k, w)}<span>${esc(OPEN_KINDS[k])} ${Math.round(w * 100)}${k === 'giro' || k === 'cortafogo' ? ' livre' : ''}</span></button>`).join('')}</div>`;
     P.innerHTML = h; bindLibTabs(P);
     $$('[data-shaft]', P).forEach(b => b.addEventListener('click', () => { const v = b.dataset.shaft; if (v === 'poly') { setTool('shaft'); return; } const [a, c] = v.split('x').map(Number); const el = { id: uid(), t: 'poly', closed: true, rect: true, role: 'shaft', usage: '', name: 'Shaft', guide: 1, pts: [[-a / 2, -c / 2], [a / 2, -c / 2], [a / 2, c / 2], [-a / 2, c / 2]], st: newStyle('shaft') }; startPlace([el], `shaft ${fmt(a)} × ${fmt(c)}`); }));
-    $$('[data-esq]', P).forEach(b => b.addEventListener('click', () => { S.doc.settings.openKind = b.dataset.esq; S.doc.settings.openW = +b.dataset.w; setTool('open'); }));
+    $$('[data-esq]', P).forEach(b => b.addEventListener('click', () => { S.doc.settings.openKind = b.dataset.esq; S.doc.settings.openW = +b.dataset.w; delete S.doc.settings.openPanels; setTool('open'); }));
     return;
   }
   if (S.libTab === 'furn') {
@@ -2771,6 +2906,7 @@ async function init() {
   $('#tg-wall').addEventListener('click', () => toggle('wall')); $('#tg-labels').addEventListener('click', () => toggle('labels'));
   $('#tg-snapmenu').addEventListener('click', e => snapMenu(e.currentTarget));
   $('#tg-gridmenu').addEventListener('click', e => gridMenu(e.currentTarget)); $('#tg-wallmenu').addEventListener('click', e => wallMenu(e.currentTarget)); $('#tg-copy').addEventListener('click', () => toggle('copy'));
+  $('#tg-nbr').addEventListener('click', e => { S.showNBR = !S.showNBR; e.currentTarget.setAttribute('aria-pressed', String(S.showNBR)); NBRC = null; renderAll(); if (S.showNBR) { const n = nbrAreas().filter(a => a.conflict).length; toast(n ? `NBR 9050: ${n} área(s) de aproximação em conflito (em vermelho)` : 'NBR 9050: nenhuma área de aproximação em conflito'); } });
   $('#tg-layout').addEventListener('click', e => { S.showLayout = !S.showLayout; e.currentTarget.setAttribute('aria-pressed', String(S.showLayout)); renderAll(); });
   $$('[data-vm]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.vm)));
   $('#tg-snap').addEventListener('contextmenu', e => { e.preventDefault(); snapMenu($('#tg-snapmenu')); });
@@ -2781,7 +2917,7 @@ async function init() {
   window.addEventListener('beforeunload', () => { if ($('#save-state').dataset.s === 'pend') saveNow(); });
 }
 init();
-window.__km = { gen, exportGeneralToGiraffe, arch, setMode, refreshPanels, S, G, cache, invalidate, renderAll, setTool, s2w, w2s, mutate, els, areaOf, polyArea, computeAreas, exportToGiraffe, importFromGiraffe, LIB, FURN, furnBlock, filletVertex, offsetRing, trimAt, enterBlock, exitBlock };
+window.__km = { resolvePoint, nbrAreas, gen, exportGeneralToGiraffe, arch, setMode, refreshPanels, S, G, cache, invalidate, renderAll, setTool, s2w, w2s, mutate, els, areaOf, polyArea, computeAreas, exportToGiraffe, importFromGiraffe, LIB, FURN, furnBlock, filletVertex, offsetRing, trimAt, enterBlock, exitBlock };
 
 </script>
 </body>
