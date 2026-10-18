@@ -236,7 +236,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
     <button class="icon-btn" id="cmd-undo" aria-label="Desfazer (Ctrl+Z)" title="Desfazer (Ctrl+Z)"><span data-icon="undo"></span></button>
     <button class="icon-btn" id="cmd-redo" aria-label="Refazer (Ctrl+Y)" title="Refazer (Ctrl+Y)"><span data-icon="redo"></span></button>
     <span class="vsep" aria-hidden="true"></span>
-    <div class="seg" role="group" aria-label="Vista"><button data-vm="manchas" aria-pressed="true" title="Vista de manchas (N alterna)">Manchas</button><button data-vm="arch" aria-pressed="false" title="Planta arquitetônica gerada das manchas (N alterna)">Planta</button></div>
+    <div class="seg" role="group" aria-label="Vista"><button data-vm="manchas" aria-pressed="true" title="Vista de manchas (N alterna)">Manchas</button><button data-vm="geral" aria-pressed="false" title="(U) Só as manchas gerais automáticas (área privativa computável, varandas, áreas comuns)">Gerais</button><button data-vm="arch" aria-pressed="false" title="Planta arquitetônica gerada das manchas (N alterna)">Planta</button></div>
     <span class="vsep" aria-hidden="true"></span>
     <button class="icon-btn" id="cmd-zoom-out" aria-label="Reduzir zoom" title="Reduzir zoom (-)"><span data-icon="zoomOut"></span></button>
     <button class="zoom-read" id="cmd-zoom-read" aria-label="Escala da vista. Clique para ajustar à tela" title="Ajustar à tela (Home)">100%</button>
@@ -337,7 +337,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V15 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V17 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -378,8 +378,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V15 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V15';
+/* KV Manchas — Beta V17 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V17';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -594,7 +594,7 @@ const S = {
   doc: null, sel: new Set(), tool: 'select', op: null, view: { cx: 0, cy: 0, k: 40 }, W: 800, H: 600,
   ortho: false, grid: true, snap: true, showWall: true, labels: true, shift: false, space: false,
   snaps: { end: true, mid: true, int: true, center: true, wall: true, guide: true, edge: true, grid: true, perp: true },
-  editBlock: null, hover: null, track: [], mode: 'manchas', showLayout: true, mouse: [0, 0], mouseS: [0, 0], snapHit: null, clip: null,
+  editBlock: null, hover: null, track: [], mode: 'manchas', showLayout: true, genSel: new Set(), mouse: [0, 0], mouseS: [0, 0], snapHit: null, clip: null,
   hist: [], redo: [], dirty: false, panel: 'props', usages: DEFAULT_USAGES.slice(), libFilter: { q: '', kind: 'all', scope: 'local' }, libTab: 'tip'
 };
 function newDoc() {
@@ -677,7 +677,9 @@ function cache() {
   CACHE = { prims, ref, guides, verts, mids, segs, centers, wallR, wallV, wallS };
   return CACHE;
 }
-function topBBox(el) { const ps = expandList([el]); const P = []; ps.forEach(p => { if (p.t === 'circle') P.push([p.c[0] - p.r, p.c[1] - p.r], [p.c[0] + p.r, p.c[1] + p.r]); else if (p.t === 'dim') P.push(p.p1, p.p2); else if (p.pts) P.push(...flat(p)); }); return P.length ? bboxPts(P) : null; }
+function topBBox(el) { if (el.t === 'open') { const op = (typeof poseOfTop === 'function' && S.mode === 'arch') ? poseOfTop(el) : null; const W = openW(el); const c = op ? op.c : el.p, u = op ? op.u : (el.d || [1, 0]); if (!c) return null; const n = [u[1], -u[0]]; const T = op ? (op.T || 0.15) : 0.25; const P = [add(c, mul(u, -W / 2)), add(c, mul(u, W / 2))].flatMap(q => [q, add(q, mul(n, T)), add(q, mul(n, -0.02))]); return bboxPts(P); }
+  return topBBox0(el); }
+function topBBox0(el) { const ps = expandList([el]); const P = []; ps.forEach(p => { if (p.t === 'circle') P.push([p.c[0] - p.r, p.c[1] - p.r], [p.c[0] + p.r, p.c[1] + p.r]); else if (p.t === 'dim') P.push(p.p1, p.p2); else if (p.pts) P.push(...flat(p)); }); return P.length ? bboxPts(P) : null; }
 function unionBBox(list) { let B = null; list.forEach(e => { const b = topBBox(e); if (!b) return; B = B ? [Math.min(B[0], b[0]), Math.min(B[1], b[1]), Math.max(B[2], b[2]), Math.max(B[3], b[3])] : b; }); return B; }
 
 const wallTypes = () => (S.doc.settings.walls || []).filter(w => w.on && w.d > 0);
@@ -765,11 +767,12 @@ function renderAll() {
   $('#g-ref').innerHTML = ref;
   const hide = S.op && S.op.hideSel ? S.sel : null;
   if (S.mode === 'arch') $('#g-els').innerHTML = renderArch();
-  else { let mh = els().map(e => hide && hide.has(e.id) ? elMarkup(e, { op: .25, fo: .15, stroke: '#9aa3a6' }) : elMarkup(e)).join(''); if (S.doc.settings.showEnv) { const GM = gen(); if (GM.length) mh += GM.filter(g => g.kind !== 'varanda').map(g => `<path d="${mpPath(g.mp)}" fill="none" stroke="#1b1b1b" stroke-width="1.2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity=".8"/>`).join(''); const A = { env: [] }; if (A.env.length) mh += `<path d="${mpPath(A.env)}" fill="none" stroke="#1b1b1b" stroke-width="1.2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity=".8"/>`; } $('#g-els').innerHTML = mh; }
+  else if (S.mode === 'geral') { const GM = gen(); $('#g-els').innerHTML = GM.map(g => `<path d="${mpPath(g.mp)}" fill="${usageColor(g.usage) || '#cfcfcf'}" fill-opacity="${g.kind === 'varanda' ? 0.45 : 0.6}" fill-rule="evenodd" stroke="${S.genSel.has(g.key) ? PRI : '#1b1b1b'}" stroke-width="${S.genSel.has(g.key) ? 3.5 : g.kind === 'varanda' ? 1.2 : 1.8}" vector-effect="non-scaling-stroke" stroke-linejoin="miter"/>`).join('') + els().filter(e => e.role === 'shaft').map(e => elMarkup(e, { fill: 'none' })).join(''); }
+  else { let mh = els().map(e => hide && hide.has(e.id) ? elMarkup(e, { op: .25, fo: .15, stroke: '#9aa3a6' }) : elMarkup(e)).join(''); if (S.doc.settings.showEnv) { const GM = gen(); if (GM.length) mh += GM.filter(g => g.kind !== 'varanda').map(g => `<path d="${mpPath(g.mp)}" fill="none" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity="1"/>`).join(''); const A = { env: [] }; if (A.env.length) mh += `<path d="${mpPath(A.env)}" fill="none" stroke="#1b1b1b" stroke-width="1.2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity=".8"/>`; } $('#g-els').innerHTML = mh; }
   $('#cv').classList.toggle('hide-lay', S.mode !== 'arch' && !S.showLayout);
   // guias perimetrais (paredes)
   let gh = '';
-  if (S.showWall && S.mode !== 'arch') cache().wallR.forEach(w => { gh += `<path d="M${w.R.map(p => `${N(p[0])} ${N(p[1])}`).join('L')}Z" fill="none" stroke="${w.color}" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" opacity=".75"/>`; });
+  if (S.showWall && S.mode === 'manchas') cache().wallR.forEach(w => { gh += `<path d="M${w.R.map(p => `${N(p[0])} ${N(p[1])}`).join('L')}Z" fill="none" stroke="${w.color}" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" opacity=".75"/>`; });
   try { gh += nbrMarkup(); } catch (e) { console.warn(e); }
   $('#g-guides').innerHTML = gh;
   renderAnn(); renderRulers(); renderOverlay();
@@ -785,6 +788,7 @@ function renderAnn() {
   g.forEach(gd => { const c = s2w([S.W / 2, S.H / 2]); const t = dot(sub(c, gd.p), gd.d); const base = add(gd.p, mul(gd.d, t)); const a = w2s(add(base, mul(gd.d, -diag))), b = w2s(add(base, mul(gd.d, diag))); const sel = S.sel.has(gd.id); h += `<line x1="${N(a[0])}" y1="${N(a[1])}" x2="${N(b[0])}" y2="${N(b[1])}" stroke="${sel ? '#00677c' : '#00accd'}" stroke-width="${sel ? 1.6 : 1}" stroke-dasharray="6 4" opacity=".85"/>`; });
   const C = cache();
   C.prims.forEach(p => { if (p.t === 'dim') h += dimMarkup(p); });
+  if (S.mode === 'geral') { gen().forEach(g => { if (!g.mp.length) return; const big = g.mp.slice().sort((a, b) => Math.abs(ringArea(b[0])) - Math.abs(ringArea(a[0])))[0]; const c = w2s(labelPoint(big[0])); h += `<text text-anchor="middle" font-family="Hind,sans-serif" fill="#1b1b1b"><tspan x="${N(c[0])}" y="${N(c[1] - 3)}" font-size="13" font-weight="700">${esc(g.label)}</tspan><tspan x="${N(c[0])}" y="${N(c[1] + 12)}" font-size="12">${g.label === g.usage || !g.usage ? '' : esc(g.usage) + ' · '}${fmt(g.A)} m²</tspan></text>`; }); $('#g-ann').innerHTML = h; return; }
   C.prims.forEach(p => { if (p.closed && p.role === 'room' && p.pts && !p.smooth && (p.ad ? p.ad.on : S.doc.settings.autoDims)) h += autoDimMarkup(p); });
   if (S.labels) C.prims.forEach(p => {
     if (!(p.closed && p.pts && p.pts.length >= 3) || p.role === 'layout' || p.role === 'shaft') return;
@@ -1212,7 +1216,7 @@ function alignSel(mode) {
     sel.forEach(e => { const b = topBBox(e); let dx = 0, dy = 0; if (mode === 'l') dx = B[0] - b[0]; if (mode === 'r') dx = B[2] - b[2]; if (mode === 'hc') dx = (B[0] + B[2]) / 2 - (b[0] + b[2]) / 2; if (mode === 'b') dy = B[1] - b[1]; if (mode === 't') dy = B[3] - b[3]; if (mode === 'vc') dy = (B[1] + B[3]) / 2 - (b[1] + b[3]) / 2; transformEl(e, mT(dx, dy)); });
   });
 }
-function deleteSel() { if (!S.sel.size) return; mutate(() => { const L = els(); for (let i = L.length - 1; i >= 0; i--) if (S.sel.has(L[i].id)) L.splice(i, 1); S.sel.clear(); }); }
+function deleteSel() { if (!S.sel.size) return; mutate(() => { const L = els(); const del = new Set(S.sel); L.forEach(e => { if (e.t === 'open' && e.host && del.has(e.host.room)) del.add(e.id); }); for (let i = L.length - 1; i >= 0; i--) if (del.has(L[i].id)) L.splice(i, 1); S.sel.clear(); }); } // aberturas saem junto com o ambiente que as hospeda
 function duplicateSel(dx = 0.5, dy = -0.5) { const sel = selEls(); if (!sel.length) return; const c = sel.map(e => transformEl({ ...clone(e), id: uid() }, mT(dx, dy))); addEls(c); }
 function reorderStep(up) { const L = els(); const idx = L.map((e, i) => S.sel.has(e.id) ? i : -1).filter(i => i >= 0); if (!idx.length) return; mutate(() => { if (up) { for (let k = idx.length - 1; k >= 0; k--) { const i = idx[k]; if (i < L.length - 1 && !S.sel.has(L[i + 1].id)) { [L[i], L[i + 1]] = [L[i + 1], L[i]]; } } } else { for (const i of idx) { if (i > 0 && !S.sel.has(L[i - 1].id)) { [L[i], L[i - 1]] = [L[i - 1], L[i]]; } } } }); }
 function lockSel() { const sel = selEls(); if (!sel.length) return; mutate(() => { sel.forEach(e => e.lock = true); S.sel.clear(); }); toast(`${sel.length} elemento(s) travado(s) — “Destravar todos” na barra de seleção`); }
@@ -1244,9 +1248,23 @@ function explodeSel() {
 function enterBlock(bid) { if (!S.doc.blocks[bid]) return; cancelOp(); S.editBlock = bid; S.sel.clear(); invalidate(); setTool('select'); renderAll(); fitView(); refreshPanels(); renderTabs(); }
 function exitBlock() { if (!S.editBlock) return; const d = S.doc.blocks[S.editBlock]; if (d) d.rev = (d.rev || 1) + 1; S.editBlock = null; S.sel.clear(); invalidate(); setTool('select'); renderAll(); refreshPanels(); renderTabs(); scheduleSave(); }
 
+/* editar bloco: só esta cópia (personalização pontual) ou todas; o padrão da biblioteca nunca é alterado */
+function allInstances(bid) { const out = []; const walk = list => list.forEach(e => { if (e.t === 'block' && e.bid === bid) out.push(e); }); S.doc.sheets.forEach(s => walk(s.els)); Object.values(S.doc.blocks).forEach(d => walk(d.els)); return out; }
+function forkBlock(bid, insts, suffix) { const d = S.doc.blocks[bid]; const nid = 'u-' + uid(); const nd = clone(d); nd.id = nid; nd.name = d.name + (suffix || ''); delete nd.libv; delete nd.libRef; nd.els.forEach(e => e.id = uid()); S.doc.blocks[nid] = nd; insts.forEach(i => { i.bid = nid; }); return nid; }
+function editBlockDialog(inst) {
+  const d = S.doc.blocks[inst.bid]; if (!d) return; const isLib = String(inst.bid).startsWith('lib-'); const n = allInstances(inst.bid).length;
+  const opts = isLib || d.kind === 'mobiliario' ? [['one', 'Personalizar só esta cópia'], ['all', `Editar todas as cópias deste desenho (${n})`]] : [['all', `Editar todas as cópias (${n})`], ['one', 'Só esta cópia (vira um bloco novo)']];
+  askDialog(`Editar “${d.name}”`, [{ id: 'm', label: 'O que editar', type: 'select', options: opts, value: opts[0][0] }, { id: 'x', type: 'note', label: isLib ? 'O padrão da biblioteca não muda: novos itens inseridos continuam vindo no formato original.' : '' }], v => {
+    let bid = inst.bid;
+    if (v.m === 'one' && n > 1 || v.m === 'one' && isLib) { pushHist(); bid = forkBlock(inst.bid, [inst], ' (personalizado)'); }
+    else if (v.m === 'all' && isLib) { pushHist(); bid = forkBlock(inst.bid, allInstances(inst.bid), ' (editado)'); }
+    enterBlock(bid);
+  }, 'Editar');
+}
+
 /* ---------- ferramentas (operações) ---------- */
 const TOOL_NAMES = { shaft: 'Shaft (polígono)', open: 'Abertura', select: 'Selecionar', pan: 'Mover vista', rect: 'Retângulo', poly: 'Polígono', line: 'Linha poligonal', curve: 'Curva', arc: 'Arco 3 pontos', circle: 'Círculo', measure: 'Medir', dim: 'Cota', guide: 'Linha guia', limit: 'Limite de cálculo', move: 'Mover', copy: 'Copiar', rotate: 'Rotacionar', mirror: 'Espelhar', stretch: 'Esticar', offset: 'Offset', trim: 'Aparar', fillet: 'Fillet', chamfer: 'Chanfro', place: 'Inserir' };
-function setMode(m, quiet) { S.mode = m; $$('[data-vm]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.vm === m))); $('#tg-layout').hidden = m === 'arch'; if (!quiet) setStatus(m === 'arch' ? 'Planta arquitetônica — clique numa parede para empurrá-la (duplo clique: só uma face) · Y insere portas e janelas' : 'Vista de manchas'); renderAll(); refreshPanels(); }
+function setMode(m, quiet) { if (m !== 'geral') S.genSel.clear(); S.mode = m; S.sel.clear(); $$('[data-vm]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.vm === m))); $('#tg-layout').hidden = m === 'arch'; if (!quiet) setStatus(m === 'arch' ? 'Planta arquitetônica — clique numa parede para empurrá-la (duplo clique: só uma face) · Y insere portas e janelas' : m === 'geral' ? `Manchas gerais automáticas: ${gen().length} mancha(s) — área privativa computável (sem varandas, menos shafts), varandas e áreas comuns` : 'Vista de manchas'); renderAll(); refreshPanels(); renderOptbar(); }
 function cancelOp() { if (S.op && S.op.onCancel) S.op.onCancel(); S.op = null; S.snapHit = null; S.track = []; hidePet(); $('#typed').value = ''; }
 function setTool(t) {
   cancelOp(); S.tool = t; if (t === 'open' && S.mode !== 'arch') setMode('arch', true);
@@ -1582,6 +1600,7 @@ cv.addEventListener('pointerdown', e => {
   if (sp[0] < RUL || sp[1] < RUL) { if (sp[0] < RUL && sp[1] < RUL) return; PD = { newGuide: sp[1] < RUL ? 'h' : 'v', sp }; cv.setPointerCapture(e.pointerId); return; }
   if (S.op) { const p = opPoint(w); PD = { op: true, sp, p }; S.op.onClick(p); renderOverlay(); return; }
   if (S.tool !== 'select') return;
+  if (S.mode === 'geral') { const g = gen().slice().reverse().find(m => inMP(w, m.mp)); if (g) { if (e.shiftKey) { S.genSel.has(g.key) ? S.genSel.delete(g.key) : S.genSel.add(g.key); } else S.genSel = new Set([g.key]); renderAll(); renderOptbar(); return; } if (!e.shiftKey) S.genSel.clear(); PD = { win: true, sp, geral: true }; cv.setPointerCapture(e.pointerId); renderAll(); renderOptbar(); return; }
   // rótulo de aresta (editar comprimento)
   const adl = e.target.closest && e.target.closest('.adim'); const prevAd = S.adSel; S.adSel = null;
   if (adl) { const el = byId(adl.dataset.el); if (el && !el.lock) { const k = +adl.dataset.e; S.adSel = { id: el.id, e: k }; S.sel.clear(); PD = { adim: { el, k, orig: (el.ad && el.ad.off && el.ad.off[k]) || [0, 0] }, sp, w }; cv.setPointerCapture(e.pointerId); renderAll(); refreshPanels(); setStatus('Cota interna: arraste para mover · Delete apaga · “Restaurar cotas” na barra do ambiente'); return; } }
@@ -1642,6 +1661,7 @@ cv.addEventListener('pointerup', e => {
   }
   if (st.wall) { const wa = st.wall; clearTimeout(S.wallT); S.wallT = setTimeout(() => { if (S.wallDbl) { S.wallDbl = false; return; } S.sel = new Set(wa.list.filter(x => !x.rc.inst).map(x => x.rc.src.id)); S.op = opWallPush(wa); S.op.cur = wa.at; setStatus(S.op.hint()); typedLabel(S.op.label); renderAll(); refreshPanels(); }, 280); return; }
   if (st.handle) { const h = st.handle; if (h.kind === 'vertex' || h.kind === 'edge') { showPet({ el: h.el, kind: h.kind, i: h.i, at: h.at }, sp); } return; }
+  if (st.win && st.geral) { const a = s2w(st.sp), b = s2w(sp); S.win = null; if (dist(st.sp, sp) > 4) { const cross = sp[0] < st.sp[0]; const x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), y0 = Math.min(a[1], b[1]), y1 = Math.max(a[1], b[1]); gen().forEach(m => { const B = bboxPts(m.mp.flatMap(pl => pl[0])); const inside = B[0] >= x0 && B[2] <= x1 && B[1] >= y0 && B[3] <= y1; const inter = !(B[2] < x0 || B[0] > x1 || B[3] < y0 || B[1] > y1); if (cross ? inter : inside) S.genSel.add(m.key); }); } renderAll(); renderOptbar(); return; }
   if (st.win) {
     const a = s2w(st.sp), b = s2w(sp); S.win = null;
     if (dist(st.sp, sp) > 4) {
@@ -1656,7 +1676,7 @@ cv.addEventListener('dblclick', e => {
   if (S.tool !== 'select' && !(S.op && S.op.base && S.mode === 'arch')) return; const sp0 = evPt(e); const w = s2w(sp0);
   if (S.mode === 'arch') { const wa = wallAt(w); if (wa) { S.wallDbl = true; clearTimeout(S.wallT); setTimeout(() => { S.wallDbl = false; }, 400); cancelOp(); const x = wa.list[0]; if (x.rc.inst) { const top = els().find(e => e.id === x.rc.w._top); const bid = x.rc.w._chain[x.rc.w._chain.length - 1].bid; toast(`Face dentro do bloco “${S.doc.blocks[bid]?.name}” — abrindo o bloco para edição independente`); enterBlock(bid); void top; return; } const P = x.rc.src.pts; const at = projSeg(w, P[x.i], P[(x.i + 1) % P.length]).p; S.sel = new Set([x.rc.src.id]); renderAll(); refreshPanels(); showPet({ el: x.rc.src, kind: 'edge', i: x.i, at }, sp0); setStatus('Edição independente desta face da parede'); return; } }
   const hit = hitTest(w);
-  if (hit && hit.t === 'block') enterBlock(hit.bid);
+  if (hit && hit.t === 'block') editBlockDialog(hit);
 });
 cv.addEventListener('wheel', e => { e.preventDefault(); const f = Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018)); zoomAt(f, evPt(e)); }, { passive: false });
 cv.addEventListener('contextmenu', e => { e.preventDefault(); if (S.op && S.op.onEnter) { S.op.onEnter(); renderOverlay(); } else if (S.op) { setTool(S.tool === 'place' ? 'select' : S.tool); } });
@@ -1714,7 +1734,7 @@ window.addEventListener('keydown', e => {
   if (ctrl && k === 'v') { e.preventDefault(); if (S.clip) startPlace(S.clip, 'cópia'); return; }
   if (ctrl && k === 'd') { e.preventDefault(); duplicateSel(); return; }
   if (ctrl) return;
-  if (e.key === 'Escape') { if (S.editBlock && S.tool === 'select' && !S.op && !S.sel.size) { exitBlock(); return; } if (S.tool !== 'select' || S.op) setTool('select'); else { S.sel.clear(); refreshPanels(); renderOverlay(); } return; }
+  if (e.key === 'Escape') { if (S.editBlock && S.tool === 'select' && !S.op && !S.sel.size) { exitBlock(); return; } if (S.tool !== 'select' || S.op) setTool('select'); else { S.sel.clear(); S.genSel.clear(); refreshPanels(); renderAll(); if (S.mode === 'geral') renderOptbar(); } return; }
   if (e.key === 'Enter') { if (S.op && S.op.onEnter) { S.op.onEnter(); renderOverlay(); } return; }
   if (e.key === 'Backspace' && S.op && S.op.onBack) { e.preventDefault(); S.op.onBack(); renderOverlay(); return; }
   if ((e.key === 'Delete' || e.key === 'Backspace') && S.adSel) { e.preventDefault(); const { id, e: k } = S.adSel; S.adSel = null; mutate(() => { const el = byId(id); el.ad = el.ad || { on: true, v: 0 }; el.ad.hide = el.ad.hide || {}; el.ad.hide[k] = true; }); return; }
@@ -1729,6 +1749,7 @@ window.addEventListener('keydown', e => {
   if (S.op && S.op.onKey && S.op.onKey(k)) { renderOverlay(); return; }
   if (S.op && S.op.typed && /^[0-9.,\-]$/.test(e.key)) { e.preventDefault(); typedLabel(S.op.label); typed.focus(); typed.value = e.key; return; }
   if (k === 'n' && !e.altKey) { setMode(S.mode === 'arch' ? 'manchas' : 'arch'); return; }
+  if (k === 'u' && !e.altKey) { setMode(S.mode === 'geral' ? 'manchas' : 'geral'); return; }
   if (KEYS[k] && !e.altKey) { setTool(KEYS[k]); return; }
 });
 window.addEventListener('keyup', e => { if (e.key === 'Shift') S.shift = false; if (e.key === ' ') S.space = false; });
@@ -1761,7 +1782,7 @@ function renderOptbar() {
   ob.classList.toggle('block-mode', !!S.editBlock);
   let h = '';
   if (S.editBlock) { const def = S.doc.blocks[S.editBlock]; h += `<span class="tname">Editando bloco</span><span class="hint">${esc(def?.name)} · ${instancesOf(S.editBlock)} cópia(s) serão atualizadas</span><button class="btn primary sm" id="ob-exit-block">${icon('save')}Concluir</button><span class="vsep"></span>`; }
-  if (!(t === 'select' && S.sel.size && !S.op)) h += `<span class="tname">${TOOL_NAMES[t] || ''}</span>`;
+  if (!(t === 'select' && ((S.sel.size && !S.op) || S.mode === 'geral'))) h += `<span class="tname">${TOOL_NAMES[t] || ''}</span>`;
   if (['rect', 'poly', 'circle'].includes(t)) {
     h += `<div class="of"><label for="ob-role">Papel</label><select class="sel" id="ob-role">${['room', 'unit', 'layout', 'line'].map(r => `<option value="${r}" ${d.role === r ? 'selected' : ''}>${ROLES[r]}</option>`).join('')}</select></div>`;
     h += `<div class="of"><label for="ob-usage">Categoria</label>${usageBtn('ob-usage', d.usage)}</div>`;
@@ -1775,11 +1796,15 @@ function renderOptbar() {
   if (t === 'offset') h += `<div class="of"><label for="ob-off">Distância</label><input class="inp num" id="ob-off" value="${fmt(st.offset, 2)}" inputmode="decimal"><span class="hint">m</span></div><label class="chk"><input type="checkbox" id="ob-offcopy" ${st.offsetCopy !== false ? 'checked' : ''}>Criar cópia</label>`;
   if (t === 'fillet') h += `<div class="of"><label for="ob-fil">Raio</label><input class="inp num" id="ob-fil" value="${fmt(st.fillet, 2)}" inputmode="decimal"><span class="hint">m</span></div><button class="btn sm" id="ob-fil-all" title="Aplica em todos os vértices dos elementos selecionados">Todos os vértices da seleção</button>`;
   if (t === 'chamfer') h += `<div class="of"><label for="ob-cha">Distância</label><input class="inp num" id="ob-cha" value="${fmt(st.chamfer, 2)}" inputmode="decimal"><span class="hint">m</span></div><button class="btn sm" id="ob-cha-all">Todos os vértices da seleção</button>`;
-  if (t === 'select' && !S.op && (S.sel.size)) h += selBarHTML();
-  if (t === 'select' && !S.sel.size && els().some(e => e.lock)) h += `<button class="btn sm" id="ob-unlock">${icon('unlock')}Destravar todos (${els().filter(e => e.lock).length})</button>`;
-  if (t === 'select' && !S.editBlock && !S.sel.size) h += `<span class="hint">Clique no vértice ou na aresta do elemento selecionado para abrir o menu de edição · clique na cota da aresta para digitar a medida · duplo clique no bloco para editá-lo</span>`;
+  if (t === 'select' && S.mode === 'geral') { const GM = gen(); const sel = GM.filter(m => S.genSel.has(m.key)); h += `<span class="tname">Manchas gerais</span><span class="hint">${sel.length ? `${sel.length} selecionada(s) · ${fmt(sel.reduce((s, m) => s + m.A, 0))} m²` : 'Clique para selecionar · Shift adiciona · arraste para janela'}</span><button class="btn sm" id="gs-all">Selecionar todas (${GM.length})</button>${sel.length ? `<button class="btn sm" id="gs-clear">Limpar seleção</button><button class="btn primary sm" id="gs-send" ${G.on ? '' : 'disabled title="Abra o app dentro do Giraffe"'}>${icon('upload')}Enviar ao Giraffe</button>` : ''}`; }
+  else if (t === 'select' && !S.op && (S.sel.size)) h += selBarHTML();
+  if (t === 'select' && S.mode !== 'geral' && !S.sel.size && els().some(e => e.lock)) h += `<button class="btn sm" id="ob-unlock">${icon('unlock')}Destravar todos (${els().filter(e => e.lock).length})</button>`;
+  if (t === 'select' && S.mode !== 'geral' && !S.editBlock && !S.sel.size) h += `<span class="hint">Clique no vértice ou na aresta do elemento selecionado para abrir o menu de edição · clique na cota da aresta para digitar a medida · duplo clique no bloco para editá-lo</span>`;
   if (S.op && S.op.hint && t !== 'select') h += `<span class="hint" id="ob-hint"></span>`;
   ob.innerHTML = h; typedLabel(S.op && S.op.label);
+  $('#gs-all', ob)?.addEventListener('click', () => { S.genSel = new Set(gen().map(m => m.key)); renderAll(); renderOptbar(); });
+  $('#gs-clear', ob)?.addEventListener('click', () => { S.genSel.clear(); renderAll(); renderOptbar(); });
+  $('#gs-send', ob)?.addEventListener('click', () => exportGeneralToGiraffe([...S.genSel]));
   if (t === 'select' && S.sel.size && !S.op) bindSelBar(ob);
   $('#ob-unlock', ob)?.addEventListener('click', unlockAll);
   const on = (id, ev, f) => { const x = $('#' + id); if (x) x.addEventListener(ev, f); };
@@ -1899,7 +1924,7 @@ function renderSheetsPanel() {
   $('#sh-op', P).addEventListener('input', e => { set.traceOpacity = +e.target.value; $('#sh-op-v', P).textContent = Math.round(set.traceOpacity * 100) + '%'; renderAll(); });
   $('#sh-op', P).addEventListener('change', scheduleSave);
   $$('[data-bins]', P).forEach(b => b.addEventListener('click', () => placeBlock(b.dataset.bins, S.doc.blocks[b.dataset.bins].kind === 'mobiliario')));
-  $$('[data-bedit]', P).forEach(b => b.addEventListener('click', () => enterBlock(b.dataset.bedit)));
+  $$('[data-bedit]', P).forEach(b => b.addEventListener('click', () => { let bid = b.dataset.bedit; if (bid.startsWith('lib-')) { pushHist(); bid = forkBlock(bid, allInstances(bid), ' (editado)'); } enterBlock(bid); }));
   $$('[data-bdel]', P).forEach(b => b.addEventListener('click', () => mutate(() => { delete S.doc.blocks[b.dataset.bdel]; })));
 }
 /* diálogo genérico */
@@ -2001,7 +2026,7 @@ function bindSelBar(ob) {
   on('sb-dcol', 'change', e => mutate(() => { one.st = { ...(one.st || {}), stroke: e.target.value }; }));
   on('sb-bname', 'change', e => mutate(() => { S.doc.blocks[one.bid].name = e.target.value.trim() || 'Bloco'; }));
   on('sb-bkind', 'change', e => mutate(() => { S.doc.blocks[one.bid].kind = e.target.value; }));
-  on('sb-bedit', 'click', () => enterBlock(one.bid)); on('sb-bexp', 'click', explodeSel); on('sb-bsave', 'click', () => saveTypologyDialog(one));
+  on('sb-bedit', 'click', () => editBlockDialog(one)); on('sb-bexp', 'click', explodeSel); on('sb-bsave', 'click', () => saveTypologyDialog(one));
   on('sb-front', 'click', () => reorder(true)); on('sb-back', 'click', () => reorder(false)); on('sb-fwd', 'click', () => reorderStep(true)); on('sb-bwd', 'click', () => reorderStep(false));
   const c = selCenter();
   on('sb-rot', 'click', () => mutate(() => applyM(selEls(), mR(Math.PI / 2, c)))); on('sb-fh', 'click', () => mutate(() => applyM(selEls(), mMirror(c, add(c, [0, 1]))))); on('sb-fv', 'click', () => mutate(() => applyM(selEls(), mMirror(c, add(c, [1, 0])))));
@@ -2085,9 +2110,9 @@ function archFor(prims, withOpen = true) {
     // paredes no contorno dos shafts (espessura “ambiente × shaft”), unidas às demais
     const shD = ((S.doc.settings.walls || []).find(w => w.k === 'shaft') || { d: 0.10 }).d || 0.10;
     const shRings = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3 && p.shaftWall !== false).map(p => [closeR(offsetRing(flat(p), shD, true))]);
-    if (shRings.length) wallSolid = wallSolid.length ? pc.union(wallSolid, ...shRings) : pc.union(...shRings);
     const cutsAll = holes.concat(shafts);
-    const raw = wallSolid.length ? (cutsAll.length ? pc.difference(wallSolid, ...cutsAll) : wallSolid) : [];
+    let raw = wallSolid.length ? (cutsAll.length ? pc.difference(wallSolid, ...cutsAll) : wallSolid) : [];
+    if (shRings.length) { const shW = pc.difference(pc.union(...shRings), ...shafts); raw = raw.length ? pc.union(raw, shW) : shW; } // a parede do shaft prevalece sobre os ambientes
     out.raw = raw;
     // guarda-corpo das varandas: faixa interna nas arestas que não encostam em ambientes
     const pd = S.doc.settings.parapet || 0.23;
@@ -2351,7 +2376,8 @@ function opOpenResize(el, side) {
    Valores de referência configuráveis em Ajustes; confira sempre com a versão vigente da norma. */
 const bedNBR = (w, l, cm) => [{ r: [w + (cm === 2 ? 0 : 0), 0, w + 0.90, cm === 2 ? l - 0.42 : l], t: 'Faixa livre lateral à cama (0,90)' }];
 const NBR_MOB = {
-  vaso: [{ r: [0.42, -0.52, 1.22, 0.68], t: 'Área de transferência lateral (0,80 × 1,20)' }],
+  vaso: [{ r: [0.37, -0.54, 1.17, 0.66], t: 'Área de transferência lateral (0,80 × 1,20)' }],
+  vaso2: [{ r: [0.37, -0.54, 1.17, 0.66], t: 'Área de transferência lateral (0,80 × 1,20)' }],
   bide: [{ r: [0.38, -0.52, 1.18, 0.68], t: 'Área de transferência lateral (0,80 × 1,20)' }],
   lavatorio: [{ r: [0.0, -0.95, 0.80, 0.25], t: 'Aproximação frontal ao lavatório (M.R. 0,80 × 1,20)' }],
   lavatorio2: [{ r: [-0.05, -0.95, 0.75, 0.25], t: 'Aproximação frontal ao lavatório (M.R. 0,80 × 1,20)' }],
@@ -2418,6 +2444,12 @@ const frr = (x, y, w, h, r, st = {}) => { const e = fr(x, y, w, h, st); e.rect =
 const TM = (list, M) => list.map(e => transformEl(e, M));
 const chair = (x, y, rot = 0) => TM([frr(-0.21, -0.2, 0.42, 0.4, 0.05), fr(-0.21, 0.14, 0.42, 0.07, { fill: '#f1f1f1' })], mMul(mT(x, y), mR(rot)));
 const bed = (w, l, pill) => { const p = pill === 2 ? [frr(0.07, l - 0.4, w / 2 - 0.11, 0.3, 0.03), frr(w / 2 + 0.04, l - 0.4, w / 2 - 0.11, 0.3, 0.03)] : [frr(0.1, l - 0.4, w - 0.2, 0.3, 0.03)]; return [fr(0, 0, w, l), ...p, fl([[0, l * 0.66], [w, l * 0.66]]), fl([[w - 0.16, l * 0.66], [w, l * 0.66 - 0.16], [w, l * 0.66]], { fill: '#f1f1f1' })]; };
+/* bacia sanitária 35 × 65,9 cm (referência KV): contorno em U duplo, assento, com ou sem caixa acoplada */
+const toilet = tank => { const w = 0.35, l = 0.659, r = w / 2, d = 0.022; const U = (x0, x1, top, extra = {}) => ({ id: uid(), t: 'poly', closed: true, role: 'layout', usage: '', guide: 0, pts: [[x0, top], [x0, r], [x1, r], [x1, top]], b: [0, 1, 0, 0], st: { ...FS, ...extra } });
+  const top = 0.47; const out = [U(0, w, l), U(d, w - d, tank ? top - 0.012 : top)];
+  out.push({ id: uid(), t: 'poly', closed: true, role: 'layout', usage: '', guide: 0, pts: [[0.075, 0.40], [0.075, r], [0.275, r], [0.275, 0.40]], b: [0, 1, 0, 0.25], st: { ...FS } });
+  if (tank) out.push(frr(0.005, top, w - 0.01, l - top - 0.005, 0.035));
+  return out; };
 const nightstand = (x, y) => [fr(x, y, 0.45, 0.4), fc(x + 0.225, y + 0.2, 0.09, { fill: '#f3f3f3' })];
 const withNight = (list, w, l, sides) => [...list, ...nightstand(-0.47, l - 0.4), ...(sides === 2 ? nightstand(w + 0.02, l - 0.4) : [])];
 const FURN = [
@@ -2446,7 +2478,8 @@ const FURN = [
   ['mesa-red4', 'Mesa redonda 4 lug.', () => [fc(0, 0, 0.5), ...[0, 1, 2, 3].flatMap(i => chair(0.72 * Math.cos(i * Math.PI / 2), 0.72 * Math.sin(i * Math.PI / 2), i * Math.PI / 2 - Math.PI / 2))]],
   ['mesa-red6', 'Mesa redonda 6 lug.', () => [fc(0, 0, 0.65), ...[0, 1, 2, 3, 4, 5].flatMap(i => chair(0.88 * Math.cos(i * Math.PI / 3), 0.88 * Math.sin(i * Math.PI / 3), i * Math.PI / 3 - Math.PI / 2))]],
   ['escrivaninha', 'Escrivaninha', () => [fr(0, 0, 1.2, 0.6), ...chair(0.6, -0.22, Math.PI)]],
-  ['vaso', 'Bacia sanitária', () => [frr(0.01, 0.5, 0.38, 0.18, 0.03), fe(0.2, 0.27, 0.18, 0.25), fe(0.2, 0.25, 0.12, 0.17, { fill: '#f6f6f6' })]],
+  ['vaso', 'Bacia c/ caixa acoplada', () => toilet(true)],
+  ['vaso2', 'Bacia sem caixa acoplada', () => toilet(false)],
   ['bide', 'Ducha / bidê', () => [fe(0.18, 0.27, 0.17, 0.25), fc(0.18, 0.42, 0.03)]],
   ['lavatorio', 'Bancada lavatório', () => [fr(0, 0, 0.8, 0.5), frr(0.2, 0.08, 0.4, 0.28, 0.05, { fill: '#ffffff' }), fc(0.4, 0.43, 0.022, { fill: '#555' })]],
   ['lavatorio2', 'Bancada lavatório dupla', () => [fr(0, 0, 1.4, 0.5), frr(0.15, 0.08, 0.4, 0.28, 0.05), frr(0.85, 0.08, 0.4, 0.28, 0.05), fc(0.35, 0.43, 0.022, { fill: '#555' }), fc(1.05, 0.43, 0.022, { fill: '#555' })]],
@@ -2471,8 +2504,8 @@ function esqThumb(kind, w) {
   return `<svg viewBox="0 0 72 56" aria-hidden="true"><g transform="matrix(${s} 0 0 ${-s} ${ox} ${oy})">${wall}${openingMarkup(pose, { kind, w, flipH: false, flipV: false })}</g></svg>`;
 }
 function furnBlock(key) {
-  const id = 'lib-' + key; const f = FURN.find(x => x[0] === key); if (!f) return null; if (S.doc.blocks[id] && S.doc.blocks[id].libv === 3) return id;
-  S.doc.blocks[id] = { id, name: f[1], kind: 'mobiliario', els: f[2](), rev: 1, libv: 3 }; return id;
+  const id = 'lib-' + key; const f = FURN.find(x => x[0] === key); if (!f) return null; if (S.doc.blocks[id] && S.doc.blocks[id].libv === 4) return id;
+  S.doc.blocks[id] = { id, name: f[1], kind: 'mobiliario', els: f[2](), rev: 1, libv: 4 }; return id;
 }
 function thumbSVG(list, w = 72, h = 56) {
   const prims = expandList(list); const P = []; prims.forEach(p => { if (p.t === 'circle') P.push([p.c[0] - p.r, p.c[1] - p.r], [p.c[0] + p.r, p.c[1] + p.r]); else if (p.pts) P.push(...flat(p)); });
@@ -2738,9 +2771,9 @@ async function exportToGiraffe(all, asBlock = false) {
 
 /* envio das manchas gerais (polígonos com furos de shaft) — substitui o envio anterior desta folha */
 function rawSectionList() { try { const rs = G.state.get('rawSections'); const out = []; const walk = (v, d = 0) => { if (!v || d > 4) return; if (Array.isArray(v)) return v.forEach(x => walk(x, d + 1)); if (v.type === 'FeatureCollection') return walk(v.features, d + 1); if (v.geometry || v.properties) { out.push(v); return; } if (typeof v === 'object') Object.values(v).forEach(x => walk(x, d + 1)); }; walk(rs); return out; } catch (_) { return []; } }
-async function exportGeneralToGiraffe() {
+async function exportGeneralToGiraffe(keys) {
   if (S.editBlock) return toast('Conclua a edição do bloco antes de enviar');
-  const sh = sheet(); const GM = gen(); if (!GM.length) return toast('Nenhuma mancha geral nesta folha');
+  const sh = sheet(); const keySet = keys && keys.length ? new Set(keys) : null; const GM = gen().filter(m => !keySet || keySet.has(m.key)); if (!GM.length) return toast(keySet ? 'Selecione manchas gerais na vista Gerais' : 'Nenhuma mancha geral nesta folha');
   if (!sh.geo) { toast('Clique no mapa para posicionar a origem (canto 0,0) da folha'); if (!(await pickOrigin())) return; }
   const o = sh.geo; const TAG = 'kv-manchas-geral';
   const feats = [];
@@ -2753,7 +2786,7 @@ async function exportGeneralToGiraffe() {
   }));
   // remove o envio anterior desta folha (mesmo sp_tag + folha)
   if (S.doc.settings.replaceGeneral !== false) {
-    const old = rawSectionList().filter(f => f.properties && f.properties.sp_tag === TAG && f.properties.kvManchas && f.properties.kvManchas.sheet === sh.id);
+    const old = rawSectionList().filter(f => f.properties && f.properties.sp_tag === TAG && f.properties.kvManchas && f.properties.kvManchas.sheet === sh.id && (!keySet || keySet.has(f.properties.kvManchas.group)));
     const ids = old.map(f => f.properties.id ?? f.id).filter(v => v != null);
     if (ids.length) { try { await gInvoke('deleteRawSections', [ids], 20000); console.info('[KV Manchas] removidas', ids.length, 'manchas gerais anteriores'); } catch (e) { console.warn('[KV Manchas] deleteRawSections falhou, tentando uma a uma', e); for (const id of ids) { try { await gInvoke('deleteRawSection', [id], 8000); } catch (e2) { console.warn('[KV Manchas] deleteRawSection', id, e2); } } } }
   }
@@ -2779,6 +2812,7 @@ function closeMenus() { $$('.menu').forEach(m => m.classList.remove('show')); $$
 document.addEventListener('pointerdown', e => { if (!e.target.closest('.menu') && !e.target.closest('[aria-haspopup]')) closeMenus(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(); });
 $('#cmd-giraffe').addEventListener('click', e => openMenu(e.currentTarget, '#menu-giraffe', `<div class="mh">Giraffe ${G.on ? '· conectado' : '· não conectado'}</div>
+  ${S.genSel.size ? `<button role="menuitem" data-g="gens" ${G.on ? '' : 'disabled'}>${icon('upload')}<span>Enviar manchas gerais selecionadas (${S.genSel.size})</span></button>` : ''}
   <button role="menuitem" data-g="gen" ${G.on ? '' : 'disabled'}>${icon('upload')}<span>Enviar manchas gerais da folha<br><small class="note" style="margin:0">unidades, varandas, circulações — com furos de shaft (${gen().length})</small></span></button>
   <label class="chk" style="padding:0 16px"><input type="checkbox" id="g-repl" ${S.doc.settings.replaceGeneral !== false ? 'checked' : ''}>Substituir o envio anterior desta folha</label><hr>
   <button role="menuitem" data-g="imp" ${G.on ? '' : 'disabled'}>${icon('download')}Copiar seleção do mapa para a folha</button>
@@ -2791,7 +2825,7 @@ $('#cmd-giraffe').addEventListener('click', e => openMenu(e.currentTarget, '#men
   <button role="menuitem" data-g="diag" ${G.on ? '' : 'disabled'}>${icon('file')}Diagnóstico (baixar JSON para suporte)</button>
   <div style="padding:4px 16px 8px"><label class="note" for="g-layer" style="display:block;margin:0 0 4px">Grupo / marcador das feições enviadas</label><input class="inp" id="g-layer" style="width:100%" value="${esc(S.doc.settings.giraffeLayer || 'KV Manchas')}"></div>
   ${G.on ? '' : '<p class="note" style="padding:0 16px">Abra este app como painel dentro do Giraffe para copiar elementos entre o mapa e a folha.</p>'}`, m => {
-  $$('[data-g]', m).forEach(b => b.addEventListener('click', () => { const k = b.dataset.g; closeMenus(); if (k === 'imp') importFromGiraffe(); if (k === 'exs') exportToGiraffe(false); if (k === 'exa') exportToGiraffe(true); if (k === 'exb') exportToGiraffe(false, true); if (k === 'org') pickOrigin(); if (k === 'diag') giraffeDiagnostics(); if (k === 'gen') exportGeneralToGiraffe(); }));
+  $$('[data-g]', m).forEach(b => b.addEventListener('click', () => { const k = b.dataset.g; closeMenus(); if (k === 'imp') importFromGiraffe(); if (k === 'exs') exportToGiraffe(false); if (k === 'exa') exportToGiraffe(true); if (k === 'exb') exportToGiraffe(false, true); if (k === 'org') pickOrigin(); if (k === 'diag') giraffeDiagnostics(); if (k === 'gen') exportGeneralToGiraffe(); if (k === 'gens') exportGeneralToGiraffe([...S.genSel]); }));
   $('#g-repl', m).addEventListener('change', ev => { S.doc.settings.replaceGeneral = ev.target.checked; scheduleSave(); });
   $('#g-colors', m).addEventListener('change', ev => { S.doc.settings.sendColors = ev.target.checked; scheduleSave(); });
   $('#g-rot', m).addEventListener('change', ev => { const v = parseNum(ev.target.value); if (isFinite(v)) S.doc.settings.mapRot = v; scheduleSave(); });
