@@ -337,7 +337,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V17 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V18 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -378,8 +378,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V17 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V17';
+/* KV Manchas — Beta V18 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V18';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -1796,13 +1796,15 @@ function renderOptbar() {
   if (t === 'offset') h += `<div class="of"><label for="ob-off">Distância</label><input class="inp num" id="ob-off" value="${fmt(st.offset, 2)}" inputmode="decimal"><span class="hint">m</span></div><label class="chk"><input type="checkbox" id="ob-offcopy" ${st.offsetCopy !== false ? 'checked' : ''}>Criar cópia</label>`;
   if (t === 'fillet') h += `<div class="of"><label for="ob-fil">Raio</label><input class="inp num" id="ob-fil" value="${fmt(st.fillet, 2)}" inputmode="decimal"><span class="hint">m</span></div><button class="btn sm" id="ob-fil-all" title="Aplica em todos os vértices dos elementos selecionados">Todos os vértices da seleção</button>`;
   if (t === 'chamfer') h += `<div class="of"><label for="ob-cha">Distância</label><input class="inp num" id="ob-cha" value="${fmt(st.chamfer, 2)}" inputmode="decimal"><span class="hint">m</span></div><button class="btn sm" id="ob-cha-all">Todos os vértices da seleção</button>`;
-  if (t === 'select' && S.mode === 'geral') { const GM = gen(); const sel = GM.filter(m => S.genSel.has(m.key)); h += `<span class="tname">Manchas gerais</span><span class="hint">${sel.length ? `${sel.length} selecionada(s) · ${fmt(sel.reduce((s, m) => s + m.A, 0))} m²` : 'Clique para selecionar · Shift adiciona · arraste para janela'}</span><button class="btn sm" id="gs-all">Selecionar todas (${GM.length})</button>${sel.length ? `<button class="btn sm" id="gs-clear">Limpar seleção</button><button class="btn primary sm" id="gs-send" ${G.on ? '' : 'disabled title="Abra o app dentro do Giraffe"'}>${icon('upload')}Enviar ao Giraffe</button>` : ''}`; }
+  if (t === 'select' && S.mode === 'geral') { const GM = gen(); const sel = GM.filter(m => S.genSel.has(m.key)); h += `<span class="tname">Manchas gerais</span><span class="hint">${sel.length ? `${sel.length} selecionada(s) · ${fmt(sel.reduce((s, m) => s + m.A, 0))} m²` : 'Clique para selecionar · Shift adiciona · arraste para janela'}</span><button class="btn sm" id="gs-all">Selecionar todas (${GM.length})</button>${sel.length ? `<div class="of"><label for="gs-usage">Uso</label>${usageBtn('gs-usage', sel[0].usage, sel.some(m => m.usage !== sel[0].usage))}</div>${sel.some(m => (sheet().genUse || {})[m.key]) ? `<button class="btn sm" id="gs-ureset" title="Volta ao uso automático (predominante dos ambientes)">Uso automático</button>` : ''}<button class="btn sm" id="gs-clear">Limpar seleção</button><button class="btn primary sm" id="gs-send" ${G.on ? '' : 'disabled title="Abra o app dentro do Giraffe"'}>${icon('upload')}Enviar ao Giraffe</button>` : ''}`; }
   else if (t === 'select' && !S.op && (S.sel.size)) h += selBarHTML();
   if (t === 'select' && S.mode !== 'geral' && !S.sel.size && els().some(e => e.lock)) h += `<button class="btn sm" id="ob-unlock">${icon('unlock')}Destravar todos (${els().filter(e => e.lock).length})</button>`;
   if (t === 'select' && S.mode !== 'geral' && !S.editBlock && !S.sel.size) h += `<span class="hint">Clique no vértice ou na aresta do elemento selecionado para abrir o menu de edição · clique na cota da aresta para digitar a medida · duplo clique no bloco para editá-lo</span>`;
   if (S.op && S.op.hint && t !== 'select') h += `<span class="hint" id="ob-hint"></span>`;
   ob.innerHTML = h; typedLabel(S.op && S.op.label);
   $('#gs-all', ob)?.addEventListener('click', () => { S.genSel = new Set(gen().map(m => m.key)); renderAll(); renderOptbar(); });
+  $('#gs-usage', ob)?.addEventListener('click', e => { const sel = gen().filter(m => S.genSel.has(m.key)); openUsagePicker(e.currentTarget, sel[0] && sel[0].usage, v => { mutate(() => { const sh = sheet(); sh.genUse = sh.genUse || {}; sel.forEach(m => { if (v) sh.genUse[m.key] = v; else delete sh.genUse[m.key]; }); }); renderOptbar(); }); });
+  $('#gs-ureset', ob)?.addEventListener('click', () => { mutate(() => { const sh = sheet(); gen().filter(m => S.genSel.has(m.key)).forEach(m => { if (sh.genUse) delete sh.genUse[m.key]; }); }); renderOptbar(); });
   $('#gs-clear', ob)?.addEventListener('click', () => { S.genSel.clear(); renderAll(); renderOptbar(); });
   $('#gs-send', ob)?.addEventListener('click', () => exportGeneralToGiraffe([...S.genSel]));
   if (t === 'select' && S.sel.size && !S.op) bindSelBar(ob);
@@ -2084,15 +2086,18 @@ function archFor(prims, withOpen = true) {
   const pc = PCL(); const out = { ok: !!pc, walls: [], raw: [], env: [], par: [], opens: [] };
   if (!pc) return out;
   const rooms = roomPrims(prims); const ext = extD(); const solids = [], holes = [];
+  const bad = [];
   rooms.forEach(r => {
-    const R = flat(r); if (R.length < 3) return; holes.push([closeR(R)]);
+    const R = cleanRing(flat(r)); if (R.length < 3 || Math.abs(ringArea(R)) < 1e-4) { bad.push(r.name || r.usage || 'sem nome'); return; } holes.push([closeR(R)]);
     if (isBalcony(r)) return; // varanda encostada no ambiente fica sem parede: evidencia o erro de desenho
     const curved = r.t === 'circle' || (r.b && r.b.some(x => x));
-    const ds = curved ? ext : r.pts.map((_, i) => (r.half && r.half[i]) ? ext / 2 : ext);
-    solids.push([closeR(offsetRing(curved ? R : r.pts, ds, true))]);
+    let P = r.pts, ds = curved ? ext : r.pts.map((_, i) => (r.half && r.half[i]) ? ext / 2 : ext);
+    if (!curved) { const c = cleanWithD(r.pts, ds); P = c.P; ds = c.d; if (P.length < 3) { bad.push(r.name || 'sem nome'); return; } }
+    const off = cleanRing(offsetRing(curved ? R : P, ds, true)); if (off.length >= 3 && off.every(q => isFinite(q[0]) && isFinite(q[1]))) solids.push([closeR(off)]); else bad.push(r.name || 'sem nome');
   });
+  out.diag = { rooms: rooms.length, bad };
   try {
-    const solid = solids.length ? pc.union(...solids) : [];
+    const solid = solids.length ? safeUnion(solids, bad) : [];
     const shafts = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3).map(p => [closeR(flat(p))]);
     out.shafts = shafts;
     const filled = solid.map(pl => [pl[0]]); out.envFull = filled;
@@ -2136,8 +2141,14 @@ function archFor(prims, withOpen = true) {
   } catch (e) { console.warn('[KV Manchas] planta arquitetônica:', e); out.err = e.message; }
   return out;
 }
+/* robustez: remove pontos repetidos/colineares e faz a união tolerante a geometria problemática */
+function cleanRing(R) { const out = []; R.forEach(q => { q = [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]; if (!out.length || dist(q, out[out.length - 1]) > 1e-4) out.push(q); }); while (out.length > 2 && dist(out[0], out[out.length - 1]) < 1e-4) out.pop(); for (let i = out.length - 1; i >= 0 && out.length > 3; i--) { const a = out[(i - 1 + out.length) % out.length], b = out[i], c = out[(i + 1) % out.length]; if (Math.abs(crs(sub(b, a), sub(c, b))) < 1e-9) out.splice(i, 1); } return out; }
+function cleanWithD(P, d) { const n = P.length; const keepP = [], keepD = []; for (let i = 0; i < n; i++) { const a = P[i], b = P[(i + 1) % n]; if (dist(a, b) < 1e-4) continue; keepP.push(a); keepD.push(Array.isArray(d) ? d[i] : d); } return { P: keepP, d: keepD }; }
+function safeUnion(list, bad) { const pc = PCL(); try { return pc.union(...list); } catch (e) { console.warn('[KV Manchas] união das paredes falhou, refazendo uma a uma', e); let acc = []; list.forEach((g, i) => { try { acc = acc.length ? pc.union(acc, g) : pc.union(g); } catch (e2) { bad.push('polígono ' + (i + 1)); } }); return acc; } }
 let ARCH = null;
-function arch() { if (!ARCH) ARCH = archFor(cache().prims, true); return ARCH; }
+let lastArchMsg = '';
+function arch() { if (!ARCH) { ARCH = archFor(cache().prims, true); const d = ARCH.diag || {}; let msg = ''; if (!ARCH.ok) msg = 'Biblioteca de geometria não carregou — paredes indisponíveis'; else if (ARCH.err) msg = 'Planta: erro ao gerar paredes (' + ARCH.err + ')'; else if (d.bad && d.bad.length) msg = `Planta: ${d.bad.length} ambiente(s) com geometria inválida foram ignorados (${d.bad.slice(0, 3).join(', ')})`; else if (S.mode === 'arch' && !d.rooms && els().some(e => e.t === 'poly' && e.closed)) msg = 'Planta: nenhum polígono com papel “Ambiente” — as paredes só são geradas entre ambientes (troque o papel na barra de seleção)';
+  if (msg && msg !== lastArchMsg) { toast(msg, 5000); console.warn('[KV Manchas]', msg, d); } lastArchMsg = msg; } return ARCH; }
 const mpArea = mp => (mp || []).reduce((s, pl) => s + Math.abs(ringArea(pl[0])) - pl.slice(1).reduce((t, h) => t + Math.abs(ringArea(h)), 0), 0);
 function envArea(list) { const a = archFor(expandList(list).filter(p => p.t !== 'guide'), false); return mpArea(a.env); }
 
@@ -2346,9 +2357,11 @@ function generalManchas(prims) {
     const byU = {}; g.items.forEach(x => { const k = x.r.usage || ''; byU[k] = (byU[k] || 0) + areaOf(x.r); });
     const dom = Object.entries(byU).sort((a, b) => b[1] - a[1])[0][0];
     if (ui >= 0) { const def = S.doc.blocks[first._chain[ui].bid]; name = def.name; usage = S.doc.settings.unitUsage || dom; } else { name = dom || 'Sem uso'; usage = dom; }
+    const ov = (sheet().genUse || {})[g.key]; if (ov) { usage = ov; if (ui < 0) name = ov; }
     out.push({ kind: ui >= 0 ? 'unidade' : 'comum', key: g.key, name, usage, mp, A: mpArea(mp) });
   });
-  R.filter(x => x.bal).forEach(x => { let mp = [[closeR(x.R)]]; if (shafts.length) mp = pc.difference(mp, ...shafts); out.push({ kind: 'varanda', key: 'v:' + x.key + ':' + x.r.id, name: x.r.name || 'Varanda', usage: x.r.usage || 'Varanda', mp, A: mpArea(mp) }); });
+  R.filter(x => x.bal).forEach(x => { let mp = [[closeR(x.R)]]; if (shafts.length) mp = pc.difference(mp, ...shafts); const vk = 'v:' + x.key + ':' + x.r.id; out.push({ kind: 'varanda', key: vk, name: x.r.name || 'Varanda', usage: (sheet().genUse || {})[vk] || x.r.usage || 'Varanda', mp, A: mpArea(mp) }); });
+  for (let i = out.length - 1; i >= 0; i--) if (!(out[i].A > 0.01)) out.splice(i, 1);
   // numera cópias de mesma tipologia
   const cnt = {}; out.forEach(o => { if (o.kind !== 'unidade') return; cnt[o.name] = (cnt[o.name] || 0) + 1; o.label = `${o.name} (${cnt[o.name]})`; }); out.forEach(o => { if (!o.label) o.label = o.name; });
   return out;
