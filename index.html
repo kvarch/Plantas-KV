@@ -337,7 +337,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V18 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V19 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -378,8 +378,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V18 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V18';
+/* KV Manchas — Beta V19 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V19';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -2447,6 +2447,147 @@ function nbrMarkup() {
   return vis.map(a => `<path d="M${a.R.map(q => `${N(q[0])} ${N(q[1])}`).join('L')}Z" fill="${a.conflict ? 'rgba(216,57,24,.18)' : 'none'}" stroke="${a.conflict ? '#c0161a' : '#e0592a'}" stroke-width="${a.conflict ? 1.4 : 1}" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"><title>${esc(a.t)}${a.conflict ? ' — EM CONFLITO' : ''}</title></path>`).join('');
 }
 
+/* ================= IMPORTADOR DXF (CAD) =================
+   Hachuras → manchas (polígonos fechados com uso por layer), polilinhas/linhas/arcos → desenho,
+   textos dentro das manchas → nome do ambiente. Cores ACI/true color e cores por layer replicadas. */
+const ACI = (() => {
+  const t = ['#000000', '#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#1b1b1b', '#808080', '#c0c0c0'];
+  const hsv = (h, s, v) => { const f = (n, k = (n + h / 60) % 6) => v - v * s * Math.max(Math.min(k, 4 - k, 1), 0); return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join(''); };
+  for (let i = 10; i < 250; i++) { const j = (i - 10) % 10; t[i] = hsv(((i - 10) / 10 | 0) * 15, j % 2 ? 0.5 : 1, [1, 0.8, 0.6, 0.5, 0.3][j >> 1]); }
+  [51, 80, 105, 130, 190, 255].forEach((g, k) => { const h = g.toString(16).padStart(2, '0'); t[250 + k] = '#' + h + h + h; });
+  return t;
+})();
+const trueColor = v => '#' + (v & 0xffffff).toString(16).padStart(6, '0');
+function parseDXF(text) {
+  const L = text.split(/\r?\n/); const P = []; for (let i = 0; i + 1 < L.length; i += 2) { const c = parseInt(L[i].trim(), 10); if (!isNaN(c)) P.push([c, L[i + 1].replace(/\s+$/, '')]); }
+  const doc = { units: 0, layers: {}, blocks: {}, ents: [] }; let i = 0;
+  const readEnt = () => { const e = { type: P[i][1], g: [] }; i++; while (i < P.length && P[i][0] !== 0) { e.g.push(P[i]); i++; } return e; };
+  while (i < P.length) {
+    if (P[i][0] === 0 && P[i][1] === 'SECTION') {
+      const name = P[i + 1] && P[i + 1][1]; i += 2;
+      if (name === 'HEADER') { while (i < P.length && !(P[i][0] === 0 && P[i][1] === 'ENDSEC')) { if (P[i][0] === 9 && P[i][1] === '$INSUNITS' && P[i + 1]) doc.units = parseInt(P[i + 1][1], 10) || 0; i++; } }
+      else if (name === 'TABLES') { while (i < P.length && !(P[i][0] === 0 && P[i][1] === 'ENDSEC')) { if (P[i][0] === 0 && P[i][1] === 'LAYER') { const e = readEnt(); const nm = (e.g.find(g => g[0] === 2) || [])[1]; if (nm != null) { const c = parseInt((e.g.find(g => g[0] === 62) || [0, 7])[1], 10); const tc = e.g.find(g => g[0] === 420); doc.layers[nm] = { name: nm, color: tc ? trueColor(+tc[1]) : (ACI[Math.abs(c)] || '#1b1b1b'), off: c < 0 }; } } else i++; } }
+      else if (name === 'BLOCKS') { let cur = null; while (i < P.length && !(P[i][0] === 0 && P[i][1] === 'ENDSEC')) { if (P[i][0] !== 0) { i++; continue; } const e = readEnt(); if (e.type === 'BLOCK') { const nm = (e.g.find(g => g[0] === 2) || [])[1]; cur = { name: nm, base: [num(e.g, 10), num(e.g, 20)], ents: [] }; doc.blocks[nm] = cur; } else if (e.type === 'ENDBLK') cur = null; else if (cur) cur.ents.push(e); } }
+      else if (name === 'ENTITIES') { while (i < P.length && !(P[i][0] === 0 && P[i][1] === 'ENDSEC')) { if (P[i][0] !== 0) { i++; continue; } doc.ents.push(readEnt()); } }
+      else while (i < P.length && !(P[i][0] === 0 && P[i][1] === 'ENDSEC')) i++;
+    }
+    i++;
+  }
+  return doc;
+}
+function num(g, code, def = 0) { const x = g.find(p => p[0] === code); return x ? parseFloat(x[1]) : def; }
+function str(g, code, def = '') { const x = g.find(p => p[0] === code); return x ? x[1] : def; }
+/* entidades → primitivos em coordenadas do desenho (expande blocos) */
+function dxfPrims(doc) {
+  const out = [];
+  const colorOf = (e, layer, inh) => { const tc = e.g.find(p => p[0] === 420); if (tc) return trueColor(+tc[1]); const c = parseInt(str(e.g, 62, '256'), 10); if (c === 256 || isNaN(c)) return (doc.layers[layer] || {}).color || '#1b1b1b'; if (c === 0) return inh || (doc.layers[layer] || {}).color || '#1b1b1b'; return ACI[Math.abs(c)] || '#1b1b1b'; };
+  const walk = (ents, M, inhLayer, inhColor, depth) => {
+    for (let k = 0; k < ents.length; k++) {
+      const e = ents[k]; let layer = str(e.g, 8, '0'); if (layer === '0' && inhLayer) layer = inhLayer; const col = colorOf(e, layer, inhColor);
+      const ocs = num(e.g, 230, 1) < 0 ? -1 : 1; const T = q => mApply(M, [q[0] * ocs, q[1]]); const flipB = (ocs < 0) !== (mDet(M) < 0);
+      const push = o => out.push({ layer, color: col, ...o });
+      if (e.type === 'LWPOLYLINE') { const pts = [], b = []; e.g.forEach(([c, v]) => { if (c === 10) { pts.push([+v, 0]); b.push(0); } else if (c === 20 && pts.length) pts[pts.length - 1][1] = +v; else if (c === 42 && pts.length) b[b.length - 1] = +v; }); const closed = (parseInt(str(e.g, 70, '0'), 10) & 1) === 1; if (pts.length >= 2) push({ kind: 'pline', pts: pts.map(T), b: b.map(x => flipB ? -x : x), closed }); }
+      else if (e.type === 'POLYLINE') { const closed = (parseInt(str(e.g, 70, '0'), 10) & 1) === 1; const pts = [], b = []; let j = k + 1; while (j < ents.length && ents[j].type === 'VERTEX') { pts.push([num(ents[j].g, 10), num(ents[j].g, 20)]); b.push(num(ents[j].g, 42)); j++; } k = j; if (pts.length >= 2) push({ kind: 'pline', pts: pts.map(T), b: b.map(x => flipB ? -x : x), closed }); }
+      else if (e.type === 'LINE') push({ kind: 'pline', pts: [T([num(e.g, 10), num(e.g, 20)]), T([num(e.g, 11), num(e.g, 21)])], b: [0, 0], closed: false });
+      else if (e.type === 'ARC' || e.type === 'CIRCLE') { const c = [num(e.g, 10), num(e.g, 20)], r = num(e.g, 40); if (!(r > 0)) continue; if (e.type === 'CIRCLE') { const R = []; for (let a = 0; a < 48; a++) R.push(T([c[0] + r * Math.cos(a / 48 * 2 * Math.PI), c[1] + r * Math.sin(a / 48 * 2 * Math.PI)])); push({ kind: 'pline', pts: R, b: R.map(() => 0), closed: true, circle: true }); } else { let a0 = num(e.g, 50) * Math.PI / 180, a1 = num(e.g, 51) * Math.PI / 180; while (a1 <= a0) a1 += 2 * Math.PI; const R = []; const n = Math.max(4, Math.ceil((a1 - a0) / (Math.PI / 24))); for (let s = 0; s <= n; s++) { const a = a0 + (a1 - a0) * s / n; R.push(T([c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)])); } push({ kind: 'pline', pts: R, b: R.map(() => 0), closed: false }); } }
+      else if (e.type === 'TEXT' || e.type === 'MTEXT') { let t = e.g.filter(p => p[0] === 3).map(p => p[1]).join('') + str(e.g, 1); t = t.replace(/\\P/g, ' ').replace(/\{\\[^;]*;|\\[A-Za-z][^;]*;|[{}]/g, '').replace(/%%[cdp]/gi, '').trim(); if (t) push({ kind: 'text', p: T([num(e.g, 10), num(e.g, 20)]), text: t }); }
+      else if (e.type === 'HATCH') { const loops = hatchLoops(e.g); const solid = str(e.g, 70, '0') === '1'; loops.forEach(lp => { if (lp.pts.length >= 3) push({ kind: 'hatch', pts: lp.pts.map(T), b: lp.b.map(x => flipB ? -x : x), closed: true, pattern: str(e.g, 2, ''), solid }); }); }
+      else if (e.type === 'INSERT' && depth < 6) { const blk = doc.blocks[str(e.g, 2)]; if (!blk) continue; const ins = [num(e.g, 10), num(e.g, 20)], sx = num(e.g, 41, 1) || 1, sy = num(e.g, 42, 1) || 1, rot = num(e.g, 50) * Math.PI / 180; const Mb = mMul(M, mMul(mT(ins[0] * ocs, ins[1]), mMul(mR(rot), mMul([sx * ocs, 0, 0, sy, 0, 0], mT(-blk.base[0], -blk.base[1]))))); walk(blk.ents, Mb, layer, col, depth + 1); }
+    }
+  };
+  walk(doc.ents, MI, null, null, 0);
+  return out;
+}
+/* contornos de hachura: caminho polilinha (com bulge) ou arestas (linha, arco, elipse, spline aprox.) */
+function hatchLoops(g) {
+  const loops = []; let i = g.findIndex(p => p[0] === 91); if (i < 0) return loops; const nPaths = parseInt(g[i][1], 10); i++;
+  const nx = c => { while (i < g.length && g[i][0] !== c) i++; return i < g.length ? g[i++][1] : null; };
+  for (let pth = 0; pth < nPaths && i < g.length; pth++) {
+    const flag = parseInt(nx(92), 10); const pts = [], b = [];
+    if (flag & 2) { const hasB = parseInt(nx(72), 10); nx(73); const nv = parseInt(nx(93), 10); for (let v = 0; v < nv; v++) { const x = +nx(10), y = +nx(20); pts.push([x, y]); b.push(hasB && i < g.length && g[i][0] === 42 ? +g[i++][1] : 0); } }
+    else { const ne = parseInt(nx(93), 10); for (let ed = 0; ed < ne; ed++) { const t = parseInt(nx(72), 10);
+        if (t === 1) { const a = [+nx(10), +nx(20)], c = [+nx(11), +nx(21)]; if (!pts.length || dist(pts[pts.length - 1], a) > 1e-9) { pts.push(a); b.push(0); } pts.push(c); b.push(0); }
+        else if (t === 2) { const c = [+nx(10), +nx(20)], r = +nx(40); let a0 = +nx(50) * Math.PI / 180, a1 = +nx(51) * Math.PI / 180; const ccw = parseInt(nx(73), 10) === 1; if (!ccw) { const t0 = -a0, t1 = -a1; a0 = t0; a1 = t1; } let sweep = a1 - a0; if (ccw) { while (sweep <= 0) sweep += 2 * Math.PI; } else { while (sweep >= 0) sweep -= 2 * Math.PI; } const n = Math.max(4, Math.ceil(Math.abs(sweep) / (Math.PI / 24))); for (let s = 0; s <= n; s++) { const a = a0 + sweep * s / n; pts.push([c[0] + r * Math.cos(a), c[1] + r * Math.sin(a)]); b.push(0); } }
+        else if (t === 3) { const c = [+nx(10), +nx(20)], mj = [+nx(11), +nx(21)], ratio = +nx(40); let a0 = +nx(50) * Math.PI / 180, a1 = +nx(51) * Math.PI / 180; const ccw = parseInt(nx(73), 10) === 1; const R = vlen(mj), ang = Math.atan2(mj[1], mj[0]); if (!ccw) { a0 = -a0; a1 = -a1; } let sweep = a1 - a0; if (ccw) { while (sweep <= 0) sweep += 2 * Math.PI; } else { while (sweep >= 0) sweep -= 2 * Math.PI; } const n = 32; for (let s = 0; s <= n; s++) { const a = a0 + sweep * s / n; const q = [R * Math.cos(a), R * ratio * Math.sin(a)]; pts.push(add(c, rotP(q, [0, 0], ang))); b.push(0); } }
+        else if (t === 4) { nx(94); nx(73); nx(74); const nk = parseInt(nx(95), 10), nc = parseInt(nx(96), 10); for (let kk = 0; kk < nk; kk++) nx(40); for (let cc = 0; cc < nc; cc++) { pts.push([+nx(10), +nx(20)]); b.push(0); } }
+      } }
+    // pula referências a objetos de borda
+    if (i < g.length && g[i][0] === 97) { const nb = parseInt(g[i][1], 10); i++; for (let q = 0; q < nb && i < g.length; q++) if (g[i][0] === 330) i++; }
+    const cl = []; const cb = []; pts.forEach((q, k) => { if (!cl.length || dist(cl[cl.length - 1], q) > 1e-9) { cl.push(q); cb.push(b[k] || 0); } }); if (cl.length > 2 && dist(cl[0], cl[cl.length - 1]) < 1e-9) { cl.pop(); cb.pop(); }
+    loops.push({ pts: cl, b: cb });
+  }
+  // laços externos apenas (ilhas internas são descartadas)
+  return loops.filter((lp, k) => !loops.some((o, j) => j !== k && Math.abs(ringArea(o.pts)) > Math.abs(ringArea(lp.pts)) && pip(lp.pts[0], o.pts)));
+}
+const UNIT_SC = { 1: 0.0254, 2: 0.3048, 4: 0.001, 5: 0.01, 6: 1 };
+async function importDXFFile(file) {
+  if (/\.dwg$/i.test(file.name)) { askDialog('Arquivo DWG', [{ id: 'x', type: 'note', label: 'O formato DWG é binário e proprietário — ainda não é lido no navegador. Salve como DXF no seu CAD (AutoCAD/ArchiCAD: Salvar como → DXF) ou converta com o ODA File Converter (gratuito) e importe o .dxf.' }], () => { }, 'Entendi'); return; }
+  let text = await file.text(); if (/^AC10/.test(text.slice(0, 6))) return toast('Este .dxf está em formato binário — salve como DXF ASCII');
+  let doc; try { doc = parseDXF(text); } catch (e) { console.warn(e); return toast('Não foi possível ler o DXF: ' + e.message); }
+  const prims = dxfPrims(doc); if (!prims.length) return toast('Nenhuma entidade reconhecida no DXF');
+  openDXFDialog(file.name, doc, prims);
+}
+function openDXFDialog(fname, doc, prims) {
+  const layers = {}; prims.forEach(p => { const L = layers[p.layer] || (layers[p.layer] = { name: p.layer, color: (doc.layers[p.layer] || {}).color || p.color, hatch: 0, closed: 0, open: 0, text: 0 }); if (p.kind === 'hatch') L.hatch++; else if (p.kind === 'text') L.text++; else if (p.closed) L.closed++; else L.open++; });
+  const B = bboxPts(prims.flatMap(p => p.pts || [p.p])); const ext = Math.max(B[2] - B[0], B[3] - B[1]);
+  let unit = UNIT_SC[doc.units] ? doc.units : (ext > 2000 ? 4 : ext > 200 ? 5 : 6);
+  const st = { unit, plines: false, names: true, minA: 0.1, dest: 'new', keep: false, L: {} };
+  const nz = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const guessUse = ln => { const l = nz(ln); const u = S.usages.find(u => { const w = nz(u.name).split(/[^a-z0-9]+/).filter(x => x.length >= 4); return w.some(x => l.includes(x)); }); return u ? u.name : (/varand|terra|sacad/.test(l) ? (S.usages.find(u => /varand/i.test(nz(u.name))) || {}).name || '' : ''); };
+  Object.values(layers).forEach(L => { const sh = /shaft|furo|duto/i.test(L.name); st.L[L.name] = { on: L.hatch > 0, mode: L.hatch > 0 ? (sh ? 'shafts' : 'manchas') : 'linhas', usage: L.hatch > 0 && !sh ? guessUse(L.name) : '' }; });
+  const dlg = $('#dlg'), f = $('#dlg-form');
+  const usageOpts = cur => `<option value="">— sem uso —</option>` + S.usages.map(u => `<option value="${esc(u.name)}" ${u.name === cur ? 'selected' : ''}>${esc(u.name)}</option>`).join('');
+  const preview = () => { const sel = prims.filter(p => st.L[p.layer] && st.L[p.layer].on && p.kind !== 'text' && (st.L[p.layer].mode === 'linhas' || p.kind === 'hatch' || (st.plines && p.closed))); if (!sel.length) return '<p class="note">Nada selecionado</p>'; const bb = bboxPts(sel.flatMap(p => p.pts)); const w = 420, h = 200; const s = Math.min((w - 10) / Math.max(bb[2] - bb[0], 1e-6), (h - 10) / Math.max(bb[3] - bb[1], 1e-6)); const ox = (w - (bb[2] - bb[0]) * s) / 2 - bb[0] * s, oy = (h + (bb[3] - bb[1]) * s) / 2 + bb[1] * s; return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;background:#fff;border:1px solid var(--md-sys-color-outline-variant)"><g transform="matrix(${s} 0 0 ${-s} ${ox} ${oy})">${sel.slice(0, 6000).map(p => `<path d="M${p.pts.map(q => `${N(q[0])} ${N(q[1])}`).join('L')}${p.closed ? 'Z' : ''}" fill="${p.kind === 'hatch' ? p.color : 'none'}" fill-opacity="${p.kind === 'hatch' ? 0.7 : 0}" stroke="${p.kind === 'hatch' ? 'none' : p.color}" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}</g></svg>`; };
+  const render = () => {
+    const rows = Object.values(layers).sort((a, b) => (b.hatch - a.hatch) || a.name.localeCompare(b.name)).map(L => { const c = st.L[L.name]; return `<tr><td><label class="chk" style="min-height:36px"><input type="checkbox" data-dl="${esc(L.name)}" ${c.on ? 'checked' : ''}><span class="sw" style="display:inline-block;width:12px;height:12px;background:${L.color};border:1px solid #0003"></span>${esc(L.name)}</label></td><td class="n" style="font-size:11px">${L.hatch ? L.hatch + ' hach.' : ''}${L.closed ? ' ' + L.closed + ' fech.' : ''}${L.open ? ' ' + L.open + ' lin.' : ''}${L.text ? ' ' + L.text + ' txt' : ''}</td><td><select class="sel" data-dm="${esc(L.name)}" style="min-height:36px;height:36px"><option value="manchas" ${c.mode === 'manchas' ? 'selected' : ''}>Manchas</option><option value="shafts" ${c.mode === 'shafts' ? 'selected' : ''}>Shafts</option><option value="linhas" ${c.mode === 'linhas' ? 'selected' : ''}>Linhas</option></select></td><td><select class="sel" data-du="${esc(L.name)}" style="min-height:36px;height:36px;max-width:150px" ${c.mode !== 'manchas' ? 'disabled' : ''}>${usageOpts(c.usage)}</select></td></tr>`; }).join('');
+    f.innerHTML = `<h2>Importar DXF — ${esc(fname)}</h2><div id="dxf-prev">${preview()}</div>
+      <div class="row2" style="margin-top:10px"><div class="field"><label for="dx-u">Unidade do desenho</label><select class="sel" id="dx-u">${[[4, 'Milímetros'], [5, 'Centímetros'], [6, 'Metros'], [1, 'Polegadas'], [2, 'Pés']].map(([k, n]) => `<option value="${k}" ${+st.unit === k ? 'selected' : ''}>${n}${+doc.units === k ? ' (do arquivo)' : ''}</option>`).join('')}</select></div><div class="field"><label for="dx-d">Destino</label><select class="sel" id="dx-d"><option value="new" ${st.dest === 'new' ? 'selected' : ''}>Nova folha</option><option value="cur" ${st.dest === 'cur' ? 'selected' : ''}>Folha atual</option></select></div></div>
+      <label class="chk"><input type="checkbox" id="dx-pl" ${st.plines ? 'checked' : ''}>Polilinhas fechadas dos layers “Manchas” também viram manchas</label>
+      <label class="chk"><input type="checkbox" id="dx-nm" ${st.names ? 'checked' : ''}>Nomear ambientes com os textos que estão dentro deles</label>
+      <label class="chk"><input type="checkbox" id="dx-kp" ${st.keep ? 'checked' : ''}>Manter as coordenadas do CAD (senão, centraliza na vista)</label>
+      <div class="field"><label for="dx-mi">Ignorar manchas menores que (m²)</label><input class="inp" id="dx-mi" value="${fmt(st.minA)}" inputmode="decimal"></div>
+      <h3 class="note" style="font-weight:600;margin:10px 0 4px">Layers</h3><div style="max-height:34vh;overflow:auto;border:1px solid var(--md-sys-color-outline-variant)"><table class="at" style="margin:0"><thead><tr><th>Layer</th><th class="n">Conteúdo</th><th>Importar como</th><th>Uso</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="btn-row" style="margin-top:14px"><button class="btn" value="cancel">Cancelar</button><button class="btn" type="button" id="dx-all">Marcar todos</button><button class="btn primary" value="ok" id="dlg-ok">Importar</button></div>`;
+    const upd = () => { $('#dxf-prev', f).innerHTML = preview(); };
+    $$('[data-dl]', f).forEach(i => i.addEventListener('change', () => { st.L[i.dataset.dl].on = i.checked; upd(); }));
+    $$('[data-dm]', f).forEach(i => i.addEventListener('change', () => { st.L[i.dataset.dm].mode = i.value; render(); }));
+    $$('[data-du]', f).forEach(i => i.addEventListener('change', () => { st.L[i.dataset.du].usage = i.value; }));
+    $('#dx-u', f).addEventListener('change', e => st.unit = +e.target.value); $('#dx-d', f).addEventListener('change', e => st.dest = e.target.value);
+    $('#dx-pl', f).addEventListener('change', e => { st.plines = e.target.checked; upd(); }); $('#dx-nm', f).addEventListener('change', e => st.names = e.target.checked); $('#dx-kp', f).addEventListener('change', e => st.keep = e.target.checked);
+    $('#dx-mi', f).addEventListener('change', e => { const v = parseNum(e.target.value); if (v >= 0) st.minA = v; });
+    $('#dx-all', f).addEventListener('click', () => { Object.values(st.L).forEach(c => c.on = true); render(); });
+  };
+  render();
+  dlg.style.maxWidth = 'min(96vw, 760px)';
+  dlg.onclose = () => { dlg.style.maxWidth = ''; if (dlg.returnValue === 'ok') doImportDXF(fname, prims, st); cv.focus(); };
+  dlg.returnValue = ''; dlg.showModal();
+}
+function doImportDXF(fname, prims, st) {
+  const sc = UNIT_SC[st.unit] || 1; const on = p => st.L[p.layer] && st.L[p.layer].on;
+  const sel = prims.filter(on); if (!sel.length) return toast('Nenhum layer selecionado');
+  const S1 = q => [q[0] * sc, q[1] * sc];
+  const all = sel.flatMap(p => (p.pts || [p.p]).map(S1)); const B = bboxPts(all);
+  let off = [0, 0]; if (!st.keep) { const c = s2w([S.W / 2, S.H / 2]); off = [c[0] - (B[0] + B[2]) / 2, c[1] - (B[1] + B[3]) / 2]; }
+  const X = q => { const a = S1(q); return [r4(a[0] + off[0]), r4(a[1] + off[1])]; };
+  const out = []; const polys = [];
+  sel.forEach(p => {
+    const cfg = st.L[p.layer]; if (p.kind === 'text') return;
+    const asMancha = (cfg.mode === 'manchas' || cfg.mode === 'shafts') && (p.kind === 'hatch' || (st.plines && p.closed));
+    if (asMancha) {
+      const pts = p.pts.map(X); const el = { id: uid(), t: 'poly', closed: true, role: 'room', usage: cfg.usage || '', name: '', guide: 1, pts, ...(p.b && p.b.some(x => x) ? { b: p.b.slice(0, pts.length) } : {}), st: { fill: p.color === '#1b1b1b' ? '#d9d9d9' : p.color, fo: 0.85, stroke: '#3a3a3a', sw: 1, dash: 'solid', byUse: false } };
+      if (cfg.mode === 'shafts') { Object.assign(el, { role: 'shaft', usage: '', name: 'Shaft', rect: el.pts.length === 4, st: newStyle('shaft') }); } else if (areaOf(el) < st.minA) return; polys.push(el); return;
+    }
+    if (cfg.mode === 'linhas') { const pts = p.pts.map(X); if (pts.length < 2) return; out.push({ id: uid(), t: 'line', closed: !!p.closed, role: 'line', pts: p.closed ? pts.concat([pts[0]]) : pts, ...(p.b && p.b.some(x => x) && !p.closed ? { b: p.b.slice(0, pts.length) } : {}), st: { fill: 'none', fo: 0, stroke: p.color, sw: 0.8, dash: 'solid', byUse: false } }); }
+  });
+  // remove manchas duplicadas (hachura + polilinha sobre o mesmo contorno)
+  const uniq = []; polys.forEach(el => { const a = areaOf(el), bb = bboxPts(el.pts); if (!uniq.some(o => Math.abs(areaOf(o) - a) < a * 0.01 && bboxPts(o.pts).every((v, k) => Math.abs(v - bb[k]) < 0.02))) uniq.push(el); });
+  uniq.forEach(el => { if (ringArea(el.pts) < 0) { const n = el.pts.length; el.pts.reverse(); if (el.b) { const o = el.b.slice(0, n); while (o.length < n) o.push(0); el.b = o.slice(0, n - 1).reverse().map(x => -x || 0).concat([-(o[n - 1] || 0)]); } } });
+  if (st.names) { const texts = prims.filter(p => p.kind === 'text').map(p => ({ p: X(p.p), t: p.text })); uniq.forEach(el => { const R = flat(el); const tx = texts.filter(t => pip(t.p, R)); if (tx.length) { const best = tx.find(t => !/^[\d.,\s]+(m²|m2)?$/i.test(t.t)) || null; if (best) el.name = best.t.slice(0, 60); } }); }
+  const list = uniq.concat(out); if (!list.length) return toast('Nada para importar com essas opções');
+  mutate(() => { if (st.dest === 'new') { const s = { id: uid(), name: fname.replace(/\.dxf$/i, '').slice(0, 40), els: [], trace: false }; S.doc.sheets.push(s); S.doc.active = s.id; S.sel.clear(); } els().push(...list); });
+  renderTabs(); fitView(list); toast(`DXF importado: ${uniq.filter(e => e.role === 'room').length} mancha(s), ${uniq.filter(e => e.role === 'shaft').length} shaft(s) e ${out.length} linha(s)`);
+}
+
 /* ---------- mobiliário (biblioteca embutida) ---------- */
 const FS = { fill: '#ffffff', fo: 1, stroke: '#6a6a6a', sw: 0.8, dash: 'solid', byUse: false };
 const fr = (x, y, w, h, st = {}) => ({ id: uid(), t: 'poly', closed: true, rect: true, role: 'layout', usage: '', name: '', guide: 0, pts: [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(p => p.map(r4)), st: { ...FS, ...st } });
@@ -2849,9 +2990,12 @@ $('#cmd-file').addEventListener('click', e => openMenu(e.currentTarget, '#menu-f
   <button role="menuitem" data-f="json">${icon('save')}Exportar documento (.json)</button>
   <button role="menuitem" data-f="imp">${icon('upload')}Abrir documento (.json)</button>
   <button role="menuitem" data-f="sheet">${icon('upload')}Importar folhas de outro documento</button><hr>
+  <div class="mh">CAD</div>
+  <button role="menuitem" data-f="dxf">${icon('upload')}Importar DXF (hachuras viram manchas)…</button><hr>
   <button role="menuitem" data-f="demo">${icon('layers')}Inserir folha de exemplo</button>
   <button role="menuitem" data-f="new">${icon('plus')}Novo documento em branco</button>`, m => {
   $$('[data-f]', m).forEach(b => b.addEventListener('click', () => { const k = b.dataset.f; closeMenus();
+    if (k === 'dxf') { const i = document.createElement('input'); i.type = 'file'; i.accept = '.dxf,.dwg'; i.onchange = () => { if (i.files[0]) importDXFFile(i.files[0]); }; i.click(); }
     if (k === 'svg') exportSVG();
     if (k === 'json') download('kv-manchas.json', snapshot());
     if (k === 'imp') pickFile(d => { if (d.app !== 'kv-manchas' || !d.sheets) return toast('Arquivo não é um documento KV Manchas'); mutate(() => { S.doc = d; S.sel.clear(); S.editBlock = null; }); renderTabs(); fitView(); });
@@ -2964,7 +3108,7 @@ async function init() {
   window.addEventListener('beforeunload', () => { if ($('#save-state').dataset.s === 'pend') saveNow(); });
 }
 init();
-window.__km = { resolvePoint, nbrAreas, gen, exportGeneralToGiraffe, arch, setMode, refreshPanels, S, G, cache, invalidate, renderAll, setTool, s2w, w2s, mutate, els, areaOf, polyArea, computeAreas, exportToGiraffe, importFromGiraffe, LIB, FURN, furnBlock, filletVertex, offsetRing, trimAt, enterBlock, exitBlock };
+window.__km = { parseDXF, dxfPrims, doImportDXF, resolvePoint, nbrAreas, gen, exportGeneralToGiraffe, arch, setMode, refreshPanels, S, G, cache, invalidate, renderAll, setTool, s2w, w2s, mutate, els, areaOf, polyArea, computeAreas, exportToGiraffe, importFromGiraffe, LIB, FURN, furnBlock, filletVertex, offsetRing, trimAt, enterBlock, exitBlock };
 
 </script>
 </body>
