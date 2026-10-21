@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V26 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V27 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -382,8 +382,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V26 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V26';
+/* KV Manchas — Beta V27 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V27';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -2163,6 +2163,9 @@ function archFor(prims, withOpen = true) {
       rooms.forEach(r => { if (!r.wh || r.t !== 'poly') return; const P = r.pts, n = P.length, sg = ringArea(P) >= 0 ? 1 : -1; Object.entries(r.wh).forEach(([i, key]) => { i = +i; if (i >= n || !key) return; const a = P[i], b = P[(i + 1) % n]; const u = nrm(sub(b, a)); const no = mul([u[1], -u[0]], sg); const T = wallThick({ c: mid(a, b), n: no }, raw); const ext = 0.25; const q = [add(a, mul(u, -ext)), add(b, mul(u, ext)), add(add(b, mul(u, ext)), mul(no, T + 0.005)), add(add(a, mul(u, -ext)), mul(no, T + 0.005))]; try { const mp = pc.intersection(out.walls, [closeR(q)]); if (mp.length) out.pieces.push({ mp, key }); } catch (_) { } }); });
       if (cuts.length && out.par.length) out.par = pc.difference(out.par, ...cuts);
     } else out.walls = raw;
+    // unidades sem ambientes: piso sólido + paredes para dentro do contorno
+    const su = standaloneUnits(prims); out.su = su;
+    if (su.length) { const others = su.map(u => flat(u)).concat(rooms.filter(r => !isBalcony(r)).map(r => flat(r))); out.suWalls = []; su.forEach((u, k) => { const oth = others.filter((_, j) => j !== k); const band = unitWallBand(u, oth); if (band.length) out.suWalls.push(...band); }); if (out.opens.length && out.suWalls.length) { try { out.suWalls = pc.difference(out.suWalls, ...out.opens.map(op => [closeR(op.cut)])); } catch (_) { } } }
   } catch (e) { console.warn('[KV Manchas] planta arquitetônica:', e); out.err = e.message; }
   return out;
 }
@@ -2178,6 +2181,17 @@ function shaftRing(p, roomRings) {
   const P = p.pts, n = P.length, sg = ringArea(P) >= 0 ? 1 : -1;
   const ds = P.map((a, i) => { const b = P[(i + 1) % n]; const u = nrm(sub(b, a)); const no = mul([u[1], -u[0]], sg); let inner = 0; [0.25, 0.5, 0.75].forEach(t => { const q = add(add(a, mul(sub(b, a), t)), mul(no, shD + 0.03)); if (roomRings.some(R => pip(q, R))) inner++; }); return inner >= 1 ? shD : ext; });
   return offsetRing(P, ds, true);
+}
+/* unidade sem ambientes dentro (ex.: CAD só com as manchas de unidade): ela própria é a mancha geral */
+function standaloneUnits(prims) {
+  const rooms = roomPrims(prims).map(r => labelPoint(flat(r)));
+  return prims.filter(p => p.role === 'unit' && p.closed && p.pts && p.pts.length >= 3).filter(u => { const R = flat(u); return !rooms.some(c => pip(c, R)); });
+}
+/* faixa de parede para dentro da unidade: externa inteira; meia parede onde encosta em outra unidade/ambiente */
+function unitWallBand(u, others) {
+  const pc = PCL(); const ext = extD(); const P = cleanRing(u.pts), n = P.length; if (n < 3) return []; const sg = ringArea(P) >= 0 ? 1 : -1;
+  const ds = P.map((a, i) => { const b = P[(i + 1) % n]; const uu = nrm(sub(b, a)); const no = mul([uu[1], -uu[0]], sg); let sh = 0; [0.25, 0.5, 0.75].forEach(t => { const q = add(add(a, mul(sub(b, a), t)), mul(no, 0.06)); if (others.some(R => pip(q, R))) sh++; }); return -(sh >= 2 ? ext / 2 : ext); });
+  try { return pc.difference([closeR(P)], [closeR(cleanRing(offsetRing(P, ds, true)))]); } catch (e) { return []; }
 }
 let ARCH = null;
 let lastArchMsg = '';
@@ -2273,13 +2287,14 @@ function renderArch() {
   C.prims.forEach(p => {
     if (p.t === 'dim' || p.t === 'open' || p.t === 'guide') return;
     if (p.role === 'room' && (p.closed || p.t === 'circle')) { const fk = floorKey(p); const fill = fk === 'liso' || !FLOORS[fk].base ? effFill(p) : `url(#fl-${fk})`; floors += p.t === 'circle' ? `<circle cx="${N(p.c[0])}" cy="${N(p.c[1])}" r="${N(p.r)}" fill="${fill}"/>` : `<path d="${pathD(p)}" fill="${fill}"/>`; return; }
-    if (p.role === 'unit') return;
+    if (p.role === 'unit') { if ((A.su || []).some(u => u._top === p._top && u.id === p.id)) floors += `<path d="${pathD(p)}" fill="${usageColor(p.usage) || effFill(p) || '#cfcfcf'}" fill-opacity="1" stroke="none"/>`; return; }
     if (p.role === 'layout') { lay += elMarkup(p); return; }
     top += elMarkup(p);
   });
   const wh = S.doc.settings.wallHatch || 'escura'; const wfill = WALLH[wh] && WALLH[wh].fill ? WALLH[wh].fill : `url(#wl-${wh})`;
   let h = floors;
   if (A.par.length) h += `<path d="${mpPath(A.par)}" fill="#ffffff" fill-rule="evenodd" stroke="#2b2b2b" stroke-width="0.9" vector-effect="non-scaling-stroke"/>`;
+  if (A.suWalls && A.suWalls.length) h += `<path d="${mpPath(A.suWalls)}" fill="${wfill}" fill-rule="evenodd" stroke="#1f1f1f" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`;
   if (A.walls.length) h += `<path d="${mpPath(A.walls)}" fill="${wfill}" fill-rule="evenodd" stroke="#1f1f1f" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`;
   (A.pieces || []).forEach(pc0 => { const f = WALLH[pc0.key] && WALLH[pc0.key].fill ? WALLH[pc0.key].fill : `url(#wl-${pc0.key})`; h += `<path d="${mpPath(pc0.mp)}" fill="${f}" fill-rule="evenodd" stroke="#1f1f1f" stroke-width="0.8" vector-effect="non-scaling-stroke"/>`; });
   A.opens.forEach(op => { h += openingMarkup(op, op.o); });
@@ -2403,6 +2418,7 @@ function generalManchas(prims) {
     out.push({ kind: ui >= 0 || upol ? 'unidade' : 'comum', key: g.key, name, usage, mp, A: mpArea(mp) });
   });
   R.filter(x => x.bal).forEach(x => { let mp = [[closeR(x.R)]]; if (shafts.length) mp = pc.difference(mp, ...shafts); const vk = 'v:' + x.key + ':' + x.r.id; out.push({ kind: 'varanda', key: vk, name: x.r.name || 'Varanda', usage: (sheet().genUse || {})[vk] || x.r.usage || 'Varanda', mp, A: mpArea(mp) }); });
+  standaloneUnits(prims).forEach(u => { let mp = [[closeR(cleanRing(flat(u)))]]; if (shafts.length) { try { mp = pc.difference(mp, ...shafts); } catch (_) { } } const key = 'su:' + u._top + ':' + u.id; const ov = (sheet().genUse || {})[key]; out.push({ kind: 'unidade', key, name: u.name || 'Unidade', usage: ov || S.doc.settings.unitUsage || u.usage || '', mp, A: mpArea(mp) }); });
   for (let i = out.length - 1; i >= 0; i--) if (!(out[i].A > 0.01)) out.splice(i, 1);
   // numera cópias de mesma tipologia
   const tot = {}; out.forEach(o => { if (o.kind === 'unidade') tot[o.name] = (tot[o.name] || 0) + 1; }); const cnt = {}; out.forEach(o => { if (o.kind !== 'unidade') return; cnt[o.name] = (cnt[o.name] || 0) + 1; o.label = tot[o.name] > 1 ? `${o.name} (${cnt[o.name]})` : o.name; }); out.forEach(o => { if (!o.label) o.label = o.name; });
