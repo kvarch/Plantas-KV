@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V24 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V25 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -382,8 +382,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V24 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V24';
+/* KV Manchas — Beta V25 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V25';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -1784,6 +1784,18 @@ function openUsagePicker(btn, cur, cb) {
     bind();
   });
 }
+/* lista de nomes de ambiente (padrão + nomes já usados no documento), com busca */
+function openNamePicker(btn, cb) {
+  const used = new Set(); S.doc.sheets.forEach(s => s.els.forEach(e => e.name && e.role === 'room' && used.add(e.name))); Object.values(S.doc.blocks).forEach(d => d.els.forEach(e => e.name && e.role === 'room' && used.add(e.name)));
+  const all = [...new Set([...ROOM_NAMES, ...used])].sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true }));
+  const list = q => { q = (q || '').trim().toLowerCase(); const f = all.filter(n => !q || n.toLowerCase().includes(q)); return f.map(n => `<button role="option" data-nm="${esc(n)}">${esc(n)}</button>`).join('') + (q && !all.some(n => n.toLowerCase() === q) ? `<button role="option" data-nm="${esc(q)}">Usar “${esc(q)}”</button>` : '') + `<button role="option" data-nm="">— sem nome —</button>`; };
+  const menu = $('#menu-usage'); if (menu.parentElement !== document.body) document.body.appendChild(menu);
+  openMenu(btn, '#menu-usage', `<div style="padding:8px 12px 4px"><label class="sr-only" for="nm-q">Buscar nome</label><input class="inp" id="nm-q" type="search" placeholder="Buscar ou digitar nome…" style="width:100%" autocomplete="off"></div><div id="nm-list" role="listbox" aria-label="Nomes de ambiente">${list('')}</div>`, m => {
+    const q = $('#nm-q', m); q.focus(); const bind = () => $$('[data-nm]', m).forEach(b => b.onclick = () => { closeMenus(); cb(b.dataset.nm); });
+    q.addEventListener('input', () => { $('#nm-list', m).innerHTML = list(q.value); bind(); });
+    q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#nm-list [data-nm]', m)?.click(); } e.stopPropagation(); }); bind();
+  });
+}
 function usageOptions(cur) { const list = S.usages.slice(); if (cur && !list.some(u => u.name === cur)) list.push({ name: cur }); return `<option value="">— sem categoria —</option>` + list.map(u => `<option value="${esc(u.name)}" ${u.name === cur ? 'selected' : ''}>${esc(u.name)}</option>`).join(''); }
 function renderOptbar() {
   const ob = $('#optbar'); const t = S.tool; const d = S.doc.defaults, st = S.doc.settings;
@@ -1960,7 +1972,7 @@ function selBarHTML() {
   if (geo.length) {
     const roleV = geo.every(e => e.role === geo[0].role) ? geo[0].role : '';
     let ident = '';
-    if (one && one.t !== 'line') ident += `<label class="sr-only" for="sb-name">Nome</label><input class="inp" id="sb-name" list="room-names" value="${esc(one.name || '')}" placeholder="Nome" style="width:130px"><datalist id="room-names">${ROOM_NAMES.map(n => `<option value="${n}">`).join('')}</datalist>`;
+    if (shapes.length) { const n0 = shapes[0].name || ''; const mixed = shapes.some(x => (x.name || '') !== n0); ident += `<label class="sr-only" for="sb-name">Nome${shapes.length > 1 ? ' (aplica a todos os selecionados)' : ''}</label><input class="inp" id="sb-name" value="${mixed ? '' : esc(n0)}" placeholder="${mixed ? '(vários)' : 'Nome'}" style="width:130px" autocomplete="off"><button type="button" class="icon-btn" id="sb-namepick" aria-label="Escolher nome da lista" title="Escolher nome da lista" style="width:36px;min-width:36px">▾</button>`; }
     ident += `<label class="sr-only" for="sb-role">Papel</label><select class="sel" id="sb-role" title="Papel">${roleV ? '' : '<option value="">(vários)</option>'}${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${roleV === k ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
     if (shapes.length) { const u0 = shapes[0].usage; ident += usageBtn('sb-usage', u0, shapes.some(x => x.usage !== u0)); }
     h += grp('Identificação', ident);
@@ -1997,7 +2009,9 @@ function bindSelBar(ob) {
   const rooms = geo.filter(e => e.closed && e.role === 'room' && e.pts);
   const on = (id, ev, f) => { const x = $('#' + id, ob); if (x) x.addEventListener(ev, f); };
   const st = (k, v, extra) => mutate(() => geo.forEach(x => { x.st = x.st || {}; x.st[k] = v; if (extra) extra(x); }));
-  on('sb-name', 'change', e => mutate(() => { one.name = e.target.value.trim(); }));
+  on('sb-name', 'change', e => { const v = e.target.value.trim(); mutate(() => shapes.forEach(x => { x.name = v; })); });
+  on('sb-name', 'keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } e.stopPropagation(); });
+  on('sb-namepick', 'click', e => openNamePicker(e.currentTarget, v => mutate(() => shapes.forEach(x => { x.name = v; }))));
   on('sb-role', 'change', e => { const v = e.target.value; if (!v) return; mutate(() => geo.forEach(x => { x.role = v; if (v === 'limit') { x.st = newStyle('limit'); x.usage = ''; } if (v === 'unit') { x.st = { ...x.st, fo: 0.12, dash: 'dash', sw: 1.6 }; x.guide = 0; } })); });
   on('sb-usage', 'click', e => { const u0 = shapes[0]?.usage; openUsagePicker(e.currentTarget, u0, v => mutate(() => shapes.forEach(x => { x.usage = v; x.st = x.st || {}; x.st.byUse = !!v; if (v && usageColor(v)) x.st.fill = usageColor(v); }))); });
   on('sb-fill', 'change', e => st('fill', e.target.value, x => { x.st.byUse = false; }));
