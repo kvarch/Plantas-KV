@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V27 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V28 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -382,8 +382,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V27 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V27';
+/* KV Manchas — Beta V28 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V28';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -3010,27 +3010,51 @@ async function exportToGiraffe(all, asBlock = false) {
 
 /* envio das manchas gerais (polígonos com furos de shaft) — substitui o envio anterior desta folha */
 function rawSectionList() { try { const rs = G.state.get('rawSections'); const out = []; const walk = (v, d = 0) => { if (!v || d > 4) return; if (Array.isArray(v)) return v.forEach(x => walk(x, d + 1)); if (v.type === 'FeatureCollection') return walk(v.features, d + 1); if (v.geometry || v.properties) { out.push(v); return; } if (typeof v === 'object') Object.values(v).forEach(x => walk(x, d + 1)); }; walk(rs); return out; } catch (_) { return []; } }
-async function exportGeneralToGiraffe(keys) {
+/* envio genérico de manchas (polígonos com furos) — substitui o envio anterior dos mesmos itens nesta folha */
+async function sendItemsToGiraffe(items, TAG, what, keySet) {
   if (S.editBlock) return toast('Conclua a edição do bloco antes de enviar');
-  const sh = sheet(); const keySet = keys && keys.length ? new Set(keys) : null; const GM = gen().filter(m => !keySet || keySet.has(m.key)); if (!GM.length) return toast(keySet ? 'Selecione manchas gerais na vista Gerais' : 'Nenhuma mancha geral nesta folha');
-  if (!sh.geo) { toast('Clique no mapa para posicionar a origem (canto 0,0) da folha'); if (!(await pickOrigin())) return; }
-  const o = sh.geo; const TAG = 'kv-manchas-geral';
-  const feats = [];
-  GM.forEach(g => g.mp.forEach((pl, pi) => {
-    const rings = pl.map(R => { const ll = R.map(q => toLL(q, o)); if (dist(ll[0], ll[ll.length - 1]) > 1e-12) ll.push(ll[0]); return ll; });
-    const props = { layerId: 'default', sp_tag: TAG, kvManchas: { sheet: sh.id, kind: g.kind, group: g.key, name: g.label, part: pi } };
+  if (!items.length) return toast('Nada para enviar nesta vista');
+  const sh = sheet(); if (!sh.geo) { toast('Clique no mapa para posicionar a origem (canto 0,0) da folha'); if (!(await pickOrigin())) return; }
+  const o = sh.geo; const feats = [];
+  items.forEach(g => g.mp.forEach((pl, pi) => {
+    const rings = pl.map(R => { const ll = R.map(q => toLL(q, o)); if (dist(ll[0], ll[ll.length - 1]) > 1e-12) ll.push(ll[0]); return ll; }).filter(r => r.length >= 4);
+    if (!rings.length) return;
+    const props = { layerId: 'default', sp_tag: TAG, kvManchas: { sheet: sh.id, kind: g.kind, group: g.key, name: g.label || g.name || '', part: pi } };
     if (g.usage) props.usage = g.usage;
-    if (S.doc.settings.sendColors && usageColor(g.usage)) props.color = usageColor(g.usage);
+    if ((S.doc.settings.sendColors || !g.usage) && g.color) props.color = g.color;
     feats.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: rings }, properties: props });
   }));
-  // remove o envio anterior desta folha (mesmo sp_tag + folha)
   if (S.doc.settings.replaceGeneral !== false) {
     const old = rawSectionList().filter(f => f.properties && f.properties.sp_tag === TAG && f.properties.kvManchas && f.properties.kvManchas.sheet === sh.id && (!keySet || keySet.has(f.properties.kvManchas.group)));
     const ids = old.map(f => f.properties.id ?? f.id).filter(v => v != null);
-    if (ids.length) { try { await gInvoke('deleteRawSections', [ids], 20000); console.info('[KV Manchas] removidas', ids.length, 'manchas gerais anteriores'); } catch (e) { console.warn('[KV Manchas] deleteRawSections falhou, tentando uma a uma', e); for (const id of ids) { try { await gInvoke('deleteRawSection', [id], 8000); } catch (e2) { console.warn('[KV Manchas] deleteRawSection', id, e2); } } } }
+    if (ids.length) { try { await gInvoke('deleteRawSections', [ids], 20000); console.info('[KV Manchas] removidos', ids.length, 'itens do envio anterior', TAG); } catch (e) { console.warn('[KV Manchas] deleteRawSections falhou, tentando um a um', e); for (const id of ids) { try { await gInvoke('deleteRawSection', [id], 8000); } catch (e2) { console.warn('[KV Manchas] deleteRawSection', id, e2); } } } }
   }
-  try { await gInvoke('createRawSections', [feats], 30000); const holes = feats.reduce((s, f) => s + f.geometry.coordinates.length - 1, 0); toast(`${feats.length} mancha(s) geral(is) enviada(s)${holes ? ` com ${holes} furo(s) de shaft` : ''}`); console.info('[KV Manchas] manchas gerais enviadas', feats.map(f => [f.properties.kvManchas.name, f.properties.usage, f.geometry.coordinates.length])); }
-  catch (e) { toast('Falha ao enviar as manchas gerais: ' + e.message); console.warn('[KV Manchas] createRawSections (gerais)', e, feats[0]); }
+  try { await gInvoke('createRawSections', [feats], 30000); const holes = feats.reduce((s, f) => s + f.geometry.coordinates.length - 1, 0); toast(`${feats.length} ${what} enviada(s) ao Giraffe${holes ? ` (${holes} furo(s))` : ''}`); console.info('[KV Manchas] enviados', TAG, feats.length); }
+  catch (e) { toast('Falha ao enviar ao Giraffe: ' + e.message); console.warn('[KV Manchas] createRawSections', TAG, e, feats[0]); }
+}
+async function exportGeneralToGiraffe(keys) {
+  const keySet = keys && keys.length ? new Set(keys) : null; const GM = gen().filter(m => !keySet || keySet.has(m.key));
+  if (!GM.length) return toast(keySet ? 'Selecione manchas gerais na vista Gerais' : 'Nenhuma mancha geral nesta folha');
+  return sendItemsToGiraffe(GM.map(g => ({ ...g, color: usageColor(g.usage) })), 'kv-manchas-geral', 'mancha(s) geral(is)', keySet);
+}
+/* vista Manchas: ambientes, unidades e varandas como desenhados (com o uso de cada um) */
+function viewManchasItems(onlySel) {
+  const top = els().filter(e => !onlySel || S.sel.has(e.id)); const prims = expandList(top);
+  const shafts = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3).map(p => [closeR(flat(p))]); const pc = PCL();
+  return prims.filter(p => (p.role === 'room' || p.role === 'unit') && (p.closed || p.t === 'circle')).map(p => { let mp = [[closeR(cleanRing(flat(p)))]]; if (shafts.length && pc && p.role !== 'unit') { try { mp = pc.difference(mp, ...shafts); } catch (_) { } } return { key: 'm:' + p._top + ':' + p.id + ':' + ((p._chain || []).map(c => c.inst.id).join('/')), kind: p.role === 'unit' ? 'unidade' : isBalcony(p) ? 'varanda' : 'ambiente', name: p.name || '', usage: p.usage || '', color: effFill(p), mp }; }).filter(i => mpArea(i.mp) > 0.01);
+}
+/* vista Planta: pisos dos ambientes + paredes (sem uso) */
+function viewPlantaItems() {
+  const A = arch(); const items = viewManchasItems(false).filter(i => i.kind !== 'unidade');
+  (A.su || []).forEach(u => items.push({ key: 'su:' + u._top + ':' + u.id, kind: 'unidade', name: u.name || '', usage: u.usage || '', color: usageColor(u.usage) || effFill(u), mp: [[closeR(cleanRing(flat(u)))]] }));
+  const walls = (A.walls || []).concat(A.suWalls || []); if (walls.length) items.push({ key: 'walls', kind: 'parede', name: 'Paredes', usage: '', color: '#3b3b3b', mp: walls });
+  return items;
+}
+async function exportViewToGiraffe(onlySel) {
+  if (S.mode === 'geral') return exportGeneralToGiraffe(onlySel ? [...S.genSel] : null);
+  if (S.mode === 'arch') return sendItemsToGiraffe(viewPlantaItems(), 'kv-manchas-planta', 'peça(s) da planta');
+  const items = viewManchasItems(onlySel); const keySet = onlySel ? new Set(items.map(i => i.key)) : null;
+  return sendItemsToGiraffe(items, 'kv-manchas-manchas', 'mancha(s)', keySet);
 }
 async function giraffeDiagnostics() {
   const d = { app: 'kv-manchas', v: VERSION, when: new Date().toISOString() };
@@ -3051,6 +3075,8 @@ function closeMenus() { $$('.menu').forEach(m => m.classList.remove('show')); $$
 document.addEventListener('pointerdown', e => { if (!e.target.closest('.menu') && !e.target.closest('[aria-haspopup]')) closeMenus(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenus(); });
 $('#cmd-giraffe').addEventListener('click', e => openMenu(e.currentTarget, '#menu-giraffe', `<div class="mh">Giraffe ${G.on ? '· conectado' : '· não conectado'}</div>
+  <button role="menuitem" data-g="view" ${G.on ? '' : 'disabled'}>${icon('upload')}<span>Enviar o que está na vista <b>${{ manchas: 'Manchas', geral: 'Gerais', arch: 'Planta' }[S.mode]}</b><br><small class="note" style="margin:0">${{ manchas: 'ambientes, unidades e varandas com seus usos', geral: 'manchas gerais com furos de shaft', arch: 'pisos dos ambientes e paredes' }[S.mode]}</small></span></button>
+  ${(S.mode === 'manchas' && S.sel.size) || (S.mode === 'geral' && S.genSel.size) ? `<button role="menuitem" data-g="views" ${G.on ? '' : 'disabled'}>${icon('upload')}<span>Enviar só a seleção desta vista</span></button>` : ''}<hr>
   ${S.genSel.size ? `<button role="menuitem" data-g="gens" ${G.on ? '' : 'disabled'}>${icon('upload')}<span>Enviar manchas gerais selecionadas (${S.genSel.size})</span></button>` : ''}
   <button role="menuitem" data-g="gen" ${G.on ? '' : 'disabled'}>${icon('upload')}<span>Enviar manchas gerais da folha<br><small class="note" style="margin:0">unidades, varandas, circulações — com furos de shaft (${gen().length})</small></span></button>
   <label class="chk" style="padding:0 16px"><input type="checkbox" id="g-repl" ${S.doc.settings.replaceGeneral !== false ? 'checked' : ''}>Substituir o envio anterior desta folha</label><hr>
@@ -3064,7 +3090,7 @@ $('#cmd-giraffe').addEventListener('click', e => openMenu(e.currentTarget, '#men
   <button role="menuitem" data-g="diag" ${G.on ? '' : 'disabled'}>${icon('file')}Diagnóstico (baixar JSON para suporte)</button>
   <div style="padding:4px 16px 8px"><label class="note" for="g-layer" style="display:block;margin:0 0 4px">Grupo / marcador das feições enviadas</label><input class="inp" id="g-layer" style="width:100%" value="${esc(S.doc.settings.giraffeLayer || 'KV Manchas')}"></div>
   ${G.on ? '' : '<p class="note" style="padding:0 16px">Abra este app como painel dentro do Giraffe para copiar elementos entre o mapa e a folha.</p>'}`, m => {
-  $$('[data-g]', m).forEach(b => b.addEventListener('click', () => { const k = b.dataset.g; closeMenus(); if (k === 'imp') importFromGiraffe(); if (k === 'exs') exportToGiraffe(false); if (k === 'exa') exportToGiraffe(true); if (k === 'exb') exportToGiraffe(false, true); if (k === 'org') pickOrigin(); if (k === 'diag') giraffeDiagnostics(); if (k === 'gen') exportGeneralToGiraffe(); if (k === 'gens') exportGeneralToGiraffe([...S.genSel]); }));
+  $$('[data-g]', m).forEach(b => b.addEventListener('click', () => { const k = b.dataset.g; closeMenus(); if (k === 'imp') importFromGiraffe(); if (k === 'exs') exportToGiraffe(false); if (k === 'exa') exportToGiraffe(true); if (k === 'exb') exportToGiraffe(false, true); if (k === 'org') pickOrigin(); if (k === 'diag') giraffeDiagnostics(); if (k === 'gen') exportGeneralToGiraffe(); if (k === 'gens') exportGeneralToGiraffe([...S.genSel]); if (k === 'view') exportViewToGiraffe(false); if (k === 'views') exportViewToGiraffe(true); }));
   $('#g-repl', m).addEventListener('change', ev => { S.doc.settings.replaceGeneral = ev.target.checked; scheduleSave(); });
   $('#g-colors', m).addEventListener('change', ev => { S.doc.settings.sendColors = ev.target.checked; scheduleSave(); });
   $('#g-rot', m).addEventListener('change', ev => { const v = parseNum(ev.target.value); if (isFinite(v)) S.doc.settings.mapRot = v; scheduleSave(); });
@@ -3193,7 +3219,7 @@ async function init() {
   window.addEventListener('beforeunload', () => { if ($('#save-state').dataset.s === 'pend') saveNow(); });
 }
 init();
-window.__km = { parseDXF, dxfPrims, doImportDXF, resolvePoint, nbrAreas, gen, exportGeneralToGiraffe, arch, setMode, refreshPanels, S, G, cache, invalidate, renderAll, setTool, s2w, w2s, mutate, els, areaOf, polyArea, computeAreas, exportToGiraffe, importFromGiraffe, LIB, FURN, furnBlock, filletVertex, offsetRing, trimAt, enterBlock, exitBlock };
+window.__km = { exportViewToGiraffe, viewManchasItems, viewPlantaItems, parseDXF, dxfPrims, doImportDXF, resolvePoint, nbrAreas, gen, exportGeneralToGiraffe, arch, setMode, refreshPanels, S, G, cache, invalidate, renderAll, setTool, s2w, w2s, mutate, els, areaOf, polyArea, computeAreas, exportToGiraffe, importFromGiraffe, LIB, FURN, furnBlock, filletVertex, offsetRing, trimAt, enterBlock, exitBlock };
 
 </script>
 </body>
