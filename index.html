@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V25 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V26 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -382,8 +382,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V25 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V25';
+/* KV Manchas — Beta V26 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V26';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -2138,7 +2138,8 @@ function archFor(prims, withOpen = true) {
     }
     // paredes no contorno dos shafts (espessura “ambiente × shaft”), unidas às demais
     const shD = ((S.doc.settings.walls || []).find(w => w.k === 'shaft') || { d: 0.10 }).d || 0.10;
-    const shRings = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3 && p.shaftWall !== false).map(p => [closeR(offsetRing(flat(p), shD, true))]);
+    const roomRings = rooms.filter(r => !isBalcony(r)).map(r => flat(r));
+    const shRings = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3 && p.shaftWall !== false).map(p => [closeR(shaftRing(p, roomRings))]);
     const cutsAll = holes.concat(shafts);
     let raw = wallSolid.length ? (cutsAll.length ? pc.difference(wallSolid, ...cutsAll) : wallSolid) : [];
     if (shRings.length) { const shW = pc.difference(pc.union(...shRings), ...shafts); raw = raw.length ? pc.union(raw, shW) : shW; } // a parede do shaft prevalece sobre os ambientes
@@ -2169,6 +2170,15 @@ function archFor(prims, withOpen = true) {
 function cleanRing(R) { const out = []; R.forEach(q => { q = [Math.round(q[0] * 1e5) / 1e5, Math.round(q[1] * 1e5) / 1e5]; if (!out.length || dist(q, out[out.length - 1]) > 1e-4) out.push(q); }); while (out.length > 2 && dist(out[0], out[out.length - 1]) < 1e-4) out.pop(); for (let i = out.length - 1; i >= 0 && out.length > 3; i--) { const a = out[(i - 1 + out.length) % out.length], b = out[i], c = out[(i + 1) % out.length]; if (Math.abs(crs(sub(b, a), sub(c, b))) < 1e-9) out.splice(i, 1); } return out; }
 function cleanWithD(P, d) { const n = P.length; const keepP = [], keepD = []; for (let i = 0; i < n; i++) { const a = P[i], b = P[(i + 1) % n]; if (dist(a, b) < 1e-4) continue; keepP.push(a); keepD.push(Array.isArray(d) ? d[i] : d); } return { P: keepP, d: keepD }; }
 function safeUnion(list, bad) { const pc = PCL(); try { return pc.union(...list); } catch (e) { console.warn('[KV Manchas] união das paredes falhou, refazendo uma a uma', e); let acc = []; list.forEach((g, i) => { try { acc = acc.length ? pc.union(acc, g) : pc.union(g); } catch (e2) { bad.push('polígono ' + (i + 1)); } }); return acc; } }
+/* contorno de parede do shaft: faces voltadas para ambientes usam a espessura “ambiente × shaft”;
+   faces voltadas para fora usam a espessura da parede externa (a fachada continua) */
+function shaftRing(p, roomRings) {
+  const shD = ((S.doc.settings.walls || []).find(w => w.k === 'shaft') || { d: 0.10 }).d || 0.10, ext = extD();
+  if (p.b && p.b.some(x => x)) return offsetRing(flat(p), shD, true);
+  const P = p.pts, n = P.length, sg = ringArea(P) >= 0 ? 1 : -1;
+  const ds = P.map((a, i) => { const b = P[(i + 1) % n]; const u = nrm(sub(b, a)); const no = mul([u[1], -u[0]], sg); let inner = 0; [0.25, 0.5, 0.75].forEach(t => { const q = add(add(a, mul(sub(b, a), t)), mul(no, shD + 0.03)); if (roomRings.some(R => pip(q, R))) inner++; }); return inner >= 1 ? shD : ext; });
+  return offsetRing(P, ds, true);
+}
 let ARCH = null;
 let lastArchMsg = '';
 function arch() { if (!ARCH) { ARCH = archFor(cache().prims, true); const d = ARCH.diag || {}; let msg = ''; if (!ARCH.ok) msg = 'Biblioteca de geometria não carregou — paredes indisponíveis'; else if (ARCH.err) msg = 'Planta: erro ao gerar paredes (' + ARCH.err + ')'; else if (d.bad && d.bad.length) msg = `Planta: ${d.bad.length} ambiente(s) com geometria inválida foram ignorados (${d.bad.slice(0, 3).join(', ')})`; else if (S.mode === 'arch' && !d.rooms && els().some(e => e.t === 'poly' && e.closed)) msg = 'Planta: nenhum polígono com papel “Ambiente” — as paredes só são geradas entre ambientes (troque o papel na barra de seleção)';
@@ -2368,6 +2378,11 @@ function generalManchas(prims) {
   const groups = new Map();
   R.forEach(x => { if (x.bal) return; if (!groups.has(x.key)) groups.set(x.key, { key: x.key, items: [] }); groups.get(x.key).items.push(x); });
   const reach = 2 * ext + 0.02;
+  // shafts encostados: o contorno de parede do shaft entra na mancha do grupo que ele toca (o shaft vira furo)
+  const roomRingsG = R.filter(x => !x.bal).map(x => x.R);
+  const shRingsG = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3).map(p => ({ R: shaftRing(p, roomRingsG), owner: null }));
+  const ringDist = (q, Rr) => { let m = Infinity; for (let i = 0; i < Rr.length; i++) { const d = dist(projSeg(q, Rr[i], Rr[(i + 1) % Rr.length]).p, q); if (d < m) m = d; } return pip(q, Rr) ? 0 : m; };
+  shRingsG.forEach(sh => { const c = centroid(sh.R); let best = null, bd = 1.0; R.forEach(x => { if (x.bal) return; const d = ringDist(c, x.R); if (d < bd) { bd = d; best = x; } }); if (best) sh.owner = best.key; });
   const edgeD = (x, i) => {
     const P = x.r.pts, n = P.length, sg = ringArea(P) >= 0 ? 1 : -1; const a = P[i], b = P[(i + 1) % n]; const u = nrm(sub(b, a)); const no = mul([u[1], -u[0]], sg);
     let d = ext; const half = x.r.half && x.r.half[i] ? ext / 2 : ext;
@@ -2378,7 +2393,8 @@ function generalManchas(prims) {
   const out = [];
   groups.forEach(g => {
     const polys = g.items.map(x => [closeR(offsetRing(x.r.pts, x.r.pts.map((_, i) => edgeD(x, i)), true))]);
-    let mp = safeUnion(polys.map(pl => [cleanRing(pl[0])]).filter(pl => pl[0].length >= 3).map(pl => [closeR(pl[0])]), []).map(pl => [pl[0]]); if (shafts.length) { try { mp = pc.difference(mp, ...shafts); } catch (e) { console.warn('[KV Manchas] furos de shaft na mancha geral', e); } }
+    let mp = safeUnion(polys.map(pl => [cleanRing(pl[0])]).filter(pl => pl[0].length >= 3).map(pl => [closeR(pl[0])]), []).map(pl => [pl[0]]);
+    const mine = shRingsG.filter(sh => sh.owner === g.key).map(sh => [closeR(sh.R)]); if (mine.length) { try { mp = pc.union(mp, ...mine).map(pl => [pl[0]]); } catch (e) { console.warn('[KV Manchas] shaft na mancha geral', e); } } if (shafts.length) { try { mp = pc.difference(mp, ...shafts); } catch (e) { console.warn('[KV Manchas] furos de shaft na mancha geral', e); } }
     const first = g.items[0].r; const ui = unitIdx(first); const upol = ui < 0 ? unitOf(first) : null; let name, usage;
     const byU = {}; g.items.forEach(x => { const k = x.r.usage || ''; byU[k] = (byU[k] || 0) + areaOf(x.r); });
     const dom = Object.entries(byU).sort((a, b) => b[1] - a[1])[0][0];
