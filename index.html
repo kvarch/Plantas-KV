@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V22 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V23 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -382,8 +382,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V22 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V22';
+/* KV Manchas — Beta V23 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V23';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -1983,6 +1983,7 @@ function selBarHTML() {
   if (one && one.t === 'open') { const anc = S.openAnchor || 'center'; h += grp('Abertura', `<label class="sr-only" for="sb-okind">Tipo</label><select class="sel" id="sb-okind">${Object.entries(OPEN_KINDS).map(([k, n]) => `<option value="${k}" ${one.kind === k ? 'selected' : ''}>${n}</option>`).join('')}</select>${widthPicker('sb-ow', one.w, one.kind)}${panelsPicker('sb-op', one.panels, one.kind)}${WIN[one.kind] ? `<div class="seg" role="group" aria-label="Canto a 45 graus"><button data-mt="start" aria-pressed="${one.miter === 'start'}" title="Canto 45° neste lado (sem batente) — junção na quina">◤ 45°</button><button data-mt="" aria-pressed="${!one.miter}" title="Sem canto 45°">—</button><button data-mt="end" aria-pressed="${one.miter === 'end'}" title="Canto 45° neste lado (sem batente) — junção na quina">45° ◥</button></div>` : ''}<div class="seg" role="group" aria-label="Lado que cresce"><button data-anc="start" aria-pressed="${anc === 'start'}" title="Mantém o lado direito, cresce para a esquerda">◀</button><button data-anc="center" aria-pressed="${anc === 'center'}" title="Cresce pelos dois lados">●</button><button data-anc="end" aria-pressed="${anc === 'end'}" title="Mantém o lado esquerdo, cresce para a direita">▶</button></div>${one.kind === 'giro' || one.kind === 'cortafogo' ? `<label class="sr-only" for="sb-ost">Representação</label><select class="sel" id="sb-ost" title="Representação da porta">${[['', 'Padrão (' + ({ fechada: 'fechada', 'fechada-tracejada': 'fechada + giro tracejado', aberta: 'com arco', tracejada: 'arco tracejado' }[S.doc.settings.doorStyle || 'fechada']) + ')'], ['fechada', 'Fechada'], ['fechada-tracejada', 'Fechada + giro tracejado'], ['aberta', 'Aberta com arco'], ['tracejada', 'Aberta tracejada']].map(([k, v]) => `<option value="${k}" ${(one.style || '') === k ? 'selected' : ''}>${v}</option>`).join('')}</select>` : ''}${(one.kind === 'giro' || one.kind === 'cortafogo') && one.w >= (nbrSet().minDoor - 1e-6) ? `<button class="btn sm" id="sb-onbr" aria-pressed="${!!one.nbr}" title="Mostrar a área de aproximação NBR 9050 desta porta">NBR</button>` : ''}<button class="icon-btn" id="sb-ofh" aria-label="Espelhar no sentido da parede" title="Espelhar ↔ (lado da dobradiça)">${icon('flipH')}</button><button class="icon-btn" id="sb-ofv" aria-label="Espelhar no sentido da abertura" title="Espelhar ↕ (lado para onde abre)">${icon('flipV')}</button>`); }
   if (one && one.t === 'dim') h += grp('Cota', `<div class="seg" role="group" aria-label="Tipo de cota"><button id="sb-dl1" aria-pressed="${one.showLine !== false}">Com linha</button><button id="sb-dl0" aria-pressed="${one.showLine === false}">Só texto</button></div><label class="sr-only" for="sb-dpos">Posição do texto</label><select class="sel" id="sb-dpos" title="Posição do texto">${[['center', 'Centro'], ['start', 'Canto inicial'], ['end', 'Canto final']].map(([k, v]) => `<option value="${k}" ${(one.textPos || 'center') === k ? 'selected' : ''}>${v}</option>`).join('')}</select><button class="icon-btn" id="sb-dside" aria-label="Inverter lado do texto" title="Inverter lado do texto">${icon('flipV')}</button><label class="sr-only" for="sb-dfs">Tamanho do texto</label><input class="inp num" id="sb-dfs" value="${one.fs || set.dimFont || 12}" inputmode="numeric" title="Tamanho do texto (px)" style="width:56px"><input type="color" id="sb-dcol" value="${one.st?.stroke || '#2b2b2b'}" aria-label="Cor da cota" title="Cor da cota">`);
   if (one && one.t === 'block') { const def = S.doc.blocks[one.bid]; h += grp('Bloco', `<label class="sr-only" for="sb-bname">Nome do bloco</label><input class="inp" id="sb-bname" value="${esc(def?.name)}" style="width:160px" title="Nome do bloco"><label class="sr-only" for="sb-bkind">Tipo</label><select class="sel" id="sb-bkind" title="Tipo do bloco">${[['unidade', 'Unidade'], ['pavimento', 'Pavimento'], ['mobiliario', 'Mobiliário'], ['outro', 'Outro']].map(([k, v]) => `<option value="${k}" ${def?.kind === k ? 'selected' : ''}>${v}</option>`).join('')}</select><span class="hint">${instancesOf(one.bid)} cópia(s)</span><button class="icon-btn" id="sb-bedit" aria-label="Editar bloco" title="Editar bloco">${icon('edit')}</button><button class="icon-btn" id="sb-bexp" aria-label="Explodir" title="Explodir">${icon('explode')}</button><button class="icon-btn" id="sb-bsave" aria-label="Salvar na biblioteca" title="Salvar na biblioteca">${icon('book')}</button>`); }
+  const cadL = [...new Set(sel.map(e => e.cad).filter(Boolean))]; if (cadL.length === 1) h += grp('Layer CAD', `<button class="btn sm" id="sb-cadsel" title="Seleciona todos os elementos importados do layer ${esc(cadL[0])}">${icon('layers')}Selecionar mesmo layer</button>`);
   h += grp('Ordem', `<button class="icon-btn" id="sb-front" aria-label="Trazer para a frente de tudo" title="Trazer para a frente de tudo">${icon('front')}</button><button class="icon-btn" id="sb-fwd" aria-label="Avançar um nível" title="Avançar um nível">${icon('up')}</button><button class="icon-btn" id="sb-bwd" aria-label="Recuar um nível" title="Recuar um nível">${icon('down')}</button><button class="icon-btn" id="sb-back" aria-label="Enviar para trás de tudo" title="Enviar para trás de tudo">${icon('back')}</button>`);
   let tr = `<button class="icon-btn" id="sb-rot" aria-label="Girar 90°" title="Girar 90°">${icon('rotate')}</button><button class="icon-btn" id="sb-fh" aria-label="Espelhar na horizontal" title="Espelhar ↔">${icon('flipH')}</button><button class="icon-btn" id="sb-fv" aria-label="Espelhar na vertical" title="Espelhar ↕">${icon('flipV')}</button>`;
   if (sel.length > 1) tr += [['l', 'alL', 'Alinhar à esquerda'], ['hc', 'alHC', 'Centralizar na horizontal'], ['r', 'alR', 'Alinhar à direita'], ['t', 'alT', 'Alinhar ao topo'], ['vc', 'alVC', 'Centralizar na vertical'], ['b', 'alB', 'Alinhar à base'], ['dh', 'distH', 'Distribuir na horizontal'], ['dv', 'distV', 'Distribuir na vertical']].map(([k, ic, t]) => `<button class="icon-btn" data-al="${k}" aria-label="${t}" title="${t}">${icon(ic)}</button>`).join('');
@@ -2037,6 +2038,7 @@ function bindSelBar(ob) {
   on('sb-bname', 'change', e => mutate(() => { S.doc.blocks[one.bid].name = e.target.value.trim() || 'Bloco'; }));
   on('sb-bkind', 'change', e => mutate(() => { S.doc.blocks[one.bid].kind = e.target.value; }));
   on('sb-bedit', 'click', () => editBlockDialog(one)); on('sb-bexp', 'click', explodeSel); on('sb-bsave', 'click', () => saveTypologyDialog(one));
+  on('sb-cadsel', 'click', () => { const L = sel[0].cad; S.sel = new Set(els().filter(e => e.cad === L && !e.lock).map(e => e.id)); renderAll(); refreshPanels(); toast(`${S.sel.size} elemento(s) do layer ${L}`); });
   on('sb-front', 'click', () => reorder(true)); on('sb-back', 'click', () => reorder(false)); on('sb-fwd', 'click', () => reorderStep(true)); on('sb-bwd', 'click', () => reorderStep(false));
   const c = selCenter();
   on('sb-rot', 'click', () => mutate(() => applyM(selEls(), mR(Math.PI / 2, c)))); on('sb-fh', 'click', () => mutate(() => applyM(selEls(), mMirror(c, add(c, [0, 1]))))); on('sb-fv', 'click', () => mutate(() => applyM(selEls(), mMirror(c, add(c, [1, 0])))));
@@ -2362,7 +2364,7 @@ function generalManchas(prims) {
   const out = [];
   groups.forEach(g => {
     const polys = g.items.map(x => [closeR(offsetRing(x.r.pts, x.r.pts.map((_, i) => edgeD(x, i)), true))]);
-    let mp = pc.union(...polys).map(pl => [pl[0]]); if (shafts.length) mp = pc.difference(mp, ...shafts);
+    let mp = safeUnion(polys.map(pl => [cleanRing(pl[0])]).filter(pl => pl[0].length >= 3).map(pl => [closeR(pl[0])]), []).map(pl => [pl[0]]); if (shafts.length) { try { mp = pc.difference(mp, ...shafts); } catch (e) { console.warn('[KV Manchas] furos de shaft na mancha geral', e); } }
     const first = g.items[0].r; const ui = unitIdx(first); const upol = ui < 0 ? unitOf(first) : null; let name, usage;
     const byU = {}; g.items.forEach(x => { const k = x.r.usage || ''; byU[k] = (byU[k] || 0) + areaOf(x.r); });
     const dom = Object.entries(byU).sort((a, b) => b[1] - a[1])[0][0];
@@ -2539,110 +2541,111 @@ async function importDXFFile(file) {
   const prims = dxfPrims(doc); if (!prims.length) return toast('Nenhuma entidade reconhecida no DXF');
   openDXFDialog(file.name, doc, prims);
 }
-/* níveis de aninhamento das hachuras (1 = a mais externa) */
+/* níveis de aninhamento (ordem das manchas na importação) */
 function hatchLevels(polys) {
   const P = polys.map(p => ({ p, A: Math.abs(ringArea(p.pts)), c: labelPoint(p.pts), B: bboxPts(p.pts) })).sort((a, b) => b.A - a.A);
-  P.forEach(x => { x.p.leaf = true; }); P.forEach((x, k) => { let d = 0; for (let j = 0; j < k; j++) { const o = P[j]; if (o.A <= x.A * 1.0001) continue; if (x.c[0] < o.B[0] || x.c[0] > o.B[2] || x.c[1] < o.B[1] || x.c[1] > o.B[3]) continue; if (pip(x.c, o.p.pts)) { d++; o.p.leaf = false; } } x.p.level = Math.min(d + 1, 4); });
+  P.forEach((x, k) => { let d = 0; for (let j = 0; j < k; j++) { const o = P[j]; if (o.A <= x.A * 1.0001) continue; if (x.c[0] < o.B[0] || x.c[0] > o.B[2] || x.c[1] < o.B[1] || x.c[1] > o.B[3]) continue; if (pip(x.c, o.p.pts)) d++; } x.p.level = d + 1; });
   return polys;
 }
-const LEVEL_ROLES = [['room', 'Ambiente'], ['unit', 'Área da unidade (contorno)'], ['ignore', 'Ignorar'], ['limit', 'Limite de cálculo (opcional)'], ['shaft', 'Shaft']];
+const DXF_TYPES = [['auto', 'Automático (contém outras → unidade)'], ['room', 'Ambiente'], ['unit', 'Unidade (área geral)'], ['shaft', 'Shaft / vazio'], ['limit', 'Limite de cálculo'], ['lines', 'Linhas (desenho)']];
+/* “automático”: polígono que contém outro (menor) vira unidade; os demais, ambientes */
+function markAuto(list) { const P = list.map(p => ({ p, A: Math.abs(ringArea(p.pts)), c: labelPoint(p.pts), B: bboxPts(p.pts) })); P.forEach(x => { x.p.autoUnit = P.some(o => o !== x && o.A < x.A * 0.98 && o.A > x.A * 0.003 && o.c[0] >= x.B[0] && o.c[0] <= x.B[2] && o.c[1] >= x.B[1] && o.c[1] <= x.B[3] && pip(o.c, x.p.pts)); }); return list; }
+const DXF_SRC = [['auto', 'Automático'], ['hatch', 'Hachuras'], ['pline', 'Polilinhas fechadas'], ['both', 'Hachuras + polilinhas']];
 function openDXFDialog(fname, doc, prims) {
-  const layers = {}; prims.forEach(p => { const L = layers[p.layer] || (layers[p.layer] = { name: p.layer, color: (doc.layers[p.layer] || {}).color || p.color, hatch: 0, closed: 0, open: 0, text: 0 }); if (p.kind === 'hatch') L.hatch++; else if (p.kind === 'hole') L.holes = (L.holes || 0) + 1; else if (p.kind === 'text') L.text++; else if (p.closed) L.closed++; else L.open++; });
+  const layers = {}; prims.forEach(p => { const L = layers[p.layer] || (layers[p.layer] = { name: p.layer, color: (doc.layers[p.layer] || {}).color || p.color, hatch: 0, holes: 0, closed: 0, open: 0, text: 0 }); if (p.kind === 'hatch') L.hatch++; else if (p.kind === 'hole') L.holes++; else if (p.kind === 'text') L.text++; else if (p.closed) L.closed++; else L.open++; });
   const B = bboxPts(prims.flatMap(p => p.pts || [p.p])); const ext = Math.max(B[2] - B[0], B[3] - B[1]);
-  let unit = UNIT_SC[doc.units] ? doc.units : (ext > 2000 ? 4 : ext > 200 ? 5 : 6);
-  const st = { unit, plines: false, names: true, minA: 0.02, dest: 'new', keep: false, holes: true, levels: { 1: 'room', 2: 'room', 3: 'room', 4: 'ignore' }, L: {} };
+  const unit = UNIT_SC[doc.units] ? doc.units : (ext > 2000 ? 4 : ext > 200 ? 5 : 6);
+  const st = { unit, names: true, minA: 0.5, dest: 'new', keep: false, holes: true, L: {} };
   const nz = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   const guessUse = ln => { const l = nz(ln); const u = S.usages.find(u => { const w = nz(u.name).split(/[^a-z0-9]+/).filter(x => x.length >= 4); return w.some(x => l.includes(x)); }); return u ? u.name : (/varand|terra|sacad/.test(l) ? (S.usages.find(u => /varand/i.test(nz(u.name))) || {}).name || '' : ''); };
-  Object.values(layers).forEach(L => { const sh = /shaft|furo|duto/i.test(L.name); st.L[L.name] = { on: L.hatch > 0, mode: L.hatch > 0 ? (sh ? 'shafts' : 'manchas') : 'linhas', usage: L.hatch > 0 && !sh ? guessUse(L.name) : '' }; });
-  const manchaPolys = () => prims.filter(p => p.kind === 'hatch' && st.L[p.layer] && st.L[p.layer].on && st.L[p.layer].mode === 'manchas');
-  const levelInfo = () => { const ps = hatchLevels(manchaPolys()); const n = {}; ps.forEach(p => n[p.level] = (n[p.level] || 0) + 1); return n; };
-  const autoLevels = () => { const n = levelInfo(); const ks = Object.keys(n).map(Number).sort(); const max = ks.length ? ks[ks.length - 1] : 1; if (max >= 3) st.levels = { 1: 'ignore', 2: 'unit', 3: 'room', 4: 'ignore' }; /* hachura total do pavimento: o app soma as manchas gerais */ else if (max === 2) st.levels = { 1: 'unit', 2: 'room', 3: 'room', 4: 'ignore' }; else st.levels = { 1: 'room', 2: 'room', 3: 'room', 4: 'ignore' }; };
-  autoLevels();
+  const guessType = (ln, L) => { const l = nz(ln); if (!L.hatch && !L.closed) return 'lines'; if (/shaft|furo|duto|vazio/.test(l)) return 'shaft'; if (/zona|zone|unidad|apto|apart/.test(l)) return 'unit'; return 'room'; };
+  // heurísticas: layers só de contornos que repetem as hachuras (ex.: ArchiCAD zona = hachura + contorno) e contornos que englobam tudo (laje, terreno) começam desligados
+  const sig = q => { const a = Math.abs(ringArea(q)); const b = bboxPts(q); return [a, b]; }; const same = (x, y) => Math.abs(x[0] - y[0]) <= Math.max(x[0], y[0]) * 0.01 + 1e-9 && x[1].every((v, k) => Math.abs(v - y[1][k]) <= Math.max(ext * 0.0005, 1e-6));
+  const hsig = prims.filter(p => p.kind === 'hatch' || p.kind === 'hole').map(p => sig(p.pts));
+  const areaPolys = prims.filter(p => p.kind === 'hatch' || (p.kind === 'pline' && p.closed)); const allB = bboxPts(areaPolys.flatMap(p => p.pts)); const allA = (allB[2] - allB[0]) * (allB[3] - allB[1]);
+  Object.values(layers).forEach(L => { const pl = prims.filter(p => p.layer === L.name && p.kind === 'pline' && p.closed); L.dup = !L.hatch && pl.length > 0 && pl.filter(p => { const s0 = sig(p.pts); return hsig.some(h => same(s0, h)); }).length >= pl.length * 0.6; const mine = areaPolys.filter(p => p.layer === L.name); const others = areaPolys.filter(p => p.layer !== L.name); const cs = others.slice(0, 400).map(p => labelPoint(p.pts)); L.wrap = mine.length > 0 && mine.length <= 3 && others.length >= 6 && mine.some(m => cs.filter(c => pip(c, m.pts)).length >= cs.length * 0.6); L.small = mine.length > 0 && mine.every(p => Math.abs(ringArea(p.pts)) < allA * 0.0005); });
+  Object.values(layers).forEach(L => { let t = guessType(L.name, L); if (t === 'shaft' && !L.small) t = 'auto'; if (t === 'room' || t === 'unit') t = 'auto'; const on = t !== 'lines' && (L.hatch > 0 || L.closed > 0) && !L.wrap; st.L[L.name] = { on, type: L.wrap ? 'unit' : t, src: 'auto', usage: t !== 'lines' && t !== 'shaft' ? guessUse(L.name) : '' }; });
+  const srcOf = (c, L) => c.src !== 'auto' ? c.src : (L.hatch ? 'hatch' : 'pline');
+  const usesP = (p) => { const c = st.L[p.layer]; if (!c || !c.on) return false; const L = layers[p.layer]; if (p.kind === 'text') return false; if (c.type === 'lines') return p.kind === 'pline'; const sc = srcOf(c, L); if (p.kind === 'hatch') return sc === 'hatch' || sc === 'both'; if (p.kind === 'hole') return sc === 'hatch' || sc === 'both'; return p.closed && (sc === 'pline' || sc === 'both'); };
   const dlg = $('#dlg'), f = $('#dlg-form');
-  const preview = () => { const sel = prims.filter(p => st.L[p.layer] && st.L[p.layer].on && p.kind !== 'text' && (st.L[p.layer].mode === 'linhas' ? p.kind !== 'hatch' && p.kind !== 'hole' : (p.kind === 'hatch' || p.kind === 'hole' || (st.plines && p.closed)))).sort((a, b) => (a.kind === 'hole') - (b.kind === 'hole') || Math.abs(ringArea(b.pts)) - Math.abs(ringArea(a.pts)));
-    if (!sel.length) return '<p class="note" style="padding:12px">Nada selecionado</p>'; hatchLevels(sel.filter(p => p.kind === 'hatch' && st.L[p.layer].mode === 'manchas'));
+  const preview = () => { const sel = prims.filter(usesP).sort((a, b) => (a.kind === 'hole') - (b.kind === 'hole') || Math.abs(ringArea(b.pts)) - Math.abs(ringArea(a.pts)));
+    if (!sel.length) return '<p class="note" style="padding:12px">Nada selecionado</p>';
+    markAuto(sel.filter(p => p.kind !== 'hole' && st.L[p.layer].type !== 'lines'));
     const bb = bboxPts(sel.flatMap(p => p.pts)); const w = 760, h = 260; const s = Math.min((w - 10) / Math.max(bb[2] - bb[0], 1e-6), (h - 10) / Math.max(bb[3] - bb[1], 1e-6)); const ox = (w - (bb[2] - bb[0]) * s) / 2 - bb[0] * s, oy = (h + (bb[3] - bb[1]) * s) / 2 + bb[1] * s;
-    const sty = p => { if (p.kind === 'hole') return 'fill="#ffffff" fill-opacity="1" stroke="#d83918"'; if (p.kind !== 'hatch') return `fill="none" stroke="${p.color}"`; let r = st.L[p.layer].mode === 'shafts' ? 'shaft' : st.levels[p.level || 1]; if ((r === 'unit' || r === 'limit') && p.leaf) r = 'room'; if (r === 'ignore') return 'fill="none" stroke="#bbb" stroke-dasharray="3 3"'; if (r === 'limit') return 'fill="none" stroke="#00677c" stroke-dasharray="8 3 2 3"'; if (r === 'unit') return 'fill="none" stroke="#1b1b1b" stroke-dasharray="6 3"'; if (r === 'shaft') return 'fill="#fff" stroke="#111"'; return `fill="${p.color}" fill-opacity=".6" stroke="#0006"`; };
+    const sty = p => { if (p.kind === 'hole') return 'fill="#ffffff" fill-opacity="1" stroke="#d83918"'; let t = st.L[p.layer].type; if (t === 'auto') t = p.autoUnit ? 'unit' : 'room'; if (t === 'lines') return `fill="none" stroke="${p.color}"`; if (t === 'limit') return 'fill="none" stroke="#00677c" stroke-dasharray="8 3 2 3"'; if (t === 'unit') return 'fill="none" stroke="#1b1b1b" stroke-width="1.6" stroke-dasharray="6 3"'; if (t === 'shaft') return 'fill="#fff" stroke="#111"'; return `fill="${p.color}" fill-opacity=".55" stroke="#0006"`; };
     return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:100%;background:#fff"><g transform="matrix(${s} 0 0 ${-s} ${ox} ${oy})">${sel.slice(0, 8000).map(p => `<path d="M${p.pts.map(q => `${N(q[0])} ${N(q[1])}`).join('L')}${p.closed ? 'Z' : ''}" ${sty(p)} stroke-width="1" vector-effect="non-scaling-stroke"/>`).join('')}</g></svg>`; };
   const NOT_ENT = new Set(['LAYER', 'BLOCK', 'ENDBLK', 'LTYPE', 'STYLE', 'VIEW', 'UCS', 'APPID', 'DIMSTYLE', 'BLOCK_RECORD', 'VPORT', 'TABLE', 'ENDTAB', 'CLASS', 'DICTIONARY', 'SEQEND', 'VERTEX']);
   const counts = Object.entries(doc.counts || {}).filter(([k]) => !NOT_ENT.has(k)).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ');
   const render = () => {
     const sc = $('.dx-scroll', f); const top = sc ? sc.scrollTop : 0;
-    const n = levelInfo();
-    const rows = Object.values(layers).sort((a, b) => (b.hatch - a.hatch) || a.name.localeCompare(b.name)).map(L => { const c = st.L[L.name]; return `<tr><td><label class="chk" style="min-height:36px"><input type="checkbox" data-dl="${esc(L.name)}" ${c.on ? 'checked' : ''}><span class="sw" style="display:inline-block;width:12px;height:12px;background:${L.color};border:1px solid #0003"></span>${esc(L.name)}</label></td><td class="n" style="font-size:11px">${L.hatch ? L.hatch + ' hach.' : ''}${L.holes ? ' ' + L.holes + ' furos' : ''}${L.closed ? ' ' + L.closed + ' fech.' : ''}${L.open ? ' ' + L.open + ' lin.' : ''}${L.text ? ' ' + L.text + ' txt' : ''}</td><td><select class="sel" data-dm="${esc(L.name)}" style="min-height:36px;height:36px"><option value="manchas" ${c.mode === 'manchas' ? 'selected' : ''}>Manchas</option><option value="shafts" ${c.mode === 'shafts' ? 'selected' : ''}>Shafts</option><option value="linhas" ${c.mode === 'linhas' ? 'selected' : ''}>Linhas</option></select></td><td>${c.mode === 'manchas' ? `<button type="button" class="sel usage-btn" data-du="${esc(L.name)}" style="min-height:36px;height:36px;min-width:150px"><span class="sw" style="background:${usageColor(c.usage) || 'transparent'}"></span><span class="ut">${c.usage ? esc(c.usage) : '— sem uso —'}</span><span aria-hidden="true">▾</span></button>` : ''}</td></tr>`; }).join('');
-    const lv = [1, 2, 3, 4].filter(k => n[k]).map(k => `<tr><td>Nível ${k}${k === 4 ? '+' : ''} <small class="note">${k === 1 ? '(mais externa)' : ''}</small></td><td class="n">${n[k]}</td><td><select class="sel" data-lv="${k}" style="min-height:36px;height:36px">${LEVEL_ROLES.map(([r, t]) => `<option value="${r}" ${st.levels[k] === r ? 'selected' : ''}>${t}</option>`).join('')}</select></td></tr>`).join('');
+    const rows = Object.values(layers).sort((a, b) => ((b.hatch + b.closed) - (a.hatch + a.closed)) || a.name.localeCompare(b.name)).map(L => { const c = st.L[L.name]; const area = c.type !== 'lines'; return `<tr><td><label class="chk" style="min-height:36px;white-space:normal"><input type="checkbox" data-dl="${esc(L.name)}" ${c.on ? 'checked' : ''}><span class="sw" style="display:inline-block;width:12px;height:12px;flex:none;background:${L.color};border:1px solid #0003"></span><span style="word-break:break-all">${esc(L.name)}</span></label></td><td class="n" style="font-size:11px;white-space:nowrap">${L.hatch ? L.hatch + ' hach.<br>' : ''}${L.holes ? L.holes + ' furos<br>' : ''}${L.closed ? L.closed + ' pol. fech.<br>' : ''}${L.open ? L.open + ' lin.<br>' : ''}${L.text ? L.text + ' txt' : ''}${L.dup ? '<br><i>contornos repetidos</i>' : ''}${L.wrap ? '<br><i>contorno geral</i>' : ''}</td><td><select class="sel" data-dt="${esc(L.name)}" style="min-height:36px;height:36px;max-width:150px">${DXF_TYPES.map(([k, n]) => `<option value="${k}" ${c.type === k ? 'selected' : ''}>${n}</option>`).join('')}</select>${area && L.hatch && L.closed ? `<select class="sel" data-ds="${esc(L.name)}" style="min-height:36px;height:36px;max-width:150px;margin-top:4px" title="De onde vêm as manchas">${DXF_SRC.map(([k, n]) => `<option value="${k}" ${c.src === k ? 'selected' : ''}>${n}</option>`).join('')}</select>` : ''}</td><td>${c.type === 'room' || c.type === 'unit' || c.type === 'auto' ? `<button type="button" class="sel usage-btn" data-du="${esc(L.name)}" style="min-height:36px;height:36px;min-width:140px;max-width:180px"><span class="sw" style="background:${usageColor(c.usage) || 'transparent'}"></span><span class="ut">${c.usage ? esc(c.usage) : '— sem uso —'}</span><span aria-hidden="true">▾</span></button>` : ''}</td></tr>`; }).join('');
+    const nSel = prims.filter(usesP).length;
     f.innerHTML = `<h2 style="margin-bottom:8px">Importar DXF — ${esc(fname)}</h2>
       <div class="dx-prev" id="dxf-prev">${preview()}</div>
       <div class="dx-scroll">
-      <h3 class="note" style="font-weight:600;margin:4px 0">Hachuras aninhadas (cada nível vira um tipo de mancha)</h3>
-      ${lv ? `<table class="at" style="margin:0 0 8px"><thead><tr><th>Nível</th><th class="n">Qtd</th><th>Vira</th></tr></thead><tbody>${lv}</tbody></table>` : '<p class="note">Nenhuma hachura nos layers de manchas.</p>'}
-      <h3 class="note" style="font-weight:600;margin:10px 0 4px">Layers</h3><table class="at" style="margin:0"><thead><tr><th>Layer</th><th class="n">Conteúdo</th><th>Importar como</th><th>Uso</th></tr></thead><tbody>${rows}</tbody></table>
+      <p class="note" style="margin:4px 0 8px">Escolha, por layer, o tipo de área e o uso. Se ambientes e unidades estiverem no mesmo layer, importe tudo como Ambiente e troque o papel depois, selecionando os elementos (barra de seleção → Papel). <b>${nSel}</b> elemento(s) selecionado(s).</p>
+      <table class="at" style="margin:0"><thead><tr><th>Layer</th><th class="n">Conteúdo</th><th>Tipo</th><th>Uso</th></tr></thead><tbody>${rows}</tbody></table>
       <div class="row2" style="margin-top:10px"><div class="field"><label for="dx-u">Unidade do desenho</label><select class="sel" id="dx-u">${[[4, 'Milímetros'], [5, 'Centímetros'], [6, 'Metros'], [1, 'Polegadas'], [2, 'Pés']].map(([k, nm]) => `<option value="${k}" ${+st.unit === k ? 'selected' : ''}>${nm}${+doc.units === k ? ' (do arquivo)' : ''}</option>`).join('')}</select></div><div class="field"><label for="dx-d">Destino</label><select class="sel" id="dx-d"><option value="new" ${st.dest === 'new' ? 'selected' : ''}>Nova folha</option><option value="cur" ${st.dest === 'cur' ? 'selected' : ''}>Folha atual</option></select></div></div>
       <label class="chk"><input type="checkbox" id="dx-ho" ${st.holes ? 'checked' : ''}>Furos (ilhas) das hachuras que não são ambientes viram shafts</label>
-      <label class="chk"><input type="checkbox" id="dx-pl" ${st.plines ? 'checked' : ''}>Polilinhas fechadas dos layers “Manchas” também viram manchas</label>
       <label class="chk"><input type="checkbox" id="dx-nm" ${st.names ? 'checked' : ''}>Nomear ambientes com os textos que estão dentro deles</label>
       <label class="chk"><input type="checkbox" id="dx-kp" ${st.keep ? 'checked' : ''}>Manter as coordenadas do CAD (senão, centraliza na vista)</label>
-      <div class="field"><label for="dx-mi">Ignorar manchas menores que (m²)</label><input class="inp" id="dx-mi" value="${fmt(st.minA)}" inputmode="decimal"></div>
+      <div class="field"><label for="dx-mi">Ignorar ambientes menores que (m²)</label><input class="inp" id="dx-mi" value="${fmt(st.minA)}" inputmode="decimal"></div>
       <p class="note">Entidades no arquivo: ${esc(counts)}</p>
       </div>
       <div class="btn-row" style="margin-top:10px"><button class="btn" value="cancel">Cancelar</button><button class="btn" type="button" id="dx-all">Marcar todos os layers</button><button class="btn primary" value="ok" id="dlg-ok">Importar</button></div>`;
     $('.dx-scroll', f).scrollTop = top;
-    const upd = () => { $('#dxf-prev', f).innerHTML = preview(); };
-    $$('[data-dl]', f).forEach(i => i.addEventListener('change', () => { st.L[i.dataset.dl].on = i.checked; autoLevels(); render(); }));
-    $$('[data-dm]', f).forEach(i => i.addEventListener('change', () => { st.L[i.dataset.dm].mode = i.value; autoLevels(); render(); }));
+    $$('[data-dl]', f).forEach(i => i.addEventListener('change', () => { st.L[i.dataset.dl].on = i.checked; render(); }));
+    $$('[data-dt]', f).forEach(i => i.addEventListener('change', () => { const c = st.L[i.dataset.dt]; c.type = i.value; if (c.type !== 'lines') c.on = true; render(); }));
+    $$('[data-ds]', f).forEach(i => i.addEventListener('change', () => { st.L[i.dataset.ds].src = i.value; render(); }));
     $$('[data-du]', f).forEach(b => b.addEventListener('click', () => openUsagePicker(b, st.L[b.dataset.du].usage, v => { st.L[b.dataset.du].usage = v; render(); })));
-    $$('[data-lv]', f).forEach(i => i.addEventListener('change', () => { st.levels[i.dataset.lv] = i.value; upd(); }));
     $('#dx-u', f).addEventListener('change', e => st.unit = +e.target.value); $('#dx-d', f).addEventListener('change', e => st.dest = e.target.value);
-    $('#dx-pl', f).addEventListener('change', e => { st.plines = e.target.checked; upd(); }); $('#dx-nm', f).addEventListener('change', e => st.names = e.target.checked); $('#dx-kp', f).addEventListener('change', e => st.keep = e.target.checked);
+    $('#dx-nm', f).addEventListener('change', e => st.names = e.target.checked); $('#dx-kp', f).addEventListener('change', e => st.keep = e.target.checked);
     $('#dx-ho', f).addEventListener('change', e => st.holes = e.target.checked);
     $('#dx-mi', f).addEventListener('change', e => { const v = parseNum(e.target.value); if (v >= 0) st.minA = v; });
-    $('#dx-all', f).addEventListener('click', () => { Object.values(st.L).forEach(c => c.on = true); autoLevels(); render(); });
+    $('#dx-all', f).addEventListener('click', () => { Object.values(st.L).forEach(c => c.on = true); render(); });
   };
   render();
+  st.usesP = usesP;
   dlg.classList.add('wide');
   dlg.onclose = () => { dlg.classList.remove('wide'); const m = $('#menu-usage'); if (m.parentElement !== document.body) document.body.appendChild(m); closeMenus(); if (dlg.returnValue === 'ok') doImportDXF(fname, prims, st); cv.focus(); };
   dlg.returnValue = ''; dlg.showModal();
 }
 function doImportDXF(fname, prims, st) {
-  const sc = UNIT_SC[st.unit] || 1; const on = p => st.L[p.layer] && st.L[p.layer].on;
-  const sel = prims.filter(on); if (!sel.length) return toast('Nenhum layer selecionado');
-  const S1 = q => [q[0] * sc, q[1] * sc];
-  const all = sel.flatMap(p => (p.pts || [p.p]).map(S1)); const B = bboxPts(all);
+  const sc = UNIT_SC[st.unit] || 1; const sel = prims.filter(p => st.usesP(p)); if (!sel.length) return toast('Nenhum elemento selecionado');
+  const S1 = q => [q[0] * sc, q[1] * sc]; const all = sel.flatMap(p => (p.pts || [p.p]).map(S1)); const B = bboxPts(all);
   let off = [0, 0]; if (!st.keep) { const c = s2w([S.W / 2, S.H / 2]); off = [c[0] - (B[0] + B[2]) / 2, c[1] - (B[1] + B[3]) / 2]; }
   const X = q => { const a = S1(q); return [r4(a[0] + off[0]), r4(a[1] + off[1])]; };
-  const out = []; const polys = [];
-  const holesL = [];
+  const out = [], polys = [], holesL = [];
+  markAuto(sel.filter(p => p.kind !== 'hole' && st.L[p.layer].type !== 'lines' && Math.abs(ringArea(p.pts)) * sc * sc >= st.minA));
+  sel.sort((a, b) => (a.kind === 'hatch' ? 0 : 1) - (b.kind === 'hatch' ? 0 : 1));
   sel.forEach(p => {
-    const cfg = st.L[p.layer]; if (p.kind === 'text') return;
-    if (p.kind === 'hole') { if (cfg.mode !== 'linhas') holesL.push(p.pts.map(X)); return; }
-    const asMancha = (cfg.mode === 'manchas' || cfg.mode === 'shafts') && (p.kind === 'hatch' || (st.plines && p.closed));
-    if (asMancha) {
-      const pts = p.pts.map(X); const el = { id: uid(), t: 'poly', closed: true, role: 'room', usage: cfg.usage || '', name: '', guide: 1, pts, ...(p.b && p.b.some(x => x) ? { b: p.b.slice(0, pts.length) } : {}), st: { fill: p.color === '#1b1b1b' ? '#d9d9d9' : p.color, fo: 0.85, stroke: '#3a3a3a', sw: 1, dash: 'solid', byUse: false } };
-      if (cfg.mode === 'shafts') { Object.assign(el, { role: 'shaft', usage: '', name: 'Shaft', rect: el.pts.length === 4, st: newStyle('shaft') }); } else if (areaOf(el) < st.minA) return; polys.push(el); return;
-    }
-    if (cfg.mode === 'linhas') { const pts = p.pts.map(X); if (pts.length < 2) return; out.push({ id: uid(), t: 'line', closed: !!p.closed, role: 'line', pts: p.closed ? pts.concat([pts[0]]) : pts, ...(p.b && p.b.some(x => x) && !p.closed ? { b: p.b.slice(0, pts.length) } : {}), st: { fill: 'none', fo: 0, stroke: p.color, sw: 0.8, dash: 'solid', byUse: false } }); }
+    const cfg = { ...st.L[p.layer] }; if (cfg.type === 'auto') cfg.type = p.autoUnit ? 'unit' : 'room';
+    if (p.kind === 'hole') { holesL.push(p.pts.map(X)); return; }
+    if (cfg.type === 'lines') { const pts = p.pts.map(X); if (pts.length < 2) return; out.push({ id: uid(), t: 'line', closed: false, role: 'line', pts: p.closed ? pts.concat([pts[0]]) : pts, ...(p.b && p.b.some(x => x) && !p.closed ? { b: p.b.slice(0, pts.length) } : {}), st: { fill: 'none', fo: 0, stroke: p.color, sw: 0.8, dash: 'solid', byUse: false } }); return; }
+    const pts = p.pts.map(X); if (pts.length < 3) return; const hasB = p.b && p.b.some(x => x);
+    const el = { id: uid(), t: 'poly', closed: true, role: 'room', usage: cfg.usage || '', name: '', guide: 1, cad: p.layer, pts, ...(hasB ? { b: p.b.slice(0, pts.length) } : {}), st: { fill: p.color === '#1b1b1b' ? '#d9d9d9' : p.color, fo: 0.85, stroke: '#3a3a3a', sw: 1, dash: 'solid', byUse: false } };
+    if ((cfg.type === 'room' || cfg.type === 'unit') && areaOf(el) < st.minA) return;
+    if (cfg.type === 'unit') Object.assign(el, { role: 'unit', guide: 0, st: { ...el.st, fo: 0.12, sw: 1.6, dash: 'dash', stroke: '#1b1b1b' } });
+    else if (cfg.type === 'limit') Object.assign(el, { role: 'limit', guide: 0, usage: '', name: 'Limite', st: newStyle('limit') });
+    else if (cfg.type === 'shaft') Object.assign(el, { role: 'shaft', usage: '', name: 'Shaft', rect: pts.length === 4, st: newStyle('shaft') });
+    polys.push(el);
   });
-  // remove manchas duplicadas (hachura + polilinha sobre o mesmo contorno)
-  const uniq = []; polys.forEach(el => { const a = areaOf(el), bb = bboxPts(el.pts); if (!uniq.some(o => Math.abs(areaOf(o) - a) < a * 0.01 && bboxPts(o.pts).every((v, k) => Math.abs(v - bb[k]) < 0.02))) uniq.push(el); });
-  // níveis de aninhamento → papel (pavimento, unidade, ambiente…)
-  const roomsL = uniq.filter(e => e.role === 'room'); hatchLevels(roomsL);
-  const hasChild = c => { const R = flat(c), A = areaOf(c); return roomsL.some(o => o !== c && areaOf(o) < A * 0.98 && pip(labelPoint(flat(o)), R)); };
-  for (let k = uniq.length - 1; k >= 0; k--) { const c = uniq[k]; if (c.role !== 'room') continue; let r = st.levels[c.level || 1] || 'room'; delete c.level;
-    if ((r === 'unit' || r === 'limit') && !hasChild(c)) r = 'room'; // sem nada dentro (ex.: hall) é ambiente
-    if (r === 'ignore') uniq.splice(k, 1);
-    else if (r === 'unit') Object.assign(c, { role: 'unit', guide: 0, name: '', st: { ...c.st, fo: 0.12, sw: 1.6, dash: 'dash', stroke: '#1b1b1b' } });
-    else if (r === 'limit') Object.assign(c, { role: 'limit', guide: 0, usage: '', name: 'Pavimento', st: newStyle('limit') });
-    else if (r === 'shaft') Object.assign(c, { role: 'shaft', usage: '', name: 'Shaft', guide: 1, st: newStyle('shaft') }); }
-  uniq.filter(e => e.role === 'unit').forEach((u, i) => { u.name = 'Unidade ' + (i + 1); });
-  // furos que não coincidem com ambientes importados viram shafts
-  let nSh = 0;
-  if (st.holes) holesL.forEach(H => { if (H.length < 3) return; const A = Math.abs(ringArea(H)); const c = labelPoint(H); const match = uniq.some(o => o.role === 'room' && Math.abs(areaOf(o) - A) < Math.max(A * 0.05, 0.01) && pip(c, flat(o))); if (match) return; let pts = H.slice(); if (ringArea(pts) < 0) pts.reverse(); uniq.push({ id: uid(), t: 'poly', closed: true, rect: pts.length === 4, role: 'shaft', usage: '', name: 'Shaft', guide: 1, pts, st: newStyle('shaft') }); nSh++; });
-  const ord = { limit: 0, unit: 1, room: 2, shaft: 3 }; uniq.sort((a, b) => (ord[a.role] ?? 2) - (ord[b.role] ?? 2) || areaOf(b) - areaOf(a));
+  // duplicadas (hachura + polilinha no mesmo contorno e mesmo papel)
+  const uniq = []; polys.forEach(el => { const a = areaOf(el), bb = bboxPts(el.pts); if (!uniq.some(o => Math.abs(areaOf(o) - a) < Math.max(a * 0.01, 0.005) && bboxPts(o.pts).every((v, k) => Math.abs(v - bb[k]) < 0.02))) uniq.push(el); });
+  // furos que não são ambientes → shafts
+  if (st.holes) holesL.forEach(H => { if (H.length < 3) return; const A = Math.abs(ringArea(H)); const c = labelPoint(H); if (uniq.some(o => (o.role === 'room' || o.role === 'shaft') && Math.abs(areaOf(o) - A) < Math.max(A * 0.05, 0.01) && pip(c, flat(o)))) return; let pts = H.slice(); if (ringArea(pts) < 0) pts.reverse(); uniq.push({ id: uid(), t: 'poly', closed: true, rect: pts.length === 4, role: 'shaft', usage: '', name: 'Shaft', guide: 1, pts, st: newStyle('shaft') }); });
   uniq.forEach(el => { if (ringArea(el.pts) < 0) { const n = el.pts.length; el.pts.reverse(); if (el.b) { const o = el.b.slice(0, n); while (o.length < n) o.push(0); el.b = o.slice(0, n - 1).reverse().map(x => -x || 0).concat([-(o[n - 1] || 0)]); } } });
-  if (st.names) { const texts = prims.filter(p => p.kind === 'text' && !/^[\d.,\s]+(m²|m2)?$/i.test(p.text)).map(p => ({ p: X(p.p), t: p.text })); const rms = uniq.filter(e => e.role === 'room').map(e => ({ e, R: flat(e), A: areaOf(e) })); texts.forEach(t => { const inn = rms.filter(r => pip(t.p, r.R)).sort((a, b) => a.A - b.A)[0]; if (inn && !inn.e.name) inn.e.name = t.t.slice(0, 60); }); }
+  const ord = { limit: 0, unit: 1, room: 2, shaft: 3 }; uniq.sort((a, b) => (ord[a.role] ?? 2) - (ord[b.role] ?? 2) || areaOf(b) - areaOf(a));
+  let nu = 0; uniq.filter(e => e.role === 'unit').forEach(u => { u.name = u.usage && !/priva|unid|apto|resid/i.test(u.usage) ? u.usage : 'Unidade ' + (++nu); });
+  // ambiente sem uso herda o uso da unidade/zona que o contém (ex.: zona de varanda, de circulação)
+  const unitsR = uniq.filter(e => e.role === 'unit' && e.usage).map(e => ({ e, R: flat(e), A: areaOf(e) })).sort((a, b) => a.A - b.A);
+  uniq.forEach(e => { if (e.role !== 'room' || e.usage) return; const c = labelPoint(flat(e)); const u = unitsR.find(x => pip(c, x.R)); if (u) e.usage = u.e.usage; });
+  if (st.names) { const texts = prims.filter(p => p.kind === 'text' && !/^[\d.,\s]+(m²|m2|m)?$/i.test(p.text)).map(p => ({ p: X(p.p), t: p.text })); const rms = uniq.filter(e => e.role === 'room').map(e => ({ e, R: flat(e), A: areaOf(e) })); texts.forEach(t => { const inn = rms.filter(r => pip(t.p, r.R)).sort((a, b) => a.A - b.A)[0]; if (inn && !inn.e.name) inn.e.name = t.t.slice(0, 60); }); }
   const list = uniq.concat(out); if (!list.length) return toast('Nada para importar com essas opções');
   mutate(() => { if (st.dest === 'new') { const s = { id: uid(), name: fname.replace(/\.dxf$/i, '').slice(0, 40), els: [], trace: false }; S.doc.sheets.push(s); S.doc.active = s.id; S.sel.clear(); } els().push(...list); });
-  renderTabs(); fitView(list); toast(`DXF importado: ${uniq.filter(e => e.role === 'limit').length} pavimento(s), ${uniq.filter(e => e.role === 'unit').length} unidade(s), ${uniq.filter(e => e.role === 'room').length} ambiente(s), ${uniq.filter(e => e.role === 'shaft').length} shaft(s) e ${out.length} linha(s)`, 5000);
+  renderTabs(); fitView(list);
+  const c = r => uniq.filter(e => e.role === r).length;
+  toast(`DXF importado: ${c('room')} ambiente(s), ${c('unit')} unidade(s), ${c('shaft')} shaft(s), ${c('limit')} limite(s) e ${out.length} linha(s)`, 6000);
 }
 
 /* ---------- mobiliário (biblioteca embutida) ---------- */
