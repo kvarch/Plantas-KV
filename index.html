@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V28 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V29 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -382,8 +382,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V28 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V28';
+/* KV Manchas — Beta V29 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V29';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -604,7 +604,7 @@ const S = {
 function newDoc() {
   return {
     v: 1, app: 'kv-manchas', sheets: [{ id: uid(), name: 'Folha 1', els: [], trace: false }], blocks: {}, active: null,
-    settings: { grid: 0.5, gridO: [0, 0], gridRot: 0, wall: 0.16, tol: 10, petMode: 'cursor', fillet: 0.3, chamfer: 0.3, offset: 0.15, traceOpacity: 0.35, autoDims: false, copyMode: false, dimFont: 12, dimColor: '#1b1b1b', mapRot: 0, sendColors: false, wallHatch: 'escura', parapet: 0.23, boneca: 0.10, showEnv: true, openKind: 'giro', openW: 0.8,
+    settings: { grid: 0.5, gridO: [0, 0], gridRot: 0, wall: 0.16, tol: 12, petMode: 'cursor', fillet: 0.3, chamfer: 0.3, offset: 0.15, traceOpacity: 0.35, autoDims: false, copyMode: false, dimFont: 12, dimColor: '#1b1b1b', mapRot: 0, sendColors: false, wallHatch: 'escura', parapet: 0.23, boneca: 0.10, showEnv: true, openKind: 'giro', openW: 0.8,
       walls: [{ k: 'ext', name: 'Externa', d: 0.23, color: '#d83918', on: true }, { k: 'int', name: 'Entre ambientes', d: 0.16, color: '#00accd', on: true }, { k: 'shaft', name: 'Ambiente × shaft', d: 0.10, color: '#8e44ad', on: false }] },
     defaults: { role: 'room', usage: 'Área privativa', guide: true, st: { fill: '#9fd3c7', fo: 0.85, stroke: '#3a3a3a', sw: 1, dash: 'solid', byUse: true } }
   };
@@ -688,6 +688,7 @@ function unionBBox(list) { let B = null; list.forEach(e => { const b = topBBox(e
 
 const wallTypes = () => (S.doc.settings.walls || []).filter(w => w.on && w.d > 0);
 const wallTypesFor = p => (S.doc.settings.walls || []).filter(w => w.d > 0 && (p.walls && p.walls[w.k] !== undefined ? p.walls[w.k] : w.on));
+let genT = null; function scheduleGen() { if (genT) return; genT = setTimeout(() => { genT = null; if (!GEN) { gen(); renderAll(); } }, 250); }
 /* ---------- vista ---------- */
 const tx = () => S.W / 2 - S.view.cx * S.view.k, ty = () => S.H / 2 + S.view.cy * S.view.k;
 const w2s = p => [p[0] * S.view.k + tx(), -p[1] * S.view.k + ty()];
@@ -772,12 +773,12 @@ function renderAll() {
   const hide = S.op && S.op.hideSel ? S.sel : null;
   if (S.mode === 'arch') $('#g-els').innerHTML = renderArch();
   else if (S.mode === 'geral') { const GM = gen(); $('#g-els').innerHTML = GM.map(g => `<path d="${mpPath(g.mp)}" fill="${usageColor(g.usage) || '#cfcfcf'}" fill-opacity="${g.kind === 'varanda' ? 0.45 : 0.6}" fill-rule="evenodd" stroke="${S.genSel.has(g.key) ? PRI : '#1b1b1b'}" stroke-width="${S.genSel.has(g.key) ? 3.5 : g.kind === 'varanda' ? 1.2 : 1.8}" vector-effect="non-scaling-stroke" stroke-linejoin="miter"/>`).join('') + els().filter(e => e.role === 'shaft').map(e => elMarkup(e, { fill: 'none' })).join(''); }
-  else { let mh = els().map(e => hide && hide.has(e.id) ? elMarkup(e, { op: .25, fo: .15, stroke: '#9aa3a6' }) : elMarkup(e)).join(''); if (S.doc.settings.showEnv) { const GM = gen(); if (GM.length) mh += GM.filter(g => g.kind !== 'varanda').map(g => `<path d="${mpPath(g.mp)}" fill="none" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity="1"/>`).join(''); const A = { env: [] }; if (A.env.length) mh += `<path d="${mpPath(A.env)}" fill="none" stroke="#1b1b1b" stroke-width="1.2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity=".8"/>`; } $('#g-els').innerHTML = mh; }
+  else { let mh = els().map(e => hide && hide.has(e.id) ? elMarkup(e, { op: .25, fo: .15, stroke: '#9aa3a6' }) : elMarkup(e)).join(''); if (S.doc.settings.showEnv) { const GM = GEN || (scheduleGen(), []); if (GM.length) mh += GM.filter(g => g.kind !== 'varanda').map(g => `<path d="${mpPath(g.mp)}" fill="none" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity="1"/>`).join(''); const A = { env: [] }; if (A.env.length) mh += `<path d="${mpPath(A.env)}" fill="none" stroke="#1b1b1b" stroke-width="1.2" stroke-dasharray="7 3 1.5 3" vector-effect="non-scaling-stroke" opacity=".8"/>`; } $('#g-els').innerHTML = mh; }
   $('#cv').classList.toggle('hide-lay', S.mode !== 'arch' && !S.showLayout);
   // guias perimetrais (paredes)
   let gh = '';
   if (S.showWall && S.mode === 'manchas') cache().wallR.forEach(w => { gh += `<path d="M${w.R.map(p => `${N(p[0])} ${N(p[1])}`).join('L')}Z" fill="none" stroke="${w.color}" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke" opacity=".75"/>`; });
-  try { gh += nbrMarkup(); } catch (e) { console.warn(e); }
+  try { gh += nbrMarkup(); if (S.doc.settings.freeArea === 'always') gh += freeMarkup(els().filter(e => freeRects(e).length)); } catch (e) { console.warn(e); }
   $('#g-guides').innerHTML = gh;
   renderAnn(); renderRulers(); renderOverlay();
   $('#cmd-zoom-read').textContent = `${Math.round(k)} px/m`;
@@ -885,13 +886,15 @@ function renderOverlay() {
     } else if (e.t === 'circle') { const c = w2s(e.c); s += `<rect x="${N(c[0] - 4.5)}" y="${N(c[1] - 4.5)}" width="9" height="9" fill="${PRI}" stroke="#fff"/>`; const r = w2s(add(e.c, [e.r, 0])); s += `<rect x="${N(r[0] - 4.5)}" y="${N(r[1] - 4.5)}" width="9" height="9" fill="${PRI}" stroke="#fff"/>`; }
     else if (e.t === 'dim') { [e.p1, e.p2].forEach(p => { const q = w2s(p); s += `<rect x="${N(q[0] - 4.5)}" y="${N(q[1] - 4.5)}" width="9" height="9" fill="${PRI}" stroke="#fff"/>`; }); }
     else if (e.t === 'open') { const op = S.mode === 'arch' ? poseOfTop(e) : null; if (op) { const W = openW(e); [-1, 1].forEach(sd => { const q = w2s(add(add(op.c, mul(op.u, sd * W / 2)), mul(op.n, (op.T || 0.15) / 2))); s += `<rect x="${N(q[0] - 5)}" y="${N(q[1] - 5)}" width="10" height="10" fill="${PRI}" stroke="#fff" stroke-width="1"/>`; }); const a0 = add(op.c, mul(op.u, -op.s)), sL = op.s - W / 2, sR = op.L - op.s - W / 2; const m1 = w2s(add(add(a0, mul(op.u, sL / 2)), mul(op.n, -0.12))), m2 = w2s(add(add(a0, mul(op.u, op.s + W / 2 + sR / 2)), mul(op.n, -0.12))); s += `<text x="${N(m1[0])}" y="${N(m1[1])}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${fmt(sL)}</text><text x="${N(m2[0])}" y="${N(m2[1])}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${PRI}" font-family="Hind,sans-serif">${fmt(sR)}</text>`; } }
-    else if (e.t === 'block') { const o = w2s([e.m[4], e.m[5]]); s += `<path d="M${N(o[0] - 7)} ${N(o[1])}h14M${N(o[0])} ${N(o[1] - 7)}v14" stroke="${PRI}" stroke-width="2"/>`; }
+    else if (e.t === 'block') { const B = topBBox(e); if (B && sel.length <= 6) [[B[0], B[1]], [B[2], B[1]], [B[2], B[3]], [B[0], B[3]]].forEach(q => { const z = w2s(q); s += `<rect x="${N(z[0] - 4.5)}" y="${N(z[1] - 4.5)}" width="9" height="9" fill="#fff" stroke="${PRI}" stroke-width="1.5"/>`; }); const o = w2s([e.m[4], e.m[5]]); s += `<path d="M${N(o[0] - 7)} ${N(o[1])}h14M${N(o[0])} ${N(o[1] - 7)}v14" stroke="${PRI}" stroke-width="2"/>`; }
   });
   // área total da seleção
   if (sel.length && !(S.op && S.op.hideSel)) {
     const A = selArea(sel); const B = unionBBox(sel);
     if (B && A > 0) { const c = w2s([(B[0] + B[2]) / 2, B[3]]); const t = `${fmt(A)} m²${sel.length > 1 ? ` · ${sel.length} itens` : ''}`; const tw = txtW(t, 12) + 6; s += `<g><rect x="${N(c[0] - tw / 2)}" y="${N(c[1] - 34)}" width="${N(tw)}" height="20" fill="${PRI}"/><text x="${N(c[0])}" y="${N(c[1] - 20)}" text-anchor="middle" font-size="12" font-weight="600" fill="#fff" font-family="Hind,sans-serif">${t}</text></g>`; }
   }
+  // área livre das camas selecionadas (some ao desselecionar)
+  if ((S.doc.settings.freeArea || 'sel') === 'sel' && !(S.op && S.op.hideSel)) { const beds = sel.filter(e => freeRects(e).length); if (beds.length) try { w += freeMarkup(beds); } catch (_) { } }
   // prévia da operação
   if (S.op && S.op.preview) { const r = S.op.preview(); if (r) { w += r.w || ''; s += r.s || ''; } }
   // janela de seleção
@@ -1001,9 +1004,11 @@ function resolvePoint(w, base, opt = {}) {
 /* alinhamento inteligente ao mover: encosta vértices da seleção em vértices/guias de parede vizinhos */
 function alignDelta(list, delta) {
   S.track = []; if (!S.snap) return delta;
-  const ex = new Set(list.map(e => e.id)); const tol = (S.doc.settings.tol || 10) / S.view.k;
+  const ex = new Set(list.map(e => e.id)); const tol = Math.max(14, (S.doc.settings.tol || 10) * 1.5) / S.view.k;
   const M = []; expandList(list).forEach(p => { if (p.t === 'dim') { M.push(p.p1, p.p2); return; } if (p.t === 'circle') { M.push(p.c); return; } if (p.pts) M.push(...p.pts); });
-  if (!M.length || M.length > 800) return delta;
+  // as guias de parede do próprio elemento também encostam (posiciona o ambiente já na distância da parede)
+  if (S.showWall && S.snaps.wall) { const C0 = cache(); C0.wallV.forEach(v => { if (ex.has(v.top)) M.push(v.p); }); }
+  if (!M.length || M.length > 1500) return delta;
   const T = trackTargets(ex); const C = cache(); C.guides.forEach(g => T.push(g.p));
   const gv = C.guides.filter(g => !ex.has(g.id));
   let bx = null, by = null;
@@ -1046,6 +1051,7 @@ function hitHandle(sp) {
   const sel = selEls(); if (sel.length > 30) return null;
   for (let j = sel.length - 1; j >= 0; j--) {
     const e = sel[j];
+    if (e.t === 'block') { const B = topBBox(e); if (B) { for (const q of [[B[0], B[1]], [B[2], B[1]], [B[2], B[3]], [B[0], B[3]]]) if (dist(w2s(q), sp) < 10) return { el: e, kind: 'bcorner', at: q }; } continue; }
     if (e.t === 'open') { if (S.mode !== 'arch') continue; const op = poseOfTop(e); if (!op) continue; const W = openW(e); for (const sd of [-1, 1]) { const q = w2s(add(add(op.c, mul(op.u, sd * W / 2)), mul(op.n, (op.T || 0.15) / 2))); if (dist(q, sp) < 10) return { el: e, kind: 'oend', side: sd }; } continue; }
     if (e.t === 'circle') { if (dist(w2s(add(e.c, [e.r, 0])), sp) < 9) return { el: e, kind: 'radius' }; if (dist(w2s(e.c), sp) < 9) return { el: e, kind: 'center' }; continue; }
     if (e.t === 'dim') { if (dist(w2s(e.p1), sp) < 9) return { el: e, kind: 'dimp', i: 1 }; if (dist(w2s(e.p2), sp) < 9) return { el: e, kind: 'dimp', i: 2 }; continue; }
@@ -1491,7 +1497,8 @@ function opTransform(kind) {
       let s = ''; const b = w2s(this.base);
       if (kind === 'rotate' && !this.ref) return { s: `<line x1="${N(b[0])}" y1="${N(b[1])}" x2="${N(w2s(this.cur)[0])}" y2="${N(w2s(this.cur)[1])}" stroke="${PRI}" stroke-dasharray="4 3"/><circle cx="${N(b[0])}" cy="${N(b[1])}" r="4" fill="${PRI}"/>` };
       const M = this.M(this.cur); if (!M) return null;
-      const w = selEls().map(e => elMarkup(transformEl(clone(e), M), { op: .6 })).join('') + selEls().map(e => outlineMarkup(transformEl(clone(e), M), PRI, 1.5)).join('');
+      const moved = selEls().map(e => transformEl(clone(e), M)); let w = moved.map(e => elMarkup(e, { op: .6 })).join('') + moved.map(e => outlineMarkup(e, PRI, 1.5)).join('');
+      if ((S.doc.settings.freeArea || 'sel') !== 'off') { const beds = moved.filter(e => freeRects(e).length); if (beds.length) try { w += freeMarkup(beds); } catch (_) { } }
       const c = w2s(this.cur); s += `<line x1="${N(b[0])}" y1="${N(b[1])}" x2="${N(c[0])}" y2="${N(c[1])}" stroke="${PRI}" stroke-dasharray="4 3"/>`;
       if (kind === 'move' || kind === 'copy') s += segLabels(this.base, this.cur);
       if (kind === 'rotate') { const a0 = Math.atan2(this.ref[1] - this.base[1], this.ref[0] - this.base[0]), a1 = Math.atan2(this.cur[1] - this.base[1], this.cur[0] - this.base[0]); let d = (a1 - a0) * 180 / Math.PI; while (d > 180) d -= 360; while (d < -180) d += 360; s += `<text x="${N(c[0] + 12)}" y="${N(c[1] - 10)}" font-size="12" font-weight="700" fill="${PRI}" font-family="Hind,sans-serif">${fmt(d, 1)}°</text>`; }
@@ -1509,7 +1516,7 @@ function opPlace(items, label, handle) {
     onMove(p) { this.cur = p; },
     onKey(k) { if (k === 'r') { this.rot += Math.PI / 2; return true; } if (k === 'f') { this.flip = !this.flip; return true; } return false; },
     onClick(p) { const M = this.M(p); const list = this.items.map(e => transformEl({ ...clone(e), id: uid() }, M)); addEls(list); },
-    preview() { if (!this.cur) return null; const M = this.M(this.cur); return { w: this.items.map(e => elMarkup(transformEl(clone(e), M), { op: .7, fo: .5 })).join('') }; }
+    preview() { if (!this.cur) return null; const M = this.M(this.cur); const its = this.items.map(e => transformEl(clone(e), M)); let w = its.map(e => elMarkup(e, { op: .7, fo: .5 })).join(''); if ((S.doc.settings.freeArea || 'sel') !== 'off') { const beds = its.filter(e => freeRects(e).length); if (beds.length) try { w += freeMarkup(beds); } catch (_) { } } return { w }; }
   };
 }
 function startPlace(items, label) { cancelOp(); S.tool = 'place'; $$('.tool').forEach(b => b.setAttribute('aria-pressed', 'false')); S.op = opPlace(items, label); renderOptbar(); setStatus(S.op.hint()); }
@@ -1562,12 +1569,13 @@ let petCtx = null;
 function finishPetOp() { S.op = null; hidePet(); const f = OPS[S.tool]; if (f && S.tool !== 'select') S.op = f(); renderOverlay(); refreshPanels(); setStatus(''); }
 function showPet(ctx, sp) {
   petCtx = ctx; const pet = $('#pet'); const el = ctx.el; let items = [];
-  if (ctx.kind === 'vertex') items = [['vmove', 'Mover vértice'], ['vdel', 'Excluir vértice'], ['vfil', 'Arredondar (fillet)'], ['vcha', 'Chanfrar'], ['rotEl', 'Rotacionar elemento por este ponto'], ['moveEl', 'Mover elemento por este ponto']];
-  else items = [['eoff', 'Deslocar aresta'], ['vins', 'Inserir vértice'], ['ecurve', 'Curvar aresta'], ...(el.closed ? [['poff', 'Offset do contorno']] : []), ['moveEl', 'Mover elemento'], ...(el.closed && el.role === 'room' ? [['half', (el.half && el.half[ctx.i]) ? 'Parede inteira nesta aresta' : 'Meia parede nesta aresta (externa)']] : [])];
-  const iconOf = { half: 'halfwall', vmove: 'vmove', vdel: 'vdel', vfil: 'fillet', vcha: 'chamfer', rotEl: 'rotate', moveEl: 'move', eoff: 'eoff', vins: 'vins', ecurve: 'ecurve', poff: 'poff' };
+  if (ctx.kind === 'block') items = [['brot', 'Rotacionar livre por este canto'], ['r90', 'Girar 90° anti-horário'], ['rm90', 'Girar 90° horário'], ['r180', 'Girar 180°'], ['bfh', 'Espelhar ↔'], ['bfv', 'Espelhar ↕'], ['moveEl', 'Mover por este canto']];
+  else if (ctx.kind === 'vertex') items = [['vmove', 'Mover vértice'], ['vdel', 'Excluir vértice'], ['vfil', 'Arredondar (fillet)'], ['vcha', 'Chanfrar'], ['rotEl', 'Rotacionar elemento por este ponto'], ['moveEl', 'Mover elemento por este ponto']];
+  else items = [['eoff', 'Deslocar aresta'], ['vins', 'Inserir vértice'], ['ecurve', 'Curvar aresta'], ...(el.closed ? [['poff', 'Offset do contorno']] : []), ['moveEl', 'Mover elemento'], ...(el.b && el.b[ctx.i] ? [['estr', 'Voltar a aresta para reta']] : []), ...(el.closed && el.role === 'room' ? [['half', (el.half && el.half[ctx.i]) ? 'Parede inteira nesta aresta' : 'Meia parede nesta aresta (externa)']] : [])];
+  const iconOf = { brot: 'rotate', r90: 'rot90', rm90: 'redo', r180: 'refresh', bfh: 'flipH', bfv: 'flipV', estr: 'line', half: 'halfwall', vmove: 'vmove', vdel: 'vdel', vfil: 'fillet', vcha: 'chamfer', rotEl: 'rotate', moveEl: 'move', eoff: 'eoff', vins: 'vins', ecurve: 'ecurve', poff: 'poff' };
   const def = items[0][0]; ctx.mode = def;
   const fixed = S.doc.settings.petMode === 'fixo';
-  pet.innerHTML = `<span class="ptitle" title="Arraste para mover o menu · duplo clique volta para perto do clique">${ctx.kind === 'vertex' ? 'Vértice' : 'Aresta'}</span>` + items.map(([k, t]) => `<button class="icon-btn" data-pet="${k}" aria-label="${t}" title="${t}" aria-pressed="${k === def}">${icon(iconOf[k])}</button>`).join('') +
+  pet.innerHTML = `<span class="ptitle" title="Arraste para mover o menu · duplo clique volta para perto do clique">${ctx.kind === 'vertex' ? 'Vértice' : ctx.kind === 'block' ? 'Objeto' : 'Aresta'}</span>` + items.map(([k, t]) => `<button class="icon-btn" data-pet="${k}" aria-label="${t}" title="${t}" aria-pressed="${k === def}">${icon(iconOf[k])}</button>`).join('') +
 
     (ctx.kind === 'edge' && el.role === 'room' && el.closed && S.mode === 'arch' ? `<label class="sr-only" for="pet-wh">Hachura desta parede</label><select class="sel" id="pet-wh" title="Hachura desta face de parede" style="margin:0 4px;min-height:40px;height:40px"><option value="">Parede: padrão</option>${Object.entries(WALLH).map(([k, w]) => `<option value="${k}" ${(el.wh && el.wh[ctx.i]) === k ? 'selected' : ''}>${w.name}</option>`).join('')}</select>` : '') +
     `<button class="icon-btn" data-pet="pin" aria-label="${fixed ? 'Menu fixo — clique para seguir o cursor' : 'Menu segue o cursor — clique para fixar'}" title="${fixed ? 'Fixo' : 'Seguir cursor'}" aria-pressed="${fixed}">${icon('pin')}</button>`;
@@ -1584,11 +1592,35 @@ function hidePet() { $('#pet').classList.remove('show'); petCtx = null; }
 function startPetMode(mode) {
   if (!petCtx) return; const ctx = petCtx; const el = byId(ctx.el.id); if (!el) return hidePet();
   $$('#pet [data-pet]').forEach(b => { if (b.dataset.pet !== 'pin') b.setAttribute('aria-pressed', String(b.dataset.pet === mode)); });
+  if (ctx.kind === 'block') {
+    const c = ctx.at; const once = M => { mutate(() => transformEl(byId(el.id), M)); finishPetOp(); };
+    if (mode === 'r90') return once(mR(Math.PI / 2, c)); if (mode === 'rm90') return once(mR(-Math.PI / 2, c)); if (mode === 'r180') return once(mR(Math.PI, c));
+    const B = topBBox(el), cc = [(B[0] + B[2]) / 2, (B[1] + B[3]) / 2];
+    if (mode === 'bfh') return once(mMirror(cc, add(cc, [0, 1]))); if (mode === 'bfv') return once(mMirror(cc, add(cc, [1, 0])));
+    if (mode === 'brot') { S.op = opRotBlock(el, c, s2w(ctx.sp)); typedLabel(S.op.label); setStatus(S.op.hint()); renderAll(); return; }
+    if (mode === 'moveEl') { S.sel = new Set([el.id]); S.op = opTransform('move'); S.op.base = c; S.op.once = true; setStatus(S.op.hint()); renderAll(); return; }
+  }
+  if (mode === 'estr') { mutate(() => { if (el.b) el.b[ctx.i] = 0; }); toast('Aresta reta'); return finishPetOp(); }
   if (mode === 'half') { mutate(() => { el.half = el.half || {}; if (el.half[ctx.i]) delete el.half[ctx.i]; else el.half[ctx.i] = true; }); toast(el.half[ctx.i] ? 'Meia parede nesta aresta' : 'Parede inteira nesta aresta'); return finishPetOp(); }
   if (mode === 'vdel') { const t = clone(el); if (deleteVertex(t, ctx.i)) mutate(() => Object.assign(el, t)); else toast('O elemento precisa de mais vértices'); return finishPetOp(); }
   if (mode === 'vfil' || mode === 'vcha') { S.op = opRound(el, ctx.i, mode === 'vcha', finishPetOp); S.op.cur = s2w(ctx.sp); typedLabel(S.op.label); setStatus(S.op.hint()); renderAll(); return; }
   S.op = ctx.kind === 'vertex' ? opVertex(el, ctx.i, mode) : opEdge(el, ctx.i, mode, ctx.at);
   S.op.cur = s2w(ctx.sp); typedLabel(S.op.label); setStatus(S.op.hint()); renderAll();
+}
+
+/* rotação livre de objeto em torno de um canto; Shift/orto encaixa de 15 em 15 graus; digite o ângulo */
+function opRotBlock(el, c, start) {
+  const orig = clone(el); const a0 = Math.atan2((start || add(c, [1, 0]))[1] - c[1], (start || add(c, [1, 0]))[0] - c[0]);
+  return {
+    noSnap: true, cur: null, typed: true, label: 'Ângulo °', hideSel: true, base: c,
+    hint() { return 'Gire o objeto e clique · digite o ângulo · Orto/Shift encaixa a cada 15°'; },
+    ang(p) { let a = Math.atan2(p[1] - c[1], p[0] - c[0]) - a0; if (S.ortho !== S.shift) a = Math.round(a / (Math.PI / 12)) * (Math.PI / 12); return a; },
+    onMove(p) { this.cur = p; },
+    commit(a) { const t = transformEl(clone(orig), mR(a, c)); commitPet(el, t, true); },
+    onClick(p) { this.commit(this.ang(p)); },
+    onTyped(v) { const x = parseNum(v); if (isFinite(x)) this.commit(x * Math.PI / 180); },
+    preview() { if (!this.cur) return null; const a = this.ang(this.cur); const t = transformEl(clone(orig), mR(a, c)); const q = w2s(this.cur), z = w2s(c); let w = elMarkup(t, { op: .7 }) + outlineMarkup(t, PRI, 2); if ((S.doc.settings.freeArea || 'sel') !== 'off' && freeRects(t).length) { try { w += freeMarkup([t]); } catch (_) { } } return { w, s: `<line x1="${N(z[0])}" y1="${N(z[1])}" x2="${N(q[0])}" y2="${N(q[1])}" stroke="${PRI}" stroke-dasharray="4 3"/><circle cx="${N(z[0])}" cy="${N(z[1])}" r="4" fill="${PRI}"/><text x="${N(q[0] + 12)}" y="${N(q[1] - 10)}" font-size="12" font-weight="700" fill="${PRI}" font-family="Hind,sans-serif">${fmt(a * 180 / Math.PI, 1)}°</text>` }; }
+  };
 }
 
 /* ---------- ponteiro ---------- */
@@ -1613,7 +1645,7 @@ cv.addEventListener('pointerdown', e => {
   { const ho0 = hitHandle(sp); if (ho0 && ho0.kind === 'oend') { cancelOp(); S.op = opOpenResize(ho0.el, ho0.side); S.op.dragFinish = true; PD = { op: true, sp }; cv.setPointerCapture(e.pointerId); renderAll(); return; } }
   if (S.mode === 'arch') { const ho = hitTest(w); if (ho && ho.t === 'open') { S.sel = new Set([ho.id]); PD = { body: ho, sp, w }; cv.setPointerCapture(e.pointerId); refreshPanels(); renderOverlay(); return; } }
   const h = hitHandle(sp);
-  if (h && (h.kind === 'vertex' || h.kind === 'edge')) { PD = { handle: h, sp, w }; cv.setPointerCapture(e.pointerId); return; }
+  if (h && (h.kind === 'vertex' || h.kind === 'edge' || h.kind === 'bcorner')) { PD = { handle: h, sp, w }; cv.setPointerCapture(e.pointerId); return; }
   if (h && (h.kind === 'radius' || h.kind === 'center' || h.kind === 'dimp')) { PD = { handle: h, sp, w }; cv.setPointerCapture(e.pointerId); return; }
   const hit = hitTest(w);
   if (S.mode === 'arch' && (!hit || hit.t !== 'open')) { const wa = wallAt(w); if (wa) { PD = { wall: wa, sp, w }; cv.setPointerCapture(e.pointerId); return; } }
@@ -1635,7 +1667,8 @@ cv.addEventListener('pointermove', e => {
   if (S.op) { const p = opPoint(w); shown = p; S.op.onMove && S.op.onMove(p, e); if (S.op.pick || S.tool === 'trim') { const hh = hitTest(w); S.hover = hh ? hh.id : null; } renderOverlay(); }
   else if (PD && PD.handle && dist(sp, PD.sp) > 4) { // arrastar direto: move vértice/aresta
     const h = PD.handle; PD = null;
-    if (h.kind === 'vertex') { S.op = opVertex(h.el, h.i, 'vmove'); S.op.dragFinish = true; }
+    if (h.kind === 'bcorner') { S.op = opRotBlock(h.el, h.at, s2w(PD ? PD.sp : sp)); S.op.dragFinish = true; }
+    else if (h.kind === 'vertex') { S.op = opVertex(h.el, h.i, 'vmove'); S.op.dragFinish = true; }
     else if (h.kind === 'edge') { S.op = opEdge(h.el, h.i, h.el.closed ? 'eoff' : 'moveEl', h.at); S.op.dragFinish = true; }
     else if (h.kind === 'center') { S.sel = new Set([h.el.id]); S.op = opTransform('move'); S.op.base = h.el.c; S.op.dragFinish = true; S.op.once = true; }
     else if (h.kind === 'radius') { const el = h.el; const o = clone(el); S.op = { hideSel: true, dragFinish: true, base: el.c, exclude: () => new Set([el.id]), onMove(p) { this.cur = p; }, onClick(p) { const r = dist(p, o.c); if (r > 1e-4) mutate(() => { byId(el.id).r = r4(r); }); finishPetOp(); }, preview() { return this.cur ? { w: elMarkup({ ...o, r: dist(this.cur, o.c) }, { fo: .5 }), s: segLabels(o.c, this.cur) } : null; } }; }
@@ -1664,7 +1697,7 @@ cv.addEventListener('pointerup', e => {
     return;
   }
   if (st.wall) { const wa = st.wall; clearTimeout(S.wallT); S.wallT = setTimeout(() => { if (S.wallDbl) { S.wallDbl = false; return; } S.sel = new Set(wa.list.filter(x => !x.rc.inst).map(x => x.rc.src.id)); S.op = opWallPush(wa); S.op.cur = wa.at; setStatus(S.op.hint()); typedLabel(S.op.label); renderAll(); refreshPanels(); }, 280); return; }
-  if (st.handle) { const h = st.handle; if (h.kind === 'vertex' || h.kind === 'edge') { showPet({ el: h.el, kind: h.kind, i: h.i, at: h.at }, sp); } return; }
+  if (st.handle) { const h = st.handle; if (h.kind === 'vertex' || h.kind === 'edge') { showPet({ el: h.el, kind: h.kind, i: h.i, at: h.at }, sp); } if (h.kind === 'bcorner') showPet({ el: h.el, kind: 'block', at: h.at }, sp); return; }
   if (st.win && st.geral) { const a = s2w(st.sp), b = s2w(sp); S.win = null; if (dist(st.sp, sp) > 4) { const cross = sp[0] < st.sp[0]; const x0 = Math.min(a[0], b[0]), x1 = Math.max(a[0], b[0]), y0 = Math.min(a[1], b[1]), y1 = Math.max(a[1], b[1]); gen().forEach(m => { const B = bboxPts(m.mp.flatMap(pl => pl[0])); const inside = B[0] >= x0 && B[2] <= x1 && B[1] >= y0 && B[3] <= y1; const inter = !(B[2] < x0 || B[0] > x1 || B[3] < y0 || B[1] > y1); if (cross ? inter : inside) S.genSel.add(m.key); }); } renderAll(); renderOptbar(); return; }
   if (st.win) {
     const a = s2w(st.sp), b = s2w(sp); S.win = null;
@@ -1885,6 +1918,7 @@ function renderProps() {
   h += `<div class="sec"><h3>ABNT NBR 9050 — áreas de aproximação</h3><p class="note">Somente para conferência (não são elementos de documentação). Valores de referência: confira com a versão vigente da norma.</p><div class="field"><label for="set-nbrc">Checagem de conflitos</label><select class="sel" id="set-nbrc">${[['ligar', 'Checar ao ligar as áreas (padrão)'], ['auto', 'Checagem automática (sempre, avisa e mostra conflitos)'], ['off', 'Desligada']].map(([k, v]) => `<option value="${k}" ${(set.nbrCheck || 'ligar') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
     <div class="row2"><div class="field"><label for="nb-pd">Puxar: profundidade</label><input class="inp" id="nb-pd" value="${fmt(ns.pullDepth)}" inputmode="decimal"></div><div class="field"><label for="nb-pe">Puxar: lateral à maçaneta</label><input class="inp" id="nb-pe" value="${fmt(ns.pullExtra)}" inputmode="decimal"></div></div>
     <div class="row2"><div class="field"><label for="nb-ud">Empurrar: profundidade</label><input class="inp" id="nb-ud" value="${fmt(ns.pushDepth)}" inputmode="decimal"></div><div class="field"><label for="nb-ue">Empurrar: lateral à maçaneta</label><input class="inp" id="nb-ue" value="${fmt(ns.pushExtra)}" inputmode="decimal"></div></div>
+    <div class="field"><label for="set-free">Área livre de 50 cm nas laterais das camas</label><select class="sel" id="set-free">${[['sel', 'Ao selecionar ou mover a cama (padrão)'], ['always', 'Sempre visível'], ['off', 'Desligada']].map(([k, v]) => `<option value="${k}" ${(set.freeArea || 'sel') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
     <div class="field"><label for="nb-min">Portas a partir de (vão livre, m)</label><input class="inp" id="nb-min" value="${fmt(ns.minDoor)}" inputmode="decimal"></div></div>`;
   const nl = els().filter(e => e.lock).length; if (nl) h += `<div class="sec"><h3>Travados</h3><button class="btn" id="set-unlock">${icon('unlock')}Destravar todos (${nl})</button></div>`;
   h += `<div class="sec"><h3>Categorias de uso</h3><p class="note">${G.on ? 'Lidas do projeto Giraffe (usos).' : 'Lista padrão — dentro do Giraffe o app lê os usos do projeto.'}</p>${Object.entries(S.usages.reduce((a, u) => { (a[u.group || 'Usos do projeto'] = a[u.group || 'Usos do projeto'] || []).push(u); return a; }, {})).map(([g, us]) => `<p class="note" style="margin:8px 0 4px;font-weight:600">${esc(g)}</p><div>${us.map(u => `<span class="tag" style="opacity:1"><span class="sw" style="display:inline-block;width:9px;height:9px;background:${u.color || '#ccc'};margin-right:4px"></span>${esc(u.name)}</span>`).join(' ')}</div>`).join('')}</div>`;
@@ -1897,6 +1931,7 @@ function renderProps() {
   on('set-dcol', e => { set.dimColor = e.target.value; renderAll(); scheduleSave(); }, 'input');
   on('set-auto', e => mutate(() => { set.autoDims = e.target.checked; }));
   on('set-unlock', unlockAll, 'click');
+  on('set-free', e => { set.freeArea = e.target.value; renderAll(); scheduleSave(); });
   on('set-nbrc', e => { set.nbrCheck = e.target.value; invalidate(); renderAll(); scheduleSave(); });
   [['nb-pd', 'pullDepth'], ['nb-pe', 'pullExtra'], ['nb-ud', 'pushDepth'], ['nb-ue', 'pushExtra'], ['nb-min', 'minDoor']].forEach(([id, k]) => on(id, e => { const v = parseNum(e.target.value); if (v >= 0) { set.nbr = { ...(set.nbr || {}), [k]: v }; invalidate(); renderAll(); scheduleSave(); } }));
   on('set-uu', e => { set.unitUsage = e.target.value; invalidate(); renderAll(); refreshPanels(); scheduleSave(); });
@@ -2179,7 +2214,8 @@ function shaftRing(p, roomRings) {
   const shD = ((S.doc.settings.walls || []).find(w => w.k === 'shaft') || { d: 0.10 }).d || 0.10, ext = extD();
   if (p.b && p.b.some(x => x)) return offsetRing(flat(p), shD, true);
   const P = p.pts, n = P.length, sg = ringArea(P) >= 0 ? 1 : -1;
-  const ds = P.map((a, i) => { const b = P[(i + 1) % n]; const u = nrm(sub(b, a)); const no = mul([u[1], -u[0]], sg); let inner = 0; [0.25, 0.5, 0.75].forEach(t => { const q = add(add(a, mul(sub(b, a), t)), mul(no, shD + 0.03)); if (roomRings.some(R => pip(q, R))) inner++; }); return inner >= 1 ? shD : ext; });
+  const cands = roomRings.map(R => ({ R })); const reach = shD + 2 * ext + 0.1;
+  const ds = P.map((a, i) => { const b = P[(i + 1) % n]; const u = nrm(sub(b, a)); const no = mul([u[1], -u[0]], sg); let inner = 0; [0.15, 0.5, 0.85].forEach(t => { const m = add(add(a, mul(sub(b, a), t)), mul(no, 1e-4)); if (cands.some(c => pip(m, c.R)) || rayHit(m, no, reach, cands)) inner++; }); return inner >= 1 ? shD : ext; }); // face com ambiente (mesmo atrás de uma parede interna) = parede de shaft; só fachada livre = externa
   return offsetRing(P, ds, true);
 }
 /* unidade sem ambientes dentro (ex.: CAD só com as manchas de unidade): ela própria é a mancha geral */
@@ -2380,10 +2416,12 @@ function opOpening(existing) {
    - demais ambientes da folha (hall, circulação…): agrupados por uso;
    - varandas: a mancha desenhada, menos shafts.
    Paredes entre grupos diferentes são divididas no eixo; parede entre ambiente e varanda fica inteira com a unidade. */
+/* primeiro polígono atingido por um raio (distância exata, sem amostragem) */
+function rayHit(m, dir, maxT, cands) { let best = null; cands.forEach(o => { const R = o.R; for (let i = 0; i < R.length; i++) { const a = R[i], b = R[(i + 1) % R.length]; const e = sub(b, a); const den = crs(dir, e); if (Math.abs(den) < 1e-12) continue; const w = sub(a, m); const t = crs(w, e) / den, u = crs(w, dir) / den; if (t > 1e-6 && t <= maxT && u >= -1e-9 && u <= 1 + 1e-9 && (!best || t < best.t)) best = { t, o }; } }); return best; }
 function generalManchas(prims) {
   const pc = PCL(); if (!pc) return [];
   prims = prims || cache().prims; const ext = extD();
-  const rooms = roomPrims(prims).filter(p => p.t === 'poly' && !(p.b && p.b.some(x => x)));
+  const rooms = roomPrims(prims).filter(p => p.t === 'poly' || p.t === 'circle').map(p => (p.t === 'circle' || (p.b && p.b.some(x => x))) ? { ...p, t: 'poly', closed: true, pts: flat(p), b: null, half: null } : p);
   const shafts = prims.filter(p => p.role === 'shaft' && p.closed && p.pts && p.pts.length >= 3).map(p => [closeR(flat(p))]);
   const unitIdx = p => (p._chain || []).findIndex(c => S.doc.blocks[c.bid] && S.doc.blocks[c.bid].kind === 'unidade');
   const unitPolys = prims.filter(p => p.role === 'unit' && p.closed && p.pts && p.pts.length >= 3 && unitIdx(p) < 0).map(p => ({ p, R: flat(p), A: areaOf(p) })).sort((a, b) => a.A - b.A);
@@ -2402,7 +2440,7 @@ function generalManchas(prims) {
     const P = x.r.pts, n = P.length, sg = ringArea(P) >= 0 ? 1 : -1; const a = P[i], b = P[(i + 1) % n]; const u = nrm(sub(b, a)); const no = mul([u[1], -u[0]], sg);
     let d = ext; const half = x.r.half && x.r.half[i] ? ext / 2 : ext;
     const cands = R.filter(o => o !== x && !(o.B[2] < Math.min(a[0], b[0]) - reach || o.B[0] > Math.max(a[0], b[0]) + reach || o.B[3] < Math.min(a[1], b[1]) - reach || o.B[1] > Math.max(a[1], b[1]) + reach));
-    [0.2, 0.5, 0.8].forEach(t => { const m = add(a, mul(sub(b, a), t)); for (let s = 0.005; s <= reach; s += 0.005) { const q = add(m, mul(no, s)); let hit = cands.find(o => pip(q, o.R)); if (hit) { let lo = s - 0.005, hi = s; for (let it = 0; it < 14; it++) { const md = (lo + hi) / 2; if (pip(add(m, mul(no, md)), hit.R)) hi = md; else lo = md; } s = r4(hi); } if (hit) { if (hit.bal) d = Math.min(d, s); else if (hit.key !== x.key) d = Math.min(d, s / 2); break; } } });
+    [0.2, 0.5, 0.8].forEach(t => { const m = add(add(a, mul(sub(b, a), t)), mul(no, 1e-4)); const h = rayHit(m, no, reach, cands); if (h) { if (h.o.bal) d = Math.min(d, h.t); else if (h.o.key !== x.key) d = Math.min(d, h.t / 2); } });
     return Math.min(d, half);
   };
   const out = [];
@@ -2468,6 +2506,18 @@ const NBR_MOB = {
   'cama-casal': bedNBR(1.4, 1.9), 'cama-queen': bedNBR(1.58, 1.98), 'cama-king': bedNBR(1.93, 2.03), 'cama-solteiro': bedNBR(0.88, 1.88),
   'cama-casal-cm': bedNBR(1.4, 1.9, 2), 'cama-queen-cm': bedNBR(1.58, 1.98, 2), 'cama-king-cm': bedNBR(1.93, 2.03, 2), 'cama-solteiro-cm': bedNBR(0.88, 1.88, 1)
 };
+/* área livre de 50 cm nas laterais das camas (conferência) */
+const bedFree = (w, l, cm) => [{ r: [-0.5, 0, 0, cm === 2 || cm === 1 ? l - 0.42 : l] }, { r: [w, 0, w + 0.5, cm === 2 ? l - 0.42 : l] }];
+const FREE_MOB = { 'cama-casal': bedFree(1.4, 1.9), 'cama-queen': bedFree(1.58, 1.98), 'cama-king': bedFree(1.93, 2.03), 'cama-solteiro': bedFree(0.88, 1.88), 'cama-casal-cm': bedFree(1.4, 1.9, 2), 'cama-queen-cm': bedFree(1.58, 1.98, 2), 'cama-king-cm': bedFree(1.93, 2.03, 2), 'cama-solteiro-cm': bedFree(0.88, 1.88, 1) };
+const nbrFreeWanted = () => false;
+function freeRects(el) { if (!el || el.t !== 'block' || !String(el.bid).startsWith('lib-')) return []; const def = FREE_MOB[String(el.bid).slice(4)]; if (!def) return []; return def.map(d => { const [x0, y0, x1, y1] = d.r; return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(q => mApply(el.m, q)); }); }
+function freeMarkup(list) {
+  const pc = PCL(); const A = S.mode === 'arch' || S.doc.settings.freeArea === 'always' ? arch() : null; let h = '';
+  const obst = []; if (A && A.walls.length) obst.push(A.walls); const C = cache(); const ids = new Set(list.map(e => e.id));
+  C.prims.forEach(p => { if ((p.role === 'layout' || p.role === 'shaft') && !ids.has(p._top)) { const R = flat(p); if (R.length >= 3) obst.push([[closeR(R)]]); } });
+  list.forEach(el => freeRects(el).forEach(R => { let conf = false; if (pc) { const B = bboxPts(R); conf = obst.some(mp => { try { return mpArea(pc.intersection([closeR(R)], mp)) > 0.005; } catch (_) { return false; } }); } h += `<path d="M${R.map(q => `${N(q[0])} ${N(q[1])}`).join('L')}Z" fill="${conf ? 'rgba(216,57,24,.18)' : 'rgba(47,175,131,.10)'}" stroke="${conf ? '#c0161a' : '#2faf83'}" stroke-width="1.2" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"><title>Área livre de 50 cm na lateral da cama${conf ? ' — EM CONFLITO' : ''}</title></path>`; }));
+  return h;
+}
 const nbrSet = () => ({ pullDepth: 1.50, pullExtra: 0.60, pushDepth: 1.20, pushExtra: 0.30, minDoor: 0.80, ...(S.doc.settings.nbr || {}) });
 let NBRC = null;
 function nbrAreas() {
@@ -2498,6 +2548,7 @@ function nbrAreas() {
 }
 let lastNbrConf = 0;
 function nbrMarkup() {
+  if (!S.showNBR && (S.doc.settings.nbrCheck || 'ligar') !== 'auto' && !els().some(e => e.nbr) && !nbrFreeWanted()) { const tb = $('#tg-nbr'); if (tb) tb.textContent = 'NBR 9050'; return ''; }
   const mode = S.doc.settings.nbrCheck || 'ligar'; let list; try { list = nbrAreas(); } catch (e) { console.warn(e); return ''; }
   const vis = list.filter(a => S.showNBR || a.show || (mode === 'auto' && a.conflict));
   const nConf = list.filter(a => a.conflict).length; if (mode === 'auto' && nConf > lastNbrConf) toast(`NBR 9050: ${nConf} área(s) de aproximação em conflito`); lastNbrConf = nConf;
@@ -2889,12 +2940,17 @@ function exportSVG() {
 
 /* ---------- persistência ---------- */
 let saveT;
-function scheduleSave() { clearTimeout(saveT); setSave('pend'); saveT = setTimeout(saveNow, 1200); }
+function scheduleSave() { clearTimeout(saveT); setSave('pend'); saveT = setTimeout(() => saveNow(), 2500); }
 function setSave(s) { const e = $('#save-state'); e.dataset.s = s; e.textContent = { pend: 'Alterações pendentes', saving: 'Salvando…', ok: G.on ? 'Salvo no projeto' : 'Salvo neste navegador', err: 'Erro ao salvar' }[s] || ''; }
-async function saveNow() {
+let lastProj = 0, projT = null, lastProjJson = '';
+async function saveNow(force) {
   const json = snapshot();
   try { localStorage.setItem(G.on ? `kvManchas:doc:${G.pid || 'giraffe'}` : 'kvManchas:doc', json); } catch (_) { }
   if (!G.on) { setSave('ok'); return; }
+  if (json === lastProjJson) { setSave('ok'); return; }
+  const wait = Math.max(0, 15000 - (Date.now() - lastProj));
+  if (!force && (wait > 0 || PD)) { clearTimeout(projT); setSave('pend'); projT = setTimeout(() => saveNow(), Math.max(wait, 4000)); return; }
+  lastProj = Date.now(); lastProjJson = json;
   if (json.length > 4e6) { setSave('err'); toast('Documento muito grande para o projeto (> 4 MB). Exporte o .json e divida em documentos.'); return; }
   setSave('saving');
   try { await setPublic({ kvManchas: JSON.parse(json) }); setSave('ok'); } catch (e) { console.warn('[KV Manchas] save', e); setSave('err'); }
@@ -3216,7 +3272,8 @@ async function init() {
   $('#optbar').addEventListener('wheel', e => { const ob = e.currentTarget; if (ob.scrollWidth > ob.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { ob.scrollLeft += e.deltaY; e.preventDefault(); } }, { passive: false });
   if (window.innerWidth < 900) $('#dock').hidden = true;
   renderTabs(); setTool('select'); resize(); fitView(); refreshPanels(); syncCopyBtns(); setSave(G.on ? 'ok' : '');
-  window.addEventListener('beforeunload', () => { if ($('#save-state').dataset.s === 'pend') saveNow(); });
+  window.addEventListener('beforeunload', () => { if ($('#save-state').dataset.s === 'pend') saveNow(true); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && $('#save-state').dataset.s === 'pend') saveNow(true); });
 }
 init();
 window.__km = { exportViewToGiraffe, viewManchasItems, viewPlantaItems, parseDXF, dxfPrims, doImportDXF, resolvePoint, nbrAreas, gen, exportGeneralToGiraffe, arch, setMode, refreshPanels, S, G, cache, invalidate, renderAll, setTool, s2w, w2s, mutate, els, areaOf, polyArea, computeAreas, exportToGiraffe, importFromGiraffe, LIB, FURN, furnBlock, filletVertex, offsetRing, trimAt, enterBlock, exitBlock };
