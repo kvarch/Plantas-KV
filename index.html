@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V29 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V30 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -382,8 +382,8 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 
 </script>
 <script type="module">
-/* KV Manchas — Beta V29 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V29';
+/* KV Manchas — Beta V30 · © 2026 Königsberger Vannucchi */
+const VERSION = 'V30';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -658,6 +658,7 @@ function cache() {
   if (CACHE) return CACHE;
   const prims = expandList(els()).filter(p => p.t !== 'guide');
   const ref = [];
+  if (S.editBlock && S.editCtx) { const sh = S.doc.sheets.find(s => s.id === S.editCtx.sheet); if (sh) ref.push(...expandList(sh.els.filter(e => e.id !== S.editCtx.inst), mInv(S.editCtx.M)).filter(p => p.t !== 'guide' && p.t !== 'dim').map(p => (p._top = '__ref', p))); }
   if (!S.editBlock) S.doc.sheets.forEach(sh => { if (sh.trace && sh.id !== sheet().id) ref.push(...expandList(sh.els).filter(p => p.t !== 'guide' && p.t !== 'dim').map(p => (p._top = '__ref', p))); });
   const guides = els().filter(e => e.t === 'guide');
   const verts = [], mids = [], segs = [], centers = [], wallR = [];
@@ -769,6 +770,8 @@ function renderAll() {
   // vegetais (folhas de referência)
   let ref = '';
   if (!S.editBlock) S.doc.sheets.forEach(sh => { if (sh.trace && sh.id !== sheet().id) ref += `<g opacity="${S.doc.settings.traceOpacity}">${sh.els.map(e => elMarkup(e)).join('')}</g>`; });
+  // edição de bloco: o contexto da folha aparece esmaecido, no lugar certo
+  if (S.editBlock && S.editCtx) { const sh = S.doc.sheets.find(s => s.id === S.editCtx.sheet); if (sh) { const Mi = mInv(S.editCtx.M); ref += `<g transform="matrix(${Mi.map(N).join(' ')})" opacity=".32" style="pointer-events:none">${sh.els.filter(e => e.id !== S.editCtx.inst && e.t !== 'guide').map(e => elMarkup(e)).join('')}</g>`; } }
   $('#g-ref').innerHTML = ref;
   const hide = S.op && S.op.hideSel ? S.sel : null;
   if (S.mode === 'arch') $('#g-els').innerHTML = renderArch();
@@ -1255,8 +1258,8 @@ function explodeSel() {
   const sel = selEls().filter(e => e.t === 'block'); if (!sel.length) return;
   mutate(() => { const L = els(); const ns = new Set(); sel.forEach(inst => { const def = S.doc.blocks[inst.bid]; if (!def) return; const parts = def.els.map(c => transformEl({ ...clone(c), id: uid() }, inst.m)); parts.forEach(p => ns.add(p.id)); L.splice(L.indexOf(inst), 1, ...parts); }); S.sel = ns; });
 }
-function enterBlock(bid) { if (!S.doc.blocks[bid]) return; cancelOp(); S.editBlock = bid; S.sel.clear(); invalidate(); setTool('select'); renderAll(); fitView(); refreshPanels(); renderTabs(); }
-function exitBlock() { if (!S.editBlock) return; const d = S.doc.blocks[S.editBlock]; if (d) d.rev = (d.rev || 1) + 1; S.editBlock = null; S.sel.clear(); invalidate(); setTool('select'); renderAll(); refreshPanels(); renderTabs(); scheduleSave(); }
+function enterBlock(bid, inst) { if (!S.doc.blocks[bid]) return; cancelOp(); S.editCtx = inst && inst.m ? { sheet: sheet().id, inst: inst.id, M: inst.m.slice() } : null; S.editBlock = bid; S.sel.clear(); invalidate(); setTool('select'); renderAll(); fitView(); refreshPanels(); renderTabs(); }
+function exitBlock() { if (!S.editBlock) return; S.editCtx = null; const d = S.doc.blocks[S.editBlock]; if (d) d.rev = (d.rev || 1) + 1; S.editBlock = null; S.sel.clear(); invalidate(); setTool('select'); renderAll(); refreshPanels(); renderTabs(); scheduleSave(); }
 
 /* editar bloco: só esta cópia (personalização pontual) ou todas; o padrão da biblioteca nunca é alterado */
 function allInstances(bid) { const out = []; const walk = list => list.forEach(e => { if (e.t === 'block' && e.bid === bid) out.push(e); }); S.doc.sheets.forEach(s => walk(s.els)); Object.values(S.doc.blocks).forEach(d => walk(d.els)); return out; }
@@ -1268,7 +1271,7 @@ function editBlockDialog(inst) {
     let bid = inst.bid;
     if (v.m === 'one' && n > 1 || v.m === 'one' && isLib) { pushHist(); bid = forkBlock(inst.bid, [inst], ' (personalizado)'); }
     else if (v.m === 'all' && isLib) { pushHist(); bid = forkBlock(inst.bid, allInstances(inst.bid), ' (editado)'); }
-    enterBlock(bid);
+    enterBlock(bid, inst);
   }, 'Editar');
 }
 
@@ -1711,7 +1714,7 @@ cv.addEventListener('pointerup', e => {
 cv.addEventListener('dblclick', e => {
   if (S.op && S.op.onDbl) { S.op.onDbl(); renderOverlay(); return; }
   if (S.tool !== 'select' && !(S.op && S.op.base && S.mode === 'arch')) return; const sp0 = evPt(e); const w = s2w(sp0);
-  if (S.mode === 'arch') { const wa = wallAt(w); if (wa) { S.wallDbl = true; clearTimeout(S.wallT); setTimeout(() => { S.wallDbl = false; }, 400); cancelOp(); const x = wa.list[0]; if (x.rc.inst) { const top = els().find(e => e.id === x.rc.w._top); const bid = x.rc.w._chain[x.rc.w._chain.length - 1].bid; toast(`Face dentro do bloco “${S.doc.blocks[bid]?.name}” — abrindo o bloco para edição independente`); enterBlock(bid); void top; return; } const P = x.rc.src.pts; const at = projSeg(w, P[x.i], P[(x.i + 1) % P.length]).p; S.sel = new Set([x.rc.src.id]); renderAll(); refreshPanels(); showPet({ el: x.rc.src, kind: 'edge', i: x.i, at }, sp0); setStatus('Edição independente desta face da parede'); return; } }
+  if (S.mode === 'arch') { const wa = wallAt(w); if (wa) { S.wallDbl = true; clearTimeout(S.wallT); setTimeout(() => { S.wallDbl = false; }, 400); cancelOp(); const x = wa.list[0]; if (x.rc.inst) { const top = els().find(e => e.id === x.rc.w._top); const bid = x.rc.w._chain[x.rc.w._chain.length - 1].bid; toast(`Face dentro do bloco “${S.doc.blocks[bid]?.name}” — abrindo o bloco para edição independente`); enterBlock(bid, { id: top && top.id, m: x.rc.M }); return; } const P = x.rc.src.pts; const at = projSeg(w, P[x.i], P[(x.i + 1) % P.length]).p; S.sel = new Set([x.rc.src.id]); renderAll(); refreshPanels(); showPet({ el: x.rc.src, kind: 'edge', i: x.i, at }, sp0); setStatus('Edição independente desta face da parede'); return; } }
   const hit = hitTest(w);
   if (hit && hit.t === 'block') editBlockDialog(hit);
 });
@@ -1834,7 +1837,7 @@ function renderOptbar() {
   const ob = $('#optbar'); const t = S.tool; const d = S.doc.defaults, st = S.doc.settings;
   ob.classList.toggle('block-mode', !!S.editBlock);
   let h = '';
-  if (S.editBlock) { const def = S.doc.blocks[S.editBlock]; h += `<span class="tname">Editando bloco</span><span class="hint">${esc(def?.name)} · ${instancesOf(S.editBlock)} cópia(s) serão atualizadas</span><button class="btn primary sm" id="ob-exit-block">${icon('save')}Concluir</button><span class="vsep"></span>`; }
+  if (S.editBlock) { const def = S.doc.blocks[S.editBlock]; h += `<span class="tname">Editando bloco</span><span class="hint">${esc(def?.name)} · ${instancesOf(S.editBlock)} cópia(s) serão atualizadas${S.editCtx ? ' · contexto da folha esmaecido' : ''}</span><button class="btn primary sm" id="ob-exit-block">${icon('save')}Concluir</button><span class="vsep"></span>`; }
   if (!(t === 'select' && ((S.sel.size && !S.op) || S.mode === 'geral'))) h += `<span class="tname">${TOOL_NAMES[t] || ''}</span>`;
   if (['rect', 'poly', 'circle'].includes(t)) {
     h += `<div class="of"><label for="ob-role">Papel</label><select class="sel" id="ob-role">${['room', 'unit', 'layout', 'line'].map(r => `<option value="${r}" ${d.role === r ? 'selected' : ''}>${ROLES[r]}</option>`).join('')}</select></div>`;
@@ -2251,7 +2254,7 @@ function resolveOpening(o, host) {
   }
   const u = o.d || [1, 0]; return { ok: false, c: o.p || [0, 0], u, n: [u[1], -u[0]], L: w };
 }
-function wallThick(pose, raw) { if (!raw || !raw.length) return 0.15; let t = 0.004; while (t < 0.8 && inMP(add(pose.c, mul(pose.n, t)), raw)) t += 0.005; return t > 0.03 ? r4(t) : 0.15; }
+function wallThick(pose, raw) { if (!raw || !raw.length) return 0.15; const at = t => inMP(add(pose.c, mul(pose.n, t)), raw); let t = 0.001; if (!at(t)) return 0.15; while (t < 0.8 && at(t)) t += 0.005; let lo = t - 0.005, hi = t; for (let k = 0; k < 16; k++) { const m = (lo + hi) / 2; if (at(m)) lo = m; else hi = m; } return lo > 0.03 ? r4(lo) : 0.15; }
 /* contorno do vão com canto a 45° opcional (junção de duas aberturas na quina): lado sem batente */
 function openingCut(pose, o, t0, t1) { const W = openW(o); const m = WIN[o.kind] ? o.miter : null; const l = t => -W / 2 - (m === 'start' ? Math.max(t, 0) : 0), r = t => W / 2 + (m === 'end' ? Math.max(t, 0) : 0); const P = (s, t) => add(add(pose.c, mul(pose.u, s)), mul(pose.n, t)); return [P(l(t0), t0), P(r(t0), t0), P(r(t1), t1), P(l(t1), t1)]; }
 function openingRect(pose, w, t0, t1) { const a = add(pose.c, mul(pose.u, -w / 2)), b = add(pose.c, mul(pose.u, w / 2)); return [add(a, mul(pose.n, t0)), add(b, mul(pose.n, t0)), add(b, mul(pose.n, t1)), add(a, mul(pose.n, t1))]; }
