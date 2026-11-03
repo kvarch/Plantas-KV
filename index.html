@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V30 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V31 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -383,7 +383,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 </script>
 <script type="module">
 /* KV Manchas — Beta V30 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V30';
+const VERSION = 'V31';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -624,7 +624,7 @@ const fromGrid = q => add(rotP(q, [0, 0], gridAng()), gridO());
 
 /* ---------- histórico / persistência ---------- */
 function snapshot() { return JSON.stringify(S.doc); }
-function pushHist() { S.hist.push(snapshot()); if (S.hist.length > 120) S.hist.shift(); S.redo.length = 0; }
+function pushHist() { const j = snapshot(); if (S.hist.length && S.hist[S.hist.length - 1] === j) return; S.hist.push(j); let tot = 0; for (let i = S.hist.length - 1; i >= 0; i--) { tot += S.hist[i].length; if (tot > 24e6 || S.hist.length - i > 120) { S.hist.splice(0, i + 1); break; } } S.redo.length = 0; }
 function mutate(fn, opts = {}) { pushHist(); const r = fn(); changed(opts); return r; }
 function changed(opts = {}) { try { syncOpenings(); } catch (e) { console.warn(e); } invalidate(); S.dirty = true; scheduleSave(); renderAll(); if (!opts.keepPanel) refreshPanels(); }
 function undo() { if (!S.hist.length) return toast('Nada para desfazer'); S.redo.push(snapshot()); S.doc = JSON.parse(S.hist.pop()); afterRestore(); }
@@ -650,7 +650,7 @@ function expandEl(el, M, out, depth, top, chain) {
     def.els.forEach(c => expandEl(c, M2, out, depth + 1, top, ch));
     return;
   }
-  const c = clone(el); if (M !== MI) transformEl(c, M); c._top = top; c._chain = chain || []; out.push(c);
+  const c = { ...el }; if (M !== MI) transformEl(c, M); c._top = top; c._chain = chain || []; out.push(c);
 }
 function expandList(list, M = MI) { const out = []; list.forEach(e => expandEl(e, M, out, 0, e.id, null)); return out; }
 let CACHE = null; const invalidate = () => { CACHE = null; ARCH = null; GEN = null; NBRC = null; };
@@ -1632,7 +1632,7 @@ const opBase = op => !op ? null : (typeof op.base === 'function' ? op.base() : o
 function evPt(e) { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
 let PD = null; // pointer down state
 function opPoint(w) { const op = S.op; if (!op || op.noSnap) { S.snapHit = null; return w; } const ex = op.exclude ? op.exclude() : null; return resolvePoint(w, opBase(op), { exclude: ex, noOrtho: op.noOrtho, extraPts: op.extraPts, noTrack: op.noTrack, noPerp: op.noPerp, excludePts: op.excludePts, excludeWallOf: op.excludeWallOf }); }
-cv.addEventListener('pointerdown', e => {
+cv.addEventListener('pointerdown', e => { S.lastAct = Date.now();
   cv.focus({ preventScroll: true }); const sp = evPt(e); const w = s2w(sp);
   if (e.button === 1 || e.button === 2 && false || S.space || S.tool === 'pan') { PD = { pan: true, sp, v: { ...S.view } }; cv.setPointerCapture(e.pointerId); cv.classList.add('panning'); e.preventDefault(); return; }
   if (e.button !== 0) return;
@@ -1907,7 +1907,7 @@ function addSheet(copyFrom) {
 
 /* ---------- painéis ---------- */
 function setPanel(p) { S.panel = p; $$('.dock-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.panel === p))); $$('.panel').forEach(x => x.hidden = x.id !== 'p-' + p); refreshPanels(); }
-let panelT; function refreshPanels() { clearTimeout(panelT); panelT = setTimeout(() => { if (S.tool === 'select' && !S.op) renderOptbar(); const p = S.panel; if (p === 'props') renderProps(); if (p === 'sheets') renderSheetsPanel(); if (p === 'lib') renderLib(); if (p === 'areas') renderAreas(); }, 30); }
+let panelT; function refreshPanels() { clearTimeout(panelT); panelT = setTimeout(() => { if (S.tool === 'select' && !S.op) renderOptbar(); const p = S.panel; if (p === 'props') renderProps(); if (p === 'sheets') renderSheetsPanel(); if (p === 'lib') renderLib(); if (p === 'areas') { clearTimeout(refreshPanels.at); refreshPanels.at = setTimeout(() => { if (S.panel === 'areas') renderAreas(); }, 400); } }, 30); }
 function renderProps() {
   const P = $('#p-props'); const d = S.doc.defaults, set = S.doc.settings;
   if (document.activeElement && P.contains(document.activeElement) && document.activeElement.matches('input[type=text],input:not([type])')) return;
@@ -1923,6 +1923,7 @@ function renderProps() {
     <div class="row2"><div class="field"><label for="nb-ud">Empurrar: profundidade</label><input class="inp" id="nb-ud" value="${fmt(ns.pushDepth)}" inputmode="decimal"></div><div class="field"><label for="nb-ue">Empurrar: lateral à maçaneta</label><input class="inp" id="nb-ue" value="${fmt(ns.pushExtra)}" inputmode="decimal"></div></div>
     <div class="field"><label for="set-free">Área livre de 50 cm nas laterais das camas</label><select class="sel" id="set-free">${[['sel', 'Ao selecionar ou mover a cama (padrão)'], ['always', 'Sempre visível'], ['off', 'Desligada']].map(([k, v]) => `<option value="${k}" ${(set.freeArea || 'sel') === k ? 'selected' : ''}>${v}</option>`).join('')}</select></div>
     <div class="field"><label for="nb-min">Portas a partir de (vão livre, m)</label><input class="inp" id="nb-min" value="${fmt(ns.minDoor)}" inputmode="decimal"></div></div>`;
+  { const r = perfReport(); h += `<div class="sec"><h3>Desempenho</h3><div class="readout"><span>Documento</span><b>${r.docKB} KB</b><span>Folhas · elementos</span><b>${r.folhas} · ${r.elementos}</b><span>Vértices</span><b>${r.vertices}</b><span>Histórico (desfazer)</span><b>${r.historico} · ${r.historicoMB} MB</b>${Object.entries(r.tempos_ms).filter(([, v]) => v.max > 30).map(([k, v]) => `<span>${k}</span><b>${v.ultimo} / máx ${v.max} ms</b>`).join('')}</div><div class="field"><label for="set-ps">Salvar no projeto Giraffe</label><select class="sel" id="set-ps"><option value="auto" ${set.projSave !== 'manual' ? 'selected' : ''}>Automático (após pausa, a cada 30 s no máx.)</option><option value="manual" ${set.projSave === 'manual' ? 'selected' : ''}>Manual (só pelo botão abaixo)</option></select></div><div class="btn-row"><button class="btn" id="set-savenow">${icon('save')}Salvar no projeto agora</button><button class="btn" id="set-clearhist">Limpar histórico</button><button class="btn" id="set-perf">${icon('download')}Diagnóstico</button></div></div>`; }
   const nl = els().filter(e => e.lock).length; if (nl) h += `<div class="sec"><h3>Travados</h3><button class="btn" id="set-unlock">${icon('unlock')}Destravar todos (${nl})</button></div>`;
   h += `<div class="sec"><h3>Categorias de uso</h3><p class="note">${G.on ? 'Lidas do projeto Giraffe (usos).' : 'Lista padrão — dentro do Giraffe o app lê os usos do projeto.'}</p>${Object.entries(S.usages.reduce((a, u) => { (a[u.group || 'Usos do projeto'] = a[u.group || 'Usos do projeto'] || []).push(u); return a; }, {})).map(([g, us]) => `<p class="note" style="margin:8px 0 4px;font-weight:600">${esc(g)}</p><div>${us.map(u => `<span class="tag" style="opacity:1"><span class="sw" style="display:inline-block;width:9px;height:9px;background:${u.color || '#ccc'};margin-right:4px"></span>${esc(u.name)}</span>`).join(' ')}</div>`).join('')}</div>`;
   P.innerHTML = h; bindStyle(P, 'def', d.st, () => scheduleSave());
@@ -1934,6 +1935,10 @@ function renderProps() {
   on('set-dcol', e => { set.dimColor = e.target.value; renderAll(); scheduleSave(); }, 'input');
   on('set-auto', e => mutate(() => { set.autoDims = e.target.checked; }));
   on('set-unlock', unlockAll, 'click');
+  on('set-ps', e => { set.projSave = e.target.value; scheduleSave(); });
+  on('set-savenow', () => saveNow(true), 'click');
+  on('set-clearhist', () => { S.hist = []; S.redo = []; toast('Histórico de desfazer limpo'); renderProps(); }, 'click');
+  on('set-perf', () => { const t = JSON.stringify(perfReport(), null, 1); download('kv-manchas-desempenho.json', t); console.info('[KV Manchas] desempenho', t); }, 'click');
   on('set-free', e => { set.freeArea = e.target.value; renderAll(); scheduleSave(); });
   on('set-nbrc', e => { set.nbrCheck = e.target.value; invalidate(); renderAll(); scheduleSave(); });
   [['nb-pd', 'pullDepth'], ['nb-pe', 'pullExtra'], ['nb-ud', 'pushDepth'], ['nb-ue', 'pushExtra'], ['nb-min', 'minDoor']].forEach(([id, k]) => on(id, e => { const v = parseNum(e.target.value); if (v >= 0) { set.nbr = { ...(set.nbr || {}), [k]: v }; invalidate(); renderAll(); scheduleSave(); } }));
@@ -2951,12 +2956,13 @@ async function saveNow(force) {
   try { localStorage.setItem(G.on ? `kvManchas:doc:${G.pid || 'giraffe'}` : 'kvManchas:doc', json); } catch (_) { }
   if (!G.on) { setSave('ok'); return; }
   if (json === lastProjJson) { setSave('ok'); return; }
-  const wait = Math.max(0, 15000 - (Date.now() - lastProj));
-  if (!force && (wait > 0 || PD)) { clearTimeout(projT); setSave('pend'); projT = setTimeout(() => saveNow(), Math.max(wait, 4000)); return; }
+  const wait = Math.max(0, (S.doc.settings.projSave === 'manual' ? 1e12 : 30000) - (Date.now() - lastProj));
+  if (!force && (wait > 0 || PD || Date.now() - (S.lastAct || 0) < 5000)) { clearTimeout(projT); setSave('pend'); if (S.doc.settings.projSave !== 'manual') projT = setTimeout(() => saveNow(), Math.min(Math.max(wait, 5000), 60000)); return; }
   lastProj = Date.now(); lastProjJson = json;
   if (json.length > 4e6) { setSave('err'); toast('Documento muito grande para o projeto (> 4 MB). Exporte o .json e divida em documentos.'); return; }
   setSave('saving');
-  try { await setPublic({ kvManchas: JSON.parse(json) }); setSave('ok'); } catch (e) { console.warn('[KV Manchas] save', e); setSave('err'); }
+  if (json.length > 1.5e6 && !S.bigWarned) { S.bigWarned = true; toast(`Documento grande (${Math.round(json.length / 1024)} KB) — salvar no projeto pode travar o Giraffe. Veja Ajustes → Desempenho.`, 7000); }
+  try { await setPublic({ kvManchas: S.doc }); setSave('ok'); } catch (e) { console.warn('[KV Manchas] save', e); setSave('err'); }
 }
 
 /* ---------- Giraffe ---------- */
@@ -3233,10 +3239,15 @@ function addDemo(doc) {
   doc.active = sid;
 }
 
+/* ---------- medidor de desempenho ---------- */
+const PERF = {};
+function perfWrap(name, fn) { return function (...a) { const t = performance.now(); try { return fn.apply(this, a); } finally { const d = performance.now() - t; const p = PERF[name] || (PERF[name] = { n: 0, last: 0, max: 0, tot: 0 }); p.n++; p.last = d; p.tot += d; if (d > p.max) p.max = d; if (d > 400) console.warn('[KV Manchas] lento:', name, Math.round(d) + ' ms'); } }; }
+function perfReport() { const d = S.doc; const nEls = d.sheets.reduce((a, s) => a + s.els.length, 0) + Object.values(d.blocks).reduce((a, b) => a + b.els.length, 0); const pts = d.sheets.reduce((a, s) => a + s.els.reduce((b, e) => b + (e.pts ? e.pts.length : 0), 0), 0); return { versao: VERSION, docKB: Math.round(snapshot().length / 1024), folhas: d.sheets.length, elementos: nEls, vertices: pts, blocos: Object.keys(d.blocks).length, historico: S.hist.length, historicoMB: Math.round(S.hist.reduce((a, h) => a + h.length, 0) / 1e5) / 10, giraffe: G.on, tempos_ms: Object.fromEntries(Object.entries(PERF).map(([k, v]) => [k, { vezes: v.n, ultimo: Math.round(v.last), max: Math.round(v.max), media: Math.round(v.tot / v.n) }])) }; }
 /* ---------- inicialização ---------- */
 function resize() { const r = $('#stage').getBoundingClientRect(); S.W = Math.max(50, r.width); S.H = Math.max(50, r.height); renderAll(); }
 function applyTheme(mode) { const html = document.documentElement; const dark = mode === 'dark' || (mode === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches); html.classList.toggle('dark', dark); html.classList.toggle('light', !dark); $('#cmd-theme').setAttribute('aria-label', 'Tema: ' + { auto: 'automático', light: 'claro', dark: 'escuro' }[mode]); $('#cmd-theme').title = 'Tema: ' + { auto: 'automático', light: 'claro', dark: 'escuro' }[mode]; }
 async function init() {
+  renderAll = perfWrap('renderAll', renderAll); cache = perfWrap('cache', cache); arch = perfWrap('planta', arch); gen = perfWrap('manchasGerais', gen); renderAreas = perfWrap('painelAreas', renderAreas); pushHist = perfWrap('historico', pushHist); saveNow = perfWrap('salvar', saveNow); renderOptbar = perfWrap('barraSuperior', renderOptbar); snapPoint = perfWrap('snap', snapPoint); renderProps = perfWrap('painelAjustes', renderProps);
   paintIcons();
   $('#footer-ver').textContent = `Beta - ${VERSION} · © 2026 Königsberger Vannucchi`;
   let theme = 'auto'; try { theme = localStorage.getItem('kvManchas:theme') || 'auto'; } catch (_) { } applyTheme(theme);
