@@ -341,7 +341,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
   <span class="coords" id="coords" aria-live="off">x 0,00 · y 0,00</span>
   <div class="typed-wrap"><label for="typed" id="typed-lbl">Medida</label><input class="inp" id="typed" type="text" inputmode="decimal" autocomplete="off" placeholder="digite…" aria-describedby="status-msg"></div>
   <span class="status-msg" id="status-msg" role="status" aria-live="polite"></span>
-  <span class="footer-ver" id="footer-ver">Beta - V31 · © 2026 Königsberger Vannucchi</span>
+  <span class="footer-ver" id="footer-ver">Beta - V32 · © 2026 Königsberger Vannucchi</span>
 </footer>
 </div>
 
@@ -383,7 +383,7 @@ dialog h2{margin:0 0 12px;font-size:16px;font-weight:600}
 </script>
 <script type="module">
 /* KV Manchas — Beta V30 · © 2026 Königsberger Vannucchi */
-const VERSION = 'V31';
+const VERSION = 'V32';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -2999,8 +2999,18 @@ async function initGiraffe() {
 function mPerDeg(lat) { const f = lat * Math.PI / 180; return [111412.84 * Math.cos(f) - 93.5 * Math.cos(3 * f), 111132.92 - 559.82 * Math.cos(2 * f) + 1.175 * Math.cos(4 * f)]; }
 /* folha → mapa: o “norte” da grade do app vira o norte da grade do mapa (rotação do mapa em settings.mapRot) */
 const mapRot = () => (S.doc.settings.mapRot || 0) * Math.PI / 180;
-function toLL(p, o) { const q = rotP(toGrid(p), [0, 0], mapRot()); const [mx, my] = mPerDeg(o.lat); return [o.lng + q[0] / mx, o.lat + q[1] / my]; }
-function fromLL(ll, o) { const [mx, my] = mPerDeg(o.lat); const q = [(ll[0] - o.lng) * mx, (ll[1] - o.lat) * my]; return fromGrid(rotP(q, [0, 0], -mapRot())); }
+/* o ponto geográfico da folha (o.lng/o.lat) corresponde ao ponto-âncora do desenho (o.a); sem âncora, à origem da grade */
+const geoAnchor = o => o.a || gridO();
+function toLL(p, o) { const q = rotP(rotP(sub(p, geoAnchor(o)), [0, 0], -gridAng()), [0, 0], mapRot()); const [mx, my] = mPerDeg(o.lat); return [o.lng + q[0] / mx, o.lat + q[1] / my]; }
+function fromLL(ll, o) { const [mx, my] = mPerDeg(o.lat); const q = [(ll[0] - o.lng) * mx, (ll[1] - o.lat) * my]; return add(rotP(rotP(q, [0, 0], -mapRot()), [0, 0], gridAng()), geoAnchor(o)); }
+function contentCenter(pts) { const P = pts && pts.length ? pts : sheet().els.flatMap(e => expandList([e]).flatMap(p => p.pts ? p.pts : p.c ? [p.c] : [])); if (!P.length) return [0, 0]; const B = bboxPts(P); return [(B[0] + B[2]) / 2, (B[1] + B[3]) / 2]; }
+/* garante a posição no mapa: sem posição → pede o clique; desenho muito longe da posição atual → oferece reposicionar */
+async function ensureGeo(pts) {
+  const sh = sheet(); const c = contentCenter(pts);
+  if (!sh.geo) { toast('Clique no mapa onde deve ficar o CENTRO do desenho', 5000); return pickOrigin(c); }
+  const d = dist(c, geoAnchor(sh.geo)); if (d < 2000) return true;
+  return new Promise(res => askDialog('Desenho longe da posição no mapa', [{ id: 'x', type: 'note', label: `O desenho está a ${fmt(d / 1000, 1)} km da posição definida para esta folha no mapa (comum após importar um DXF com coordenadas grandes). Reposicionar clicando no mapa onde deve ficar o centro do desenho?` }], async () => res(await pickOrigin(c)), 'Reposicionar'));
+}
 /* coleta feições de qualquer formato de retorno (array, FeatureCollection, mapa por id, blocos) */
 const BLOCK_KEYS = ['blockId', 'block_id', '_blockId', 'blockRef', 'block', 'definitionId'];
 async function collectFeatures(res, out = [], depth = 0) {
@@ -3047,12 +3057,12 @@ async function importFromGiraffe() {
     addEls(all); fitView(all); toast(`${all.length} elemento(s) copiados do Giraffe${blocksOut.length ? ` (${blocksOut.length} como bloco)` : ''}`);
   } catch (e) { toast('Falha ao importar: ' + e.message); console.warn(e); }
 }
-async function pickOrigin() {
-  try { const r = await gInvoke('drawPoint', [], 120000); const c = r && (r.geometry ? r.geometry.coordinates : Array.isArray(r) ? r : r.coordinates || (r.lng != null ? [r.lng, r.lat] : null)); if (!c) throw new Error('ponto não retornado'); sheet().geo = { lng: c[0], lat: c[1], rot: sheet().geo?.rot || 0 }; scheduleSave(); toast('Origem da folha definida no mapa'); return true; }
+async function pickOrigin(anchor) {
+  try { const a = anchor || contentCenter(); const r = await gInvoke('drawPoint', [], 120000); const c = r && (r.geometry ? r.geometry.coordinates : Array.isArray(r) ? r : r.coordinates || (r.lng != null ? [r.lng, r.lat] : null)); if (!c) throw new Error('ponto não retornado'); if (Math.abs(c[0]) > 180 || Math.abs(c[1]) > 90) throw new Error('o ponto não veio em longitude/latitude'); sheet().geo = { lng: c[0], lat: c[1], a: a.map(r4), rot: sheet().geo?.rot || 0 }; scheduleSave(); toast('Posição da folha no mapa definida (centro do desenho no ponto clicado)'); return true; }
   catch (e) { toast('Não foi possível obter o ponto: ' + e.message); return false; }
 }
 async function exportToGiraffe(all, asBlock = false) {
-  const sh = sheet(); if (!sh.geo) { toast('Clique no mapa para posicionar a origem (canto 0,0) da folha'); if (!(await pickOrigin())) return; }
+  const sh = sheet(); if (!(await ensureGeo((all ? sh.els : selEls()).flatMap(e => expandList([e]).flatMap(p => p.pts ? p.pts : p.c ? [p.c] : []))))) return;
   const o = sh.geo; const src = all ? sh.els : selEls(); if (!src.length) return toast(all ? 'Folha vazia' : 'Selecione os elementos a enviar');
   const prims = expandList(src).filter(p => p.t !== 'dim' && p.t !== 'guide' && p.role !== 'limit');
   const layer = S.doc.settings.giraffeLayer || 'KV Manchas';
@@ -3079,7 +3089,7 @@ function rawSectionList() { try { const rs = G.state.get('rawSections'); const o
 async function sendItemsToGiraffe(items, TAG, what, keySet) {
   if (S.editBlock) return toast('Conclua a edição do bloco antes de enviar');
   if (!items.length) return toast('Nada para enviar nesta vista');
-  const sh = sheet(); if (!sh.geo) { toast('Clique no mapa para posicionar a origem (canto 0,0) da folha'); if (!(await pickOrigin())) return; }
+  const sh = sheet(); if (!(await ensureGeo(items.flatMap(g => g.mp.flatMap(pl => pl[0]))))) return;
   const o = sh.geo; const feats = [];
   items.forEach(g => g.mp.forEach((pl, pi) => {
     const rings = pl.map(R => { const ll = R.map(q => toLL(q, o)); if (dist(ll[0], ll[ll.length - 1]) > 1e-12) ll.push(ll[0]); return ll; }).filter(r => r.length >= 4);
@@ -3149,7 +3159,7 @@ $('#cmd-giraffe').addEventListener('click', e => openMenu(e.currentTarget, '#men
   <button role="menuitem" data-g="exs" ${G.on ? '' : 'disabled'}>${icon('upload')}Enviar seleção para o mapa</button>
   <button role="menuitem" data-g="exa" ${G.on ? '' : 'disabled'}>${icon('upload')}Enviar folha inteira para o mapa</button>
   <button role="menuitem" data-g="exb" ${G.on ? '' : 'disabled'}>${icon('block')}Enviar seleção como bloco (experimental)</button>
-  <button role="menuitem" data-g="org" ${G.on ? '' : 'disabled'}>${icon('map')}Definir origem da folha no mapa</button><hr>
+  <button role="menuitem" data-g="org" ${G.on ? '' : 'disabled'}>${icon('map')}Reposicionar a folha no mapa (clicar onde fica o centro do desenho)</button><hr>
   <label class="chk" style="padding:0 16px"><input type="checkbox" id="g-colors" ${S.doc.settings.sendColors ? 'checked' : ''}>Enviar cores e linhas do app (ignora o template do uso)</label>
   <div style="padding:4px 16px"><label class="note" for="g-rot" style="display:block;margin:0 0 4px">Rotação da grade do mapa (°) — a vertical da grade do app vira esta direção</label><input class="inp num" id="g-rot" value="${fmt(S.doc.settings.mapRot || 0, 1)}" inputmode="decimal" style="width:100%"></div>
   <button role="menuitem" data-g="diag" ${G.on ? '' : 'disabled'}>${icon('file')}Diagnóstico (baixar JSON para suporte)</button>
